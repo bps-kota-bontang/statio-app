@@ -75,7 +75,8 @@ export const formatCellsToPayload = (
   rows: string[],
   dimensions: Dimension[],
   year: number,
-  swapped?: boolean
+  swapped?: boolean,
+  locale: "id" | "en" = "id"
 ): FactRequest | null => {
   const isOneDim = dimensions.length === 1;
 
@@ -103,7 +104,7 @@ export const formatCellsToPayload = (
     }
   }
 
-  const data: { dimensions: string[]; value: unknown }[] = [];
+  const data: { dimensions: string[]; value: number | null }[] = [];
 
   cells?.forEach(([rowIndex, colIndex, , newValue]) => {
     const rowName = rows[rowIndex as number];
@@ -123,7 +124,7 @@ export const formatCellsToPayload = (
 
     data.push({
       dimensions: cellDimensions,
-      value: formattedNumber(newValue),
+      value: formattedNumber(newValue, locale),
     });
   });
 
@@ -131,60 +132,6 @@ export const formatCellsToPayload = (
     year,
     data,
   };
-};
-
-/** * Formats a number string with various thousand and decimal separators into a number.
- * @param value The input number as a string or number.
- * @returns The formatted number or null if invalid.
- */ 
-export const formattedNumber = (value: number | string): number | null => {
-  if (typeof value === "number") {
-    return value;
-  }
-
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  let str = value.trim();
-
-  // If both separators exist, assume last one is decimal if only one occurrence
-  const commaCount = (str.match(/,/g) || []).length;
-  const dotCount = (str.match(/\./g) || []).length;
-
-  if (commaCount > 1 && dotCount === 0) {
-    // multiple commas, all are thousand separators
-    str = str.replace(/,/g, "");
-  } else if (dotCount > 1 && commaCount === 0) {
-    // multiple dots, all are thousand separators
-    str = str.replace(/\./g, "");
-  } else {
-    // replace thousand separators
-    if (commaCount > 0 && dotCount > 0) {
-      // assume the last separator is decimal
-      const lastComma = str.lastIndexOf(",");
-      const lastDot = str.lastIndexOf(".");
-      if (lastComma > lastDot) {
-        str = str.replace(/\./g, "");
-        str = str.replace(",", ".");
-      } else {
-        str = str.replace(/,/g, "");
-      }
-    } else {
-      // only one type of separator
-      if (commaCount === 1 && dotCount === 0) {
-        str = str.replace(",", ".");
-      } else if (dotCount === 1 && commaCount === 0) {
-        // keep as is
-      } else {
-        // multiple separators of same type already handled above
-      }
-    }
-  }
-
-  const parsed = parseFloat(str);
-
-  return isNaN(parsed) ? null : parsed;
 };
 
 /** * Builds data with total rows and columns.
@@ -249,4 +196,24 @@ export const buildDataWithTotals = (
 
   // Panjang akhir = rowCount + 1
   return newData;
+};
+
+export const formattedNumber = (
+  value: number | string,
+  locale: "id" | "en" = "id"
+): number | null => {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return null;
+
+  let normalized;
+
+  if (locale == "id") {
+    // Ganti titik jadi kosong, koma jadi titik
+    normalized = value.replace(/\./g, "").replace(/,/g, ".");
+  } else {
+    // Ganti koma jadi kosong, titik jadi titik
+    normalized = value.replace(/,/g, "");
+  }
+
+  return normalized ? Number(normalized) : null;
 };

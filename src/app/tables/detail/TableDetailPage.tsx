@@ -13,9 +13,17 @@ const TableDetailPage = () => {
   const { data, isLoading, error, mutate } = useTable(id, yearParam);
 
   const years = useMemo(
-    () => Array.from({ length: 5 }, (_, i) => currentYear - i),
+    () => Array.from({ length: 4 }, (_, i) => currentYear - 1 - i),
     [currentYear]
   );
+
+  // Ensure longest dimensions as rows, for better UX
+  const sortedDimensions = useMemo(() => {
+    if (!data?.data) return [];
+    return [...data.data.dimensions].sort(
+      (a, b) => (b.values?.length || 0) - (a.values?.length || 0)
+    );
+  }, [data?.data]);
 
   if (!id) return <div>Table ID is missing</div>;
   if (isLoading) return <div>Loading...</div>;
@@ -33,7 +41,7 @@ const TableDetailPage = () => {
       <TableViewer
         id={id}
         year={yearParam}
-        table={data.data}
+        table={{ ...data.data, dimensions: sortedDimensions }}
         onRevalidate={() => mutate()}
       />
     </div>

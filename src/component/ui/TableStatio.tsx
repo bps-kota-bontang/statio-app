@@ -19,22 +19,18 @@ import numbro from "numbro";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import idID from "numbro/languages/id";
-import { buildDataWithTotals } from "@/utils/table";
+import { buildDataWithTotals, formattedNumber } from "@/utils/table";
 
 interface TableStatioProps {
   data: RowObject[];
   rowHeaders: string[];
   colHeaders: string[];
   onChange?: (cells: CellChange[] | null) => void;
+  locale?: "id" | "en";
 }
 
 registerAllModules();
 numbro.registerLanguage(idID);
-
-const formatID = {
-  pattern: "0,0",
-  culture: "id-ID",
-};
 
 export const TOTAL_KEY = "Total";
 
@@ -76,11 +72,25 @@ export interface TableStatioHandle {
 }
 
 const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
-  ({ data, rowHeaders, colHeaders, onChange }, ref) => {
+  ({ data, rowHeaders, colHeaders, onChange, locale = "id" }, ref) => {
     const hotRef = useRef<HotTableRef>(null);
     const [tableData, setTableData] = useState(
       buildDataWithTotals(data, rowHeaders.length, colHeaders.length)
     );
+
+    const numericFormat = useMemo(() => {
+      if (locale === "id") {
+        return {
+          pattern: "0,0",
+          culture: "id-ID",
+        };
+      } else {
+        return {
+          pattern: "0,0",
+          culture: "en-US",
+        };
+      }
+    }, [locale]);
 
     useImperativeHandle(ref, () => ({
       getData: async () => {
@@ -137,7 +147,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
         const colIndex = colHeaders.indexOf(colKey);
 
         if (row < newData.length - 1 && colIndex >= 0) {
-          (newData[row] as Record<string, number | null>)[colKey] = newValue;
+          (newData[row] as Record<string, number | null>)[colKey] =
+            formattedNumber(newValue, locale);
         }
       });
 
@@ -195,7 +206,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
             return {
               data: extraColHeaders[index],
               type: "numeric",
-              numericFormat: formatID,
+              numericFormat: numericFormat,
             };
           }}
           cells={(row, col) => {
