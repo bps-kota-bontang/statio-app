@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* CSS Variables */
+:root {
+  --primary-color: #1d4ed8; /* text active */
+  --primary-hover-color: #2563eb; /* text hover */
+  --primary-bg: #bfdbfe; /* bg active */
+  --primary-hover-bg: #dbeafe; /* hover bg */
+  --text-color: #374151; /* default text gray-700 */
+  --sidebar-bg: #f8fafc; /* slate-50 */
+  --sidebar-shadow: rgba(0, 0, 0, 0.1);
+  --font-base: "Inter", sans-serif;
+}
+
+/* Body */
+body {
+  font-family: var(--font-base);
+  margin: 0;
+  padding: 0;
+}
+
+/* Tailwind custom utilities */
+@layer utilities {
+  .text-primary {
+    color: var(--primary-color);
+  }
+  .hover\:text-primary:hover {
+    color: var(--primary-hover-color);
+  }
+  .bg-primary {
+    background-color: var(--primary-bg);
+  }
+  .hover\:bg-primary:hover {
+    background-color: var(--primary-hover-bg);
+  }
+  .text-default {
+    color: var(--text-color);
+  }
+  .bg-sidebar {
+    background-color: var(--sidebar-bg);
+  }
+  .shadow-sidebar {
+    box-shadow: 0 0 10px var(--sidebar-shadow);
+  }
+}
