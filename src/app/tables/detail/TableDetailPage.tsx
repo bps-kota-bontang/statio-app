@@ -6,15 +6,15 @@ import { useTable } from "@/service/table";
 
 const TableDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const currentYear = new Date().getFullYear();
+  const lastYear = new Date().getFullYear() - 1;
   const [searchParams, setSearchParams] = useSearchParams();
-  const yearParam = Number(searchParams.get("year")) || currentYear;
+  const yearParam = Number(searchParams.get("year")) || lastYear;
 
   const { data, isLoading, error, mutate } = useTable(id, yearParam);
 
   const years = useMemo(
-    () => Array.from({ length: 4 }, (_, i) => currentYear - 1 - i),
-    [currentYear]
+    () => Array.from({ length: 4 }, (_, i) => lastYear - i),
+    [lastYear]
   );
 
   // Ensure longest dimensions as rows, for better UX
