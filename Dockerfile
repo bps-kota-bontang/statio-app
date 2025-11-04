@@ -1,11 +1,11 @@
 # ================================
-# Stage 1 — Build
+# Stage 1 — Build SPA
 # ================================
 FROM oven/bun:1.3-alpine AS build
 
 WORKDIR /app
 
-# Copy dependency files first (layer caching)
+# Copy dependency files first (caching layer)
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
@@ -22,26 +22,21 @@ RUN bun run build-only --mode production
 
 
 # ================================
-# Stage 2 — Serve (Nginx)
+# Stage 2 — Serve with Nginx
 # ================================
 FROM nginx:stable-alpine-slim AS production
 
-# Create non-root user
-RUN adduser -D -H -u 1001 statio
-
-# Create necessary writable directories for Nginx
-RUN mkdir -p /var/cache/nginx/client_temp /var/log/nginx && \
-    chown -R statio:statio /var/cache/nginx /var/log/nginx /usr/share/nginx/html
-
-# Copy compiled assets
+# Copy compiled SPA
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy Nginx config
 COPY default.conf /etc/nginx/conf.d/default.conf
 
-# Use non-root user
-USER statio
+# Make sure folders Nginx needs exist
+RUN mkdir -p /var/cache/nginx /var/log/nginx
 
+# Expose HTTP port
 EXPOSE 80
 
+# Run Nginx as root (avoids permission errors)
 CMD ["nginx", "-g", "daemon off;"]
