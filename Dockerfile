@@ -5,7 +5,7 @@ FROM oven/bun:1.3-alpine AS build
 
 WORKDIR /app
 
-# Copy only dependency files first (better layer caching)
+# Copy dependency files first (layer caching)
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
@@ -26,8 +26,12 @@ RUN bun run build-only --mode production
 # ================================
 FROM nginx:stable-alpine-slim AS production
 
-# Security: non-root user
+# Create non-root user
 RUN adduser -D -H -u 1001 statio
+
+# Create necessary writable directories for Nginx
+RUN mkdir -p /var/cache/nginx/client_temp /var/log/nginx && \
+    chown -R statio:statio /var/cache/nginx /var/log/nginx /usr/share/nginx/html
 
 # Copy compiled assets
 COPY --from=build /app/dist /usr/share/nginx/html
@@ -35,10 +39,9 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copy Nginx config
 COPY default.conf /etc/nginx/conf.d/default.conf
 
-# Give permission to non-root user
-RUN chown -R statio:statio /usr/share/nginx/html
-
+# Use non-root user
 USER statio
 
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]
