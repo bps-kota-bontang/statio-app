@@ -28,8 +28,11 @@ const EditDimensionForm = ({
   const [name, setName] = useState(dimension.name);
   const [valueInput, setValueInput] = useState("");
   const [values, setValues] = useState<UpdateDimensionValueRequest[]>(
-    dimension.values.map((v) => ({ id: v.id, name: v.name }))
+    dimension.values
+      .map((v) => ({ id: v.id, name: v.name?.trim() ?? "" }))
+      .filter((v) => v.name !== "") // Hapus value kosong dari awal
   );
+
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const { errors, validate } = useRequiredFields<UpdateDimensionRequest>();
@@ -51,15 +54,19 @@ const EditDimensionForm = ({
     [data, values]
   );
 
-  const handleAddValue = useCallback(
-    (val?: string) => {
-      const v = val ?? valueInput.trim();
-      if (!v || values.some((val) => val.name === v)) return;
-      setValues((prev) => [...prev, { name: v }]);
-      setValueInput("");
-    },
-    [valueInput, values]
-  );
+  const handleAddValue = useCallback(() => {
+    const v = valueInput.trim();
+    if (!v) return;
+
+    // Pastikan tidak ada duplikat (case-insensitive)
+    const exists = values.some(
+      (val) => val?.name?.toLowerCase() === v.toLowerCase()
+    );
+    if (exists) return;
+
+    setValues((prev) => [...prev, { name: v }]);
+    setValueInput("");
+  }, [valueInput, values]);
 
   const handleRemoveValue = useCallback((valName: string) => {
     setValues((prev) => prev.filter((v) => v.name !== valName));
@@ -68,7 +75,11 @@ const EditDimensionForm = ({
   const handleUpdateValueName = useCallback(
     (index: number, newName: string) => {
       setValues((prev) =>
-        prev.map((v, i) => (i === index ? { ...v, name: newName } : v))
+        prev.map((v, i) =>
+          i === index
+            ? { ...v, name: newName.trimStart() } // trim agar tak ada spasi kosong di depan
+            : v
+        )
       );
     },
     []
@@ -79,13 +90,53 @@ const EditDimensionForm = ({
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate({ name, values }, ["name"], ["values"]);
+      const trimmedName = name.trim();
+      const cleanedValues = values
+        .map((v) => ({
+          id: v.id,
+          name: v.name?.trim() ?? "",
+        }))
+        .filter((v) => v.name !== ""); // buang value kosong
+
+      if (trimmedName === "") {
+        alert("Nama dimensi tidak boleh kosong.");
+        return;
+      }
+
+      if (cleanedValues.length === 0) {
+        alert("Minimal harus ada satu value yang tidak kosong.");
+        return;
+      }
+
+      const isValid = validate({ name: trimmedName, values: cleanedValues }, [
+        "name",
+      ]);
       if (!isValid) return;
 
-      const success = await onSubmit(dimension.id, { name, values });
+      // Bangun payload yang mengikuti aturan:
+      // 1. Jika tidak diubah → kirim id saja
+      // 2. Jika diubah → kirim id + name
+      // 3. Jika baru → hanya name
+      const payloadValues: UpdateDimensionValueRequest[] = cleanedValues.map(
+        (v) => {
+          const original = dimension.values.find((ov) => ov.id === v.id);
+
+          if (!v.id) return { name: v.name }; // value baru
+
+          if (original && original.name === v.name) return { id: v.id }; // tidak diubah
+
+          return { id: v.id, name: v.name }; // diubah
+        }
+      );
+
+      const success = await onSubmit(dimension.id, {
+        name: trimmedName,
+        values: payloadValues,
+      });
+
       if (success) setEditingIndex(null);
     },
-    [name, values, onSubmit, validate, dimension.id]
+    [name, values, onSubmit, validate, dimension]
   );
 
   return (
@@ -139,55 +190,60 @@ const EditDimensionForm = ({
 
         <div className="flex flex-wrap gap-3 mt-3">
           <AnimatePresence>
-            {values.map((val, index) => (
-              <motion.div
-                key={val.id ?? index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="relative flex items-center"
-              >
-                {editingIndex === index ? (
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="text"
-                      value={val.name}
-                      onChange={(e) =>
-                        handleUpdateValueName(index, e.target.value)
-                      }
-                      className="border-gray-300 border rounded px-2 py-1 text-sm outline-blue-400 focus:ring-1 focus:ring-blue-400"
-                      autoFocus
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => setEditingIndex(null)}
-                      size="sm"
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <Badge
-                      label={val.name}
-                      copyable={false}
-                      onClick={() => {
-                        setEditingIndex(index);
-                      }}
-                      className="cursor-pointer"
-                    />
-                    {/* Tombol edit & delete */}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveValue(val.name)}
-                      className="absolute -top-2 -right-2 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition"
-                    >
-                      <X className="w-2.5 h-2.5" />
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            ))}
+            {values
+              .filter(
+                (val, index) =>
+                  editingIndex === index || (val.name && val.name.trim() !== "")
+              )
+              .map((val, index) => (
+                <motion.div
+                  key={val.id ?? index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="relative flex items-center"
+                >
+                  {editingIndex === index ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={val.name}
+                        onChange={(e) =>
+                          handleUpdateValueName(index, e.target.value)
+                        }
+                        className="border-gray-300 border rounded px-2 py-1 text-sm outline-blue-400 focus:ring-1 focus:ring-blue-400"
+                        autoFocus
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => setEditingIndex(null)}
+                        size="sm"
+                      >
+                        <Check className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Badge
+                        label={val.name ?? ""}
+                        copyable={false}
+                        onClick={() => {
+                          setEditingIndex(index);
+                        }}
+                        className="cursor-pointer"
+                      />
+                      {/* Tombol edit & delete */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveValue(val.name ?? "")}
+                        className="absolute -top-2 -right-2 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
           </AnimatePresence>
         </div>
       </div>

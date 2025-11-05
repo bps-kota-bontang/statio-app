@@ -20,7 +20,7 @@ export type CreateDimensionRequest = {
 
 export type UpdateDimensionValueRequest = {
   id?: string;
-  name: string;
+  name?: string;
 };
 
 export type UpdateDimensionRequest = {
