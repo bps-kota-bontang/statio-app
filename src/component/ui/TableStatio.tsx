@@ -25,6 +25,7 @@ interface TableStatioProps {
   data: RowObject[];
   rowHeaders: string[];
   colHeaders: string[];
+  dimensionCount: number;
   onChange?: (cells: CellChange[] | null) => void;
   locale?: "id" | "en";
 }
@@ -72,10 +73,18 @@ export interface TableStatioHandle {
 }
 
 const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
-  ({ data, rowHeaders, colHeaders, onChange, locale = "id" }, ref) => {
+  (
+    { data, rowHeaders, colHeaders, dimensionCount, onChange, locale = "id" },
+    ref
+  ) => {
     const hotRef = useRef<HotTableRef>(null);
     const [tableData, setTableData] = useState(
-      buildDataWithTotals(data, rowHeaders.length, colHeaders.length)
+      buildDataWithTotals(
+        data,
+        rowHeaders.length,
+        colHeaders.length,
+        dimensionCount
+      )
     );
 
     const numericFormat = useMemo(() => {
@@ -130,9 +139,14 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
     useEffect(() => {
       setTableData(
-        buildDataWithTotals(data, rowHeaders.length, colHeaders.length)
+        buildDataWithTotals(
+          data,
+          rowHeaders.length,
+          colHeaders.length,
+          dimensionCount
+        )
       );
-    }, [colHeaders.length, data, rowHeaders]);
+    }, [colHeaders.length, data, dimensionCount, rowHeaders]);
 
     const handleAfterChange = (
       changes: CellChange[] | null,
@@ -155,7 +169,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
       const newBuildData = buildDataWithTotals(
         newData,
         rowHeaders.length,
-        colHeaders.length
+        colHeaders.length,
+        dimensionCount
       );
 
       setTableData(newBuildData);

@@ -11,6 +11,9 @@ export type Fact = {
 };
 
 export type FactRequest = {
-  year: number;
-  data: { dimensions: string[]; value: number | null }[];
+  data: {
+    dimensions: string[];
+    value: number | null;
+    year: number;
+  }[];
 };

@@ -8,9 +8,13 @@ const TableDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const lastYear = new Date().getFullYear() - 1;
   const [searchParams, setSearchParams] = useSearchParams();
-  const yearParam = Number(searchParams.get("year")) || lastYear;
+  const yearParam = searchParams.get("year");
 
-  const { data, isLoading, error, mutate } = useTable(id, yearParam);
+  // Fetch table data based on ID and year parameter (if present)
+  const { data, isLoading, error, mutate } = useTable(
+    id,
+    yearParam ? Number(yearParam) : null
+  );
 
   const years = useMemo(
     () => Array.from({ length: 4 }, (_, i) => lastYear - i),
@@ -37,12 +41,19 @@ const TableDetailPage = () => {
   return (
     <div>
       <h3 className="text-xl font-semibold mb-4">{data.data.name}</h3>
-      <Tab items={years} selected={yearParam} onSelect={handleYearSelect} />
+      {sortedDimensions.length > 0 && (
+        <Tab
+          items={years}
+          selected={yearParam ? Number(yearParam) : lastYear}
+          onSelect={handleYearSelect}
+        />
+      )}
       <TableViewer
         id={id}
-        year={yearParam}
+        year={yearParam ? Number(yearParam) : lastYear}
         table={{ ...data.data, dimensions: sortedDimensions }}
         onRevalidate={() => mutate()}
+        years={years}
       />
     </div>
   );

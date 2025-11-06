@@ -11,7 +11,7 @@ import type { FactRequest } from "@/type/fact";
 
 type TableFilters = Record<keyof Table, FilterValue>;
 
-export const useTable = (id?: string, year?: number) => {
+export const useTable = (id?: string, year?: number | null) => {
   const params = new URLSearchParams();
   if (year) params.append("year", String(year));
 

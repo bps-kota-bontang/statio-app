@@ -36,7 +36,7 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
 
       const isValid = validate(
         { name, indicator_id: indicatorId, dimension_ids: dimensionIds },
-        ["name", "indicator_id", "dimension_ids"]
+        ["name", "indicator_id"]
       );
 
       if (!isValid) return;

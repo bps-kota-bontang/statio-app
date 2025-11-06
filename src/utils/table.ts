@@ -16,18 +16,26 @@ export function transpose<T>(matrix: T[][]): T[][] {
  * @param table The Table object from the API response.
  * @returns An object containing data, rowHeaders, colHeaders, rowMap, and colMap.
  */
-export function tableResponseToRowObjects(table: Table) {
+export function tableResponseToRowObjects(table: Table, years?: number[]) {
   const rowDim = table.dimensions[0];
   const colDim = table.dimensions[1];
 
-  const rowHeaders = rowDim?.values.map((v) => v.name) ?? [];
+  const rowHeaders = rowDim
+    ? rowDim.values.map((v) => v.name)
+    : years?.sort((a, b) => a - b).map((item) => String(item)) ?? []; // tidak ada dimensi, indikator tunggal
   const colHeaders = colDim
     ? colDim.values.map((v) => v.name)
-    : [table.indicator.name]; // indikator tunggal
+    : [table.indicator.name]; // dimensi tunggal, indikator di kolom
 
   const rowMap = rowDim
     ? Object.fromEntries(rowDim.values.map((v) => [v.name, v]))
-    : {};
+    : {
+        [table.indicator.name]: {
+          id: table.indicator.id,
+          name: table.indicator.name,
+        },
+      };
+
   const colMap = colDim
     ? Object.fromEntries(colDim.values.map((v) => [v.name, v]))
     : {
@@ -37,14 +45,27 @@ export function tableResponseToRowObjects(table: Table) {
         },
       };
 
-  const data = rowHeaders.map(() => ({} as RowObject));
+  const data = rowHeaders.map(() => {
+    const row: Record<string, unknown> = {};
+    colHeaders.forEach((col) => {
+      row[col] = null;
+    });
+    return row;
+  });
 
   table.facts?.forEach((f) => {
+    let rowIndex: number;
+
     // cari nilai baris
-    const rowVal = f.dimensions.find((d) => d.id === rowDim?.id)?.value;
-    if (!rowVal) return;
-    const rowIndex = rowHeaders.indexOf(rowVal.name);
-    if (rowIndex === -1) return;
+    if (rowDim) {
+      const rowVal = f.dimensions.find((d) => d.id === rowDim?.id)?.value;
+      if (!rowVal) return;
+      rowIndex = rowHeaders.indexOf(rowVal.name);
+      if (rowIndex === -1) return; // tidak ditemukan, mungkin nilai dimensi tidak ada di rowHeaders
+    } else {
+      rowIndex = rowHeaders.indexOf(String(f.year));
+      if (rowIndex === -1) return; // tidak ditemukan, mungkin tahun tidak ada di rowHeaders
+    }
 
     // cari nilai kolom
     let colKey = "";
@@ -74,7 +95,7 @@ export const formatCellsToPayload = (
   cells: CellChange[],
   rows: string[],
   dimensions: Dimension[],
-  year: number,
+  year: number | null,
   swapped?: boolean,
   locale: "id" | "en" = "id"
 ): FactRequest | null => {
@@ -104,7 +125,8 @@ export const formatCellsToPayload = (
     }
   }
 
-  const data: { dimensions: string[]; value: number | null }[] = [];
+  const data: { dimensions: string[]; value: number | null; year: number }[] =
+    [];
 
   cells?.forEach(([rowIndex, colIndex, , newValue]) => {
     const rowName = rows[rowIndex as number];
@@ -125,11 +147,16 @@ export const formatCellsToPayload = (
     data.push({
       dimensions: cellDimensions,
       value: formattedNumber(newValue, locale),
+      year:
+        cellDimensions.length > 0 && year
+          ? year
+          : swapped
+          ? Number(colName)
+          : Number(rowName),
     });
   });
 
   return {
-    year,
     data,
   };
 };
@@ -143,7 +170,8 @@ export const formatCellsToPayload = (
 export const buildDataWithTotals = (
   data: RowObject[],
   rowCount: number,
-  columnCount: number
+  columnCount: number,
+  dimensionCount: number
 ) => {
   if (!data || data.length === 0) return [];
 
@@ -162,14 +190,16 @@ export const buildDataWithTotals = (
   let newData: RowObject[] = [...dataRows]; // copy dulu data asli
 
   if (!onlyOneCol) {
-    // Tambahkan TOTAL_KEY tiap row jika lebih dari 1 kolom
-    newData = newData.map((row) => ({
-      ...row,
-      [TOTAL_KEY]: colKeys.reduce(
-        (sum, key) => sum + (Number(row[key]) || 0),
-        0
-      ),
-    }));
+    if (dimensionCount > 0) {
+      // Tambahkan TOTAL_KEY tiap row jika lebih dari 1 kolom
+      newData = newData.map((row) => ({
+        ...row,
+        [TOTAL_KEY]: colKeys.reduce(
+          (sum, key) => sum + (Number(row[key]) || 0),
+          0
+        ),
+      }));
+    }
   }
 
   if (!onlyOneRow) {
@@ -190,7 +220,7 @@ export const buildDataWithTotals = (
       newData.push({ ...colTotals, [TOTAL_KEY]: grandTotal });
     } else {
       // Hanya push total per kolom, tanpa grand total
-      newData.push({ ...colTotals });
+      if (dimensionCount > 0) newData.push({ ...colTotals });
     }
   }
 

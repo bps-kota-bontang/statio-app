@@ -19,10 +19,12 @@ const TableViewer = ({
   year,
   table,
   onRevalidate,
+  years,
 }: {
   id: string;
-  year: number;
+  year: number | null;
   table: Table;
+  years?: number[];
   onRevalidate: () => void;
 }) => {
   const lastPayloadRef = useRef<string>("");
@@ -44,7 +46,7 @@ const TableViewer = ({
 
   const { data, colHeaders, rowHeaders } = useMemo(() => {
     if (!table) return { data: [], colHeaders: [], rowHeaders: [] };
-    const base = tableResponseToRowObjects(table);
+    const base = tableResponseToRowObjects(table, years);
     if (!swap) return base;
 
     const transposedDataValues = transpose(
@@ -67,7 +69,7 @@ const TableViewer = ({
     };
 
     return baseTransposed;
-  }, [table, swap]);
+  }, [table, years, swap]);
 
   const handleSave = useCallback(
     async (changes: CellChange[]) => {
@@ -218,15 +220,16 @@ const TableViewer = ({
         data={data}
         colHeaders={colHeaders}
         rowHeaders={rowHeaders}
+        dimensionCount={dims.length}
         locale={locale}
         onChange={(changes) => {
           if (autoSave && changes) handleSave(changes);
         }}
       />
       <p className="text-xs text-gray-500">
-        Silakan masukkan angka <b>tanpa pemisah ribuan</b>. Contoh: <br />• Untuk 1.234
-        (Indonesia), ketik <code>1234</code> <br />• Untuk 1,234 (English),
-        ketik <code>1234</code>
+        Silakan masukkan angka <b>tanpa pemisah ribuan</b>. Contoh: <br />•
+        Untuk 1.234 (Indonesia), ketik <code>1234</code> <br />• Untuk 1,234
+        (English), ketik <code>1234</code>
       </p>
 
       {/* 📝 Notes + Save */}
