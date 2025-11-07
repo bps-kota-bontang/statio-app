@@ -13,7 +13,10 @@ export type Column<T> = {
   render?: (row: T, no: number, index: number) => React.ReactNode;
 };
 
-function createRenderRow<T extends object>(columns: Column<T>[]) {
+function createRenderRow<T extends object>(
+  columns: Column<T>[],
+  selectable?: boolean
+) {
   return (row: T, no: number, index: number) => (
     <>
       {columns.map((col, i) => {
@@ -22,7 +25,6 @@ function createRenderRow<T extends object>(columns: Column<T>[]) {
         if (col.render) {
           value = col.render(row, no, index);
         } else if (col.key in row) {
-          // konversi aman
           const raw = (row as Record<string, unknown>)[col.key as string];
           value = (raw as React.ReactNode) ?? "-";
         } else {
@@ -30,7 +32,12 @@ function createRenderRow<T extends object>(columns: Column<T>[]) {
         }
 
         return (
-          <td key={i} className="px-4 py-2 text-sm">
+          <td
+            key={i}
+            className={`py-2 text-sm ${
+              i === 0 && selectable ? "pl-0 pr-4" : "px-4"
+            }`}
+          >
             {value}
           </td>
         );
@@ -98,7 +105,7 @@ export default function DataTable<
   const [internalSelected, setInternalSelected] = useState<(string | number)[]>(
     []
   );
-  const renderRow = createRenderRow(columns);
+  const renderRow = createRenderRow(columns, selectable);
   const selected = selectedKeys ?? internalSelected;
 
   const selectAllRef = useRef<HTMLInputElement>(null);
@@ -212,8 +219,8 @@ export default function DataTable<
           <thead className="bg-gray-100 sticky top-0 z-10">
             <tr>
               {selectable && (
-                <th className="px-4 py-2">
-                  <div className="flex items-center space-x-1">
+                <th className="px-4 py-2 w-9">
+                  <div className="flex items-center justify-center">
                     <input
                       ref={selectAllRef}
                       type="checkbox"
@@ -225,10 +232,12 @@ export default function DataTable<
                   </div>
                 </th>
               )}
-              {columns.map((c) => (
+              {columns.map((c, i) => (
                 <th
                   key={String(c.key)}
-                  className="px-4 py-2 text-left text-sm font-medium text-gray-700"
+                  className={`py-2 text-left text-sm font-medium text-gray-700 ${
+                    i === 0 && selectable ? "pl-0 pr-4" : "px-4"
+                  }`}
                 >
                   <div className="flex items-center space-x-1">
                     <span
@@ -384,12 +393,14 @@ export default function DataTable<
                     }`}
                   >
                     {selectable && (
-                      <td className="px-4 py-2">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleRow(id)}
-                        />
+                      <td className="px-4 py-2 w-9">
+                        <div className="flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleRow(id)}
+                          />
+                        </div>
                       </td>
                     )}
                     {renderRow(row, no, index)}
