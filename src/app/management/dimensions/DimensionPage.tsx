@@ -19,6 +19,7 @@ import { useMemo, useCallback, useState } from "react";
 import CreateDimensionForm from "@/app/management/dimensions/CreateDimensionForm";
 import EditDimensionForm from "@/app/management/dimensions/EditDimensionForm";
 import { Plus } from "lucide-react";
+import { getRowNumber } from "@/utils/table";
 
 export default function DimensionExample() {
   const table = useDataTable<Dimension>();
@@ -94,7 +95,9 @@ export default function DimensionExample() {
   const renderRow = useCallback(
     (row: Dimension, index: number) => (
       <tr key={row.id} className="hover:bg-gray-50">
-        <td className="px-4 py-2 text-sm">{index + 1}</td>
+        <td className="px-4 py-2 text-sm">
+          {getRowNumber(index, table.page, table.perPage)}
+        </td>
         <td className="px-4 py-2 text-sm">{row.name}</td>
         <td className="px-4 py-2 text-sm">
           <div className="flex flex-wrap gap-2">
@@ -110,7 +113,7 @@ export default function DimensionExample() {
         </td>
       </tr>
     ),
-    [openEdit]
+    [openEdit, table.page, table.perPage]
   );
 
   return (

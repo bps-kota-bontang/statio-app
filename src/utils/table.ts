@@ -247,3 +247,17 @@ export const formattedNumber = (
 
   return normalized ? Number(normalized) : null;
 };
+
+/**
+ * Hitung nomor urut global berdasarkan index, page, dan perPage.
+ * Contoh:
+ *  - page = 1, perPage = 10, index = 0 → 1
+ *  - page = 2, perPage = 10, index = 0 → 11
+ */
+export function getRowNumber(
+  index: number,
+  page: number,
+  perPage: number
+): number {
+  return index + 1 + (page - 1) * perPage;
+}

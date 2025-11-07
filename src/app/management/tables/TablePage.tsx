@@ -17,6 +17,7 @@ import { Plus } from "lucide-react";
 import { useMemo, useCallback, useState } from "react";
 import { Link } from "react-router";
 import CreateTableForm from "@/app/management/tables/CreateTableForm";
+import { getRowNumber } from "@/utils/table";
 
 const TablePage = () => {
   const table = useDataTable<TableList>();
@@ -136,7 +137,9 @@ const TablePage = () => {
   const renderRow = useCallback(
     (row: TableList, index: number) => (
       <tr key={row.id} className="hover:bg-gray-50">
-        <td className="px-4 py-2 text-sm">{index + 1}</td>
+        <td className="px-4 py-2 text-sm">
+          {getRowNumber(index, table.page, table.perPage)}
+        </td>
         <td className="px-4 py-2 text-sm">{row.name}</td>
         <td className="px-4 py-2 text-sm">{row.indicator.name}</td>
         <td className="px-4 py-2 text-sm">{row.indicator.measure}</td>
@@ -155,7 +158,7 @@ const TablePage = () => {
         </td>
       </tr>
     ),
-    []
+    [table.page, table.perPage]
   );
 
   return (

@@ -20,6 +20,7 @@ import CreateIndicatorForm from "@/app/management/indicators/CreateIndicatorForm
 import EditIndicatorForm from "@/app/management/indicators/EditIndicatorForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
+import { getRowNumber } from "@/utils/table";
 
 export default function IndicatorExample() {
   const table = useDataTable<Indicator>(["measure", "unit"]);
@@ -118,7 +119,9 @@ export default function IndicatorExample() {
   const renderRow = useCallback(
     (row: Indicator, index: number) => (
       <tr key={row.id} className="hover:bg-gray-50">
-        <td className="px-4 py-2 text-sm">{index + 1}</td>
+        <td className="px-4 py-2 text-sm">
+          {getRowNumber(index, table.page, table.perPage)}
+        </td>
         <td className="px-4 py-2 text-sm">{row.name}</td>
         <td className="px-4 py-2 text-sm">{row.measure}</td>
         <td className="px-4 py-2 text-sm">{row.unit || "-"}</td>
@@ -129,7 +132,7 @@ export default function IndicatorExample() {
         </td>
       </tr>
     ),
-    [openEdit]
+    [openEdit, table.page, table.perPage]
   );
 
   return (
