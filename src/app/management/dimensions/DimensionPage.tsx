@@ -71,7 +71,12 @@ export default function DimensionExample() {
 
   const columns = useMemo<Column<Dimension>[]>(
     () => [
-      { key: "no", label: "No", sortable: true },
+      {
+        key: "no",
+        label: "No",
+        sortable: true,
+        render: (_, no) => no,
+      },
       {
         key: "name",
         label: "Name",
@@ -81,35 +86,27 @@ export default function DimensionExample() {
         key: "values",
         label: "Values",
         sortable: false,
-      },
-      {
-        key: "actions",
-        label: "Actions",
-        sortable: false,
-      },
-    ],
-    []
-  );
-
-  const renderRow = useCallback(
-    (row: Dimension, no: number) => (
-      <>
-        <td className="px-4 py-2">{no}</td>
-        <td className="px-4 py-2 text-sm">{row.name}</td>
-        <td className="px-4 py-2 text-sm">
+        render: (row) => (
           <div className="flex flex-wrap gap-2">
             {row.values.map((value) => (
               <Badge key={value.id} label={value.name} />
             ))}
           </div>
-        </td>
-        <td className="px-4 py-2 text-sm flex gap-2">
-          <Button size="sm" onClick={() => openEdit(row)}>
-            Edit
-          </Button>
-        </td>
-      </>
-    ),
+        ),
+      },
+      {
+        key: "actions",
+        label: "Actions",
+        sortable: false,
+        render: (row) => (
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => openEdit(row)}>
+              Edit
+            </Button>
+          </div>
+        ),
+      },
+    ],
     [openEdit]
   );
 
@@ -128,7 +125,6 @@ export default function DimensionExample() {
         data={data?.data ?? []}
         meta={data?.meta}
         columns={columns}
-        renderRow={renderRow}
         isLoading={isLoading}
         {...table}
       />

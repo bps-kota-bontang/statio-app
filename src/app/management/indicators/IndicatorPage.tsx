@@ -88,7 +88,12 @@ export default function IndicatorExample() {
 
   const columns = useMemo<Column<Indicator>[]>(
     () => [
-      { key: "no", label: "No", sortable: true },
+      {
+        key: "no",
+        label: "No",
+        sortable: true,
+        render: (_, no) => no, // custom render nomor urut
+      },
       {
         key: "name",
         label: "Name",
@@ -105,31 +110,22 @@ export default function IndicatorExample() {
         label: "Unit",
         sortable: true,
         filterOptions: existingIndicatorUnits,
+        render: (row) => row.unit || "-",
       },
       {
         key: "actions",
         label: "Actions",
         sortable: false,
+        render: (row) => (
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => openEdit(row)}>
+              Edit
+            </Button>
+          </div>
+        ),
       },
     ],
-    [existingIndicatorMeasures, existingIndicatorUnits]
-  );
-
-  const renderRow = useCallback(
-    (row: Indicator, no: number) => (
-      <>
-        <td className="px-4 py-2">{no}</td>
-        <td className="px-4 py-2 text-sm">{row.name}</td>
-        <td className="px-4 py-2 text-sm">{row.measure}</td>
-        <td className="px-4 py-2 text-sm">{row.unit || "-"}</td>
-        <td className="px-4 py-2 text-sm flex gap-2">
-          <Button size="sm" onClick={() => openEdit(row)}>
-            Edit
-          </Button>
-        </td>
-      </>
-    ),
-    [openEdit]
+    [existingIndicatorMeasures, existingIndicatorUnits, openEdit]
   );
 
   return (
@@ -145,7 +141,6 @@ export default function IndicatorExample() {
         data={data?.data ?? []}
         meta={data?.meta}
         columns={columns}
-        renderRow={renderRow}
         isLoading={isLoading}
         {...table}
       />

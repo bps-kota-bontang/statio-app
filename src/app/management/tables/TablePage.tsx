@@ -1,6 +1,5 @@
 "use client";
 
-import Badge from "@/component/ui/Badge";
 import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
@@ -19,9 +18,10 @@ import type {
 } from "@/type/table";
 import { Plus } from "lucide-react";
 import { useMemo, useCallback, useState } from "react";
-import { Link } from "react-router";
 import CreateTableForm from "@/app/management/tables/CreateTableForm";
 import EditTableForm from "./EditIndicatorForm";
+import Badge from "@/component/ui/Badge";
+import { Link } from "react-router";
 
 const TablePage = () => {
   const table = useDataTable<TableList>();
@@ -98,7 +98,12 @@ const TablePage = () => {
 
   const columns = useMemo<Column<TableList>[]>(
     () => [
-      { key: "no", label: "No", sortable: true },
+      {
+        key: "no",
+        label: "No",
+        sortable: true,
+        render: (_, no) => no,
+      },
       {
         key: "name",
         label: "Name",
@@ -108,26 +113,46 @@ const TablePage = () => {
         key: "indicator_name",
         label: "Indicator",
         filterOptions: existingIndicatorNames,
+        render: (row) => row.indicator.name,
       },
       {
         key: "indicator_measure",
         label: "Measure",
         filterOptions: existingIndicatorMeasures,
+        render: (row) => row.indicator.measure,
       },
       {
         key: "indicator_unit",
         label: "Unit",
         filterOptions: existingIndicatorUnits,
+        render: (row) => row.indicator.unit ?? "-",
       },
       {
         key: "dimensions",
         label: "Dimensions",
         filterOptions: existingDimensionNames,
+        render: (row) => (
+          <div className="flex flex-wrap gap-2">
+            {row.dimensions.map((dimension, index) => (
+              <Badge key={index} label={dimension} />
+            ))}
+          </div>
+        ),
       },
       {
         key: "actions",
         label: "Actions",
         sortable: false,
+        render: (row) => (
+          <div className="flex gap-2">
+            <Link to={`/tables/${row.id}`} target="_blank">
+              <Button size="sm">View</Button>
+            </Link>
+            <Button size="sm" onClick={() => openEdit(row.id)}>
+              Edit
+            </Button>
+          </div>
+        ),
       },
     ],
     [
@@ -135,35 +160,8 @@ const TablePage = () => {
       existingIndicatorMeasures,
       existingIndicatorNames,
       existingIndicatorUnits,
+      openEdit,
     ]
-  );
-
-  const renderRow = useCallback(
-    (row: TableList, no: number) => (
-      <>
-        <td className="px-4 py-2">{no}</td>
-        <td className="px-4 py-2 text-sm">{row.name}</td>
-        <td className="px-4 py-2 text-sm">{row.indicator.name}</td>
-        <td className="px-4 py-2 text-sm">{row.indicator.measure}</td>
-        <td className="px-4 py-2 text-sm">{row.indicator.unit ?? "-"}</td>
-        <td className="px-4 py-2 text-sm">
-          <div className="flex flex-wrap gap-2">
-            {row.dimensions.map((dimension, index) => (
-              <Badge key={index} label={dimension} />
-            ))}
-          </div>
-        </td>
-        <td className="px-4 py-2 text-sm flex gap-2">
-          <Link to={`/tables/${row.id}`} target="_blank">
-            <Button size="sm">View</Button>
-          </Link>
-          <Button size="sm" onClick={() => openEdit(row.id)}>
-            Edit
-          </Button>
-        </td>
-      </>
-    ),
-    [openEdit]
   );
 
   return (
@@ -180,7 +178,6 @@ const TablePage = () => {
         data={data?.data ?? []}
         meta={data?.meta}
         columns={columns}
-        renderRow={renderRow}
         isLoading={isLoading}
         onSelectionChange={(selectedIDs) => {
           console.log(selectedIDs);

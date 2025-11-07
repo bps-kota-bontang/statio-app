@@ -6,11 +6,38 @@ import { useRef, useState, useEffect, createRef } from "react";
 import type { PaginationMeta } from "@/type/response";
 
 export type Column<T> = {
-  key: keyof T | "no" | unknown;
+  key: keyof T | string;
   label: string;
   sortable?: boolean;
   filterOptions?: string[];
+  render?: (row: T, no: number, index: number) => React.ReactNode;
 };
+
+function createRenderRow<T extends object>(columns: Column<T>[]) {
+  return (row: T, no: number, index: number) => (
+    <>
+      {columns.map((col, i) => {
+        let value: React.ReactNode;
+
+        if (col.render) {
+          value = col.render(row, no, index);
+        } else if (col.key in row) {
+          // konversi aman
+          const raw = (row as Record<string, unknown>)[col.key as string];
+          value = (raw as React.ReactNode) ?? "-";
+        } else {
+          value = "-";
+        }
+
+        return (
+          <td key={i} className="px-4 py-2 text-sm">
+            {value}
+          </td>
+        );
+      })}
+    </>
+  );
+}
 
 export type DataTableProps<
   T extends { id?: string | number }, // 👈 Tambah constraint
@@ -19,7 +46,6 @@ export type DataTableProps<
   data: T[];
   meta?: PaginationMeta;
   columns: Column<T>[];
-  renderRow: (row: T, no: number, index: number) => React.ReactNode;
   perPageOptions?: number[];
   maxPageButtons?: number;
   perPage?: number;
@@ -52,7 +78,6 @@ export default function DataTable<
   columns,
   perPageOptions = [5, 10, 20, 50, 100, 250, 500, 1000],
   maxPageButtons = 5,
-  renderRow,
   selectable = false, // 👈 default off
   selectedKeys,
   getRowId,
@@ -73,6 +98,7 @@ export default function DataTable<
   const [internalSelected, setInternalSelected] = useState<(string | number)[]>(
     []
   );
+  const renderRow = createRenderRow(columns);
   const selected = selectedKeys ?? internalSelected;
 
   const selectAllRef = useRef<HTMLInputElement>(null);
