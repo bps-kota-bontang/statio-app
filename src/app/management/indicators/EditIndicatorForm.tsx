@@ -26,23 +26,21 @@ const EditIndicatorForm = ({
 
   const { data } = useIndicators({ perPage: 1000 });
 
-  const existingNames = useMemo(
-    () =>
-      data?.data.map((dim) => dim.name).filter((n) => n !== indicator.name) ||
-      [],
-    [data, indicator.name]
-  );
+  const existingNames = useMemo(() => {
+    const names = data?.data.map((dim) => dim.name) || [];
+    return Array.from(new Set(names));
+  }, [data]);
 
-  const existingMeasures = useMemo(
-    () => data?.data.map((dim) => dim.measure) || [],
-    [data]
-  );
+  const existingMeasures = useMemo(() => {
+    const measures = data?.data.map((dim) => dim.measure) || [];
+    return Array.from(new Set(measures));
+  }, [data]);
 
-  const existingUnits = useMemo(
-    () =>
-      data?.data.map((dim) => dim.unit).filter((item) => item != null) || [],
-    [data]
-  );
+  const existingUnits = useMemo(() => {
+    const units =
+      data?.data.map((dim) => dim.unit).filter((item) => item != null) || [];
+    return Array.from(new Set(units));
+  }, [data]);
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
