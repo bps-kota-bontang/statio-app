@@ -21,7 +21,6 @@ import { Plus } from "lucide-react";
 import { useMemo, useCallback, useState } from "react";
 import { Link } from "react-router";
 import CreateTableForm from "@/app/management/tables/CreateTableForm";
-import { getRowNumber } from "@/utils/table";
 import EditTableForm from "./EditIndicatorForm";
 
 const TablePage = () => {
@@ -140,11 +139,9 @@ const TablePage = () => {
   );
 
   const renderRow = useCallback(
-    (row: TableList, index: number) => (
+    (row: TableList, no: number) => (
       <tr key={row.id} className="hover:bg-gray-50">
-        <td className="px-4 py-2 text-sm">
-          {getRowNumber(index, table.page, table.perPage)}
-        </td>
+        <td className="px-4 py-2">{no}</td>
         <td className="px-4 py-2 text-sm">{row.name}</td>
         <td className="px-4 py-2 text-sm">{row.indicator.name}</td>
         <td className="px-4 py-2 text-sm">{row.indicator.measure}</td>
@@ -166,7 +163,7 @@ const TablePage = () => {
         </td>
       </tr>
     ),
-    [openEdit, table.page, table.perPage]
+    [openEdit]
   );
 
   return (

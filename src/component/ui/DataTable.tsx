@@ -1,4 +1,3 @@
-// app/components/table/DataTable.tsx
 "use client";
 
 import { ChevronUp, ChevronDown, Filter, Search, X } from "lucide-react";
@@ -17,7 +16,7 @@ export type DataTableProps<T, F extends Record<string, string[]>> = {
   data: T[];
   meta?: PaginationMeta;
   columns: Column<T>[];
-  renderRow: (row: T, index: number) => React.ReactNode;
+  renderRow: (row: T, no: number, index: number) => React.ReactNode;
   perPageOptions?: number[];
   maxPageButtons?: number;
   perPage?: number;
@@ -93,6 +92,7 @@ export default function DataTable<T, F extends Record<string, string[]>>({
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
+  // === SORT ICON ===
   const icon = (field: string) =>
     sortBy !== field ? null : sortOrder === "asc" ? (
       <ChevronUp className="w-3 h-3 inline ml-1" />
@@ -100,6 +100,7 @@ export default function DataTable<T, F extends Record<string, string[]>>({
       <ChevronDown className="w-3 h-3 inline ml-1" />
     );
 
+  // === PAGINATION BUTTONS ===
   const half = Math.floor(maxPageButtons / 2);
   let start = Math.max((meta?.page ?? 1) - half, 1);
   const end = Math.min(start + maxPageButtons - 1, meta?.pages ?? 1);
@@ -107,11 +108,11 @@ export default function DataTable<T, F extends Record<string, string[]>>({
     start = Math.max(end - maxPageButtons + 1, 1);
   const pages = [...Array(end - start + 1)].map((_, i) => start + i);
 
+  // === TABLE RENDER ===
   return (
     <div className="space-y-3">
-      {/* Search */}
+      {/* === SEARCH & ACTION BAR === */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
-        {/* Actions */}
         <div>{actions}</div>
         {onSearchChange && (
           <div className="relative w-full ml-auto sm:w-64">
@@ -134,7 +135,7 @@ export default function DataTable<T, F extends Record<string, string[]>>({
         )}
       </div>
 
-      {/* Table */}
+      {/* === TABLE === */}
       <div className="overflow-auto border border-gray-200 rounded-md">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100 sticky top-0 z-10">
@@ -189,7 +190,7 @@ export default function DataTable<T, F extends Record<string, string[]>>({
                                       onFilterChange(
                                         c.key as string,
                                         allOptions
-                                      ); // kirim semua sekaligus
+                                      );
                                     }
                                   }}
                                 >
@@ -200,7 +201,6 @@ export default function DataTable<T, F extends Record<string, string[]>>({
                                   className="text-red-600 hover:underline"
                                   onClick={() => {
                                     if (onFilterChange) {
-                                      // clear all options
                                       (
                                         filters?.[c.key as string] || []
                                       ).forEach((opt) =>
@@ -263,6 +263,7 @@ export default function DataTable<T, F extends Record<string, string[]>>({
             </tr>
           </thead>
 
+          {/* === BODY === */}
           <tbody className="divide-y divide-gray-100 bg-white">
             {isLoading ? (
               Array(perPage || 5)
@@ -283,7 +284,12 @@ export default function DataTable<T, F extends Record<string, string[]>>({
                   </tr>
                 ))
             ) : data.length ? (
-              data.map(renderRow)
+              data.map((row, index) => {
+                const page = meta?.page ?? 1;
+                const perPageCount = meta?.per_page ?? perPage ?? 10;
+                const no = index + 1 + (page - 1) * perPageCount;
+                return renderRow(row, no, index);
+              })
             ) : (
               <tr>
                 <td
@@ -298,7 +304,7 @@ export default function DataTable<T, F extends Record<string, string[]>>({
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* === PAGINATION === */}
       {meta && onPageChange && (
         <div className="mt-2 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500 space-y-2 sm:space-y-0">
           <div className="flex items-center gap-2">
