@@ -12,7 +12,10 @@ export type Column<T> = {
   filterOptions?: string[];
 };
 
-export type DataTableProps<T, F extends Record<string, string[]>> = {
+export type DataTableProps<
+  T extends { id?: string | number }, // 👈 Tambah constraint
+  F extends Record<string, string[]>
+> = {
   data: T[];
   meta?: PaginationMeta;
   columns: Column<T>[];
@@ -25,6 +28,10 @@ export type DataTableProps<T, F extends Record<string, string[]>> = {
   searchTerm?: string;
   filters?: F;
   isLoading?: boolean;
+  selectable?: boolean; // 👈 aktifkan fitur selectable
+  selectedKeys?: (string | number)[];
+  getRowId?: (row: T) => string | number;
+  onSelectionChange?: (selectedIds: (string | number)[]) => void;
   onPerPageChange?: (v: number) => void;
   onPageChange?: (p: number) => void;
   onSort?: (key: keyof T) => void;
@@ -36,13 +43,20 @@ export type DataTableProps<T, F extends Record<string, string[]>> = {
   actions?: React.ReactNode;
 };
 
-export default function DataTable<T, F extends Record<string, string[]>>({
+export default function DataTable<
+  T extends { id?: string | number },
+  F extends Record<string, string[]>
+>({
   data,
   meta,
   columns,
   perPageOptions = [5, 10, 20, 50, 100, 250, 500, 1000],
   maxPageButtons = 5,
   renderRow,
+  selectable = false, // 👈 default off
+  selectedKeys,
+  getRowId,
+  onSelectionChange,
   perPage,
   sortBy,
   sortOrder,
@@ -56,6 +70,37 @@ export default function DataTable<T, F extends Record<string, string[]>>({
   onFilterChange,
   actions,
 }: DataTableProps<T, F>) {
+  const [internalSelected, setInternalSelected] = useState<(string | number)[]>(
+    []
+  );
+  const selected = selectedKeys ?? internalSelected;
+
+  const selectAllRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate =
+        selected.length > 0 && selected.length < data.length;
+    }
+  }, [selected, data.length]);
+
+  const toggleRow = (id: string | number) => {
+    const exists = selected.includes(id);
+    const next = exists ? selected.filter((v) => v !== id) : [...selected, id];
+    if (!selectedKeys) setInternalSelected(next);
+    onSelectionChange?.(next);
+  };
+
+  const toggleAll = () => {
+    if (selected.length === data.length) {
+      setInternalSelected([]);
+      onSelectionChange?.([]);
+    } else {
+      const allIds = data.map((row) => (getRowId ? getRowId(row) : row.id!));
+      setInternalSelected(allIds);
+      onSelectionChange?.(allIds);
+    }
+  };
   const dropdownRefs = useRef<
     Record<string, React.RefObject<HTMLDivElement | null>>
   >({});
@@ -140,6 +185,20 @@ export default function DataTable<T, F extends Record<string, string[]>>({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100 sticky top-0 z-10">
             <tr>
+              {selectable && (
+                <th className="px-4 py-2">
+                  <div className="flex items-center space-x-1">
+                    <input
+                      ref={selectAllRef}
+                      type="checkbox"
+                      onChange={toggleAll}
+                      checked={
+                        selected.length === data.length && data.length > 0
+                      }
+                    />
+                  </div>
+                </th>
+              )}
               {columns.map((c) => (
                 <th
                   key={String(c.key)}
@@ -288,7 +347,28 @@ export default function DataTable<T, F extends Record<string, string[]>>({
                 const page = meta?.page ?? 1;
                 const perPageCount = meta?.per_page ?? perPage ?? 10;
                 const no = index + 1 + (page - 1) * perPageCount;
-                return renderRow(row, no, index);
+                const id = getRowId ? getRowId(row) : row.id!;
+                const isSelected = selected.includes(id);
+
+                return (
+                  <tr
+                    key={String(id)}
+                    className={`hover:bg-gray-50 ${
+                      isSelected ? "bg-blue-50" : ""
+                    }`}
+                  >
+                    {selectable && (
+                      <td className="px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleRow(id)}
+                        />
+                      </td>
+                    )}
+                    {renderRow(row, no, index)}
+                  </tr>
+                );
               })
             ) : (
               <tr>

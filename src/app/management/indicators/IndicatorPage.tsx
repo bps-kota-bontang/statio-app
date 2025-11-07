@@ -117,7 +117,7 @@ export default function IndicatorExample() {
 
   const renderRow = useCallback(
     (row: Indicator, no: number) => (
-      <tr key={row.id} className="hover:bg-gray-50">
+      <>
         <td className="px-4 py-2">{no}</td>
         <td className="px-4 py-2 text-sm">{row.name}</td>
         <td className="px-4 py-2 text-sm">{row.measure}</td>
@@ -127,7 +127,7 @@ export default function IndicatorExample() {
             Edit
           </Button>
         </td>
-      </tr>
+      </>
     ),
     [openEdit]
   );

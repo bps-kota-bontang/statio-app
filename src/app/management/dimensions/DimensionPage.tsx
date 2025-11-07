@@ -93,7 +93,7 @@ export default function DimensionExample() {
 
   const renderRow = useCallback(
     (row: Dimension, no: number) => (
-      <tr key={row.id} className="hover:bg-gray-50">
+      <>
         <td className="px-4 py-2">{no}</td>
         <td className="px-4 py-2 text-sm">{row.name}</td>
         <td className="px-4 py-2 text-sm">
@@ -108,7 +108,7 @@ export default function DimensionExample() {
             Edit
           </Button>
         </td>
-      </tr>
+      </>
     ),
     [openEdit]
   );
