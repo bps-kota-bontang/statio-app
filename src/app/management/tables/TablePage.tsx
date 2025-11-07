@@ -11,13 +11,18 @@ import {
   useIndicatorNames,
   useIndicatorUnits,
 } from "@/service/indicator";
-import { createTable, useTables } from "@/service/table";
-import type { CreateTableRequest, TableList } from "@/type/table";
+import { createTable, updateTable, useTables } from "@/service/table";
+import type {
+  CreateTableRequest,
+  TableList,
+  UpdateTableRequest,
+} from "@/type/table";
 import { Plus } from "lucide-react";
 import { useMemo, useCallback, useState } from "react";
 import { Link } from "react-router";
 import CreateTableForm from "@/app/management/tables/CreateTableForm";
 import { getRowNumber } from "@/utils/table";
+import EditTableForm from "./EditIndicatorForm";
 
 const TablePage = () => {
   const table = useDataTable<TableList>();
@@ -55,8 +60,8 @@ const TablePage = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // // Modal edit
-  // const [isEditOpen, setIsEditOpen] = useState(false);
-  // const [editingTable, setEditingTable] = useState<Table | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingTableID, setEditingTableID] = useState<string | null>(null);
 
   const handleCreateTable = async (data: CreateTableRequest) => {
     try {
@@ -70,27 +75,27 @@ const TablePage = () => {
     }
   };
 
-  // const handleEditTable = async (id: string, data: UpdateTableRequest) => {
-  //   try {
-  //     await updateTable(id, data);
-  //     handleCloseEditModal();
-  //     mutate();
-  //     return true;
-  //   } catch (error) {
-  //     console.error(error);
-  //     return false;
-  //   }
-  // };
+  const handleEditTable = async (id: string, data: UpdateTableRequest) => {
+    try {
+      await updateTable(id, data);
+      handleCloseEditModal();
+      mutate();
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
 
-  // const handleCloseEditModal = () => {
-  //   setIsEditOpen(false);
-  //   setEditingTable(null);
-  // };
+  const handleCloseEditModal = () => {
+    setIsEditOpen(false);
+    setEditingTableID(null);
+  };
 
-  // const openEdit = useCallback((row: Table) => {
-  //   setEditingTable(row);
-  //   setIsEditOpen(true);
-  // }, []);
+  const openEdit = useCallback((id: string) => {
+    setEditingTableID(id);
+    setIsEditOpen(true);
+  }, []);
 
   const columns = useMemo<Column<TableList>[]>(
     () => [
@@ -155,10 +160,13 @@ const TablePage = () => {
           <Link to={`/tables/${row.id}`} target="_blank">
             <Button size="sm">View</Button>
           </Link>
+          <Button size="sm" onClick={() => openEdit(row.id)}>
+            Edit
+          </Button>
         </td>
       </tr>
     ),
-    [table.page, table.perPage]
+    [openEdit, table.page, table.perPage]
   );
 
   return (
@@ -192,19 +200,19 @@ const TablePage = () => {
       </Modal>
 
       {/* Modal Edit */}
-      {/* <Modal
+      <Modal
         isOpen={isEditOpen}
         onClose={handleCloseEditModal}
         closeOutside={false}
       >
-        {editingTable && (
+        {editingTableID && (
           <EditTableForm
-            table={editingTable}
+            tableID={editingTableID}
             onSubmit={handleEditTable}
             onCancel={handleCloseEditModal}
           />
         )}
-      </Modal> */}
+      </Modal>
     </div>
   );
 };

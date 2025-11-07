@@ -1,33 +1,39 @@
 "use client";
 
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Button from "@/component/ui/Button";
 import Input from "@/component/ui/Input";
-import type { CreateTableRequest } from "@/type/table";
+import Select from "@/component/ui/Select";
+import type { UpdateTableRequest } from "@/type/table";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
 import { useIndicators } from "@/service/indicator";
 import { useDimensions } from "@/service/dimension";
-import Select from "@/component/ui/Select";
+import { useTable } from "@/service/table";
 
-interface CreateTableFormProps {
-  onSubmit?: (data: CreateTableRequest) => Promise<boolean>;
+interface EditTableFormProps {
+  tableID: string;
+  onSubmit?: (id: string, data: UpdateTableRequest) => Promise<boolean>;
   onCancel?: () => void;
 }
 
-const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
+const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
+  const { data, isLoading, error } = useTable(tableID);
+  const { data: indicators } = useIndicators({ perPage: 1000 });
+  const { data: dimensions } = useDimensions({ perPage: 1000 });
+  const { errors, validate } = useRequiredFields<UpdateTableRequest>();
+
   const [name, setName] = useState("");
   const [indicatorId, setIndicatorId] = useState<string>("");
   const [dimensionIds, setDimensionIds] = useState<string[]>([]);
 
-  const { data: indicators } = useIndicators({
-    perPage: 1000,
-  });
-
-  const { data: dimensions } = useDimensions({
-    perPage: 1000,
-  });
-
-  const { errors, validate } = useRequiredFields<CreateTableRequest>();
+  // ✅ Update form values when table data is loaded
+  useEffect(() => {
+    if (data?.data) {
+      setName(data.data.name ?? "");
+      setIndicatorId(data.data.indicator?.id ?? "");
+      setDimensionIds(data.data.dimensions?.map((d) => d.id) ?? []);
+    }
+  }, [data]);
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
@@ -38,22 +44,26 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
         { name, indicator_id: indicatorId, dimension_ids: dimensionIds },
         ["name", "indicator_id"]
       );
-
       if (!isValid) return;
 
-      const success = await onSubmit({
+      await onSubmit(tableID, {
         name,
         indicator_id: indicatorId,
         dimension_ids: dimensionIds,
       });
-      if (success) {
-        setName("");
-        setIndicatorId("");
-        setDimensionIds([]);
-      }
     },
-    [name, indicatorId, dimensionIds, onSubmit, validate]
+    [dimensionIds, indicatorId, name, onSubmit, tableID, validate]
   );
+
+  if (isLoading) {
+    return <p className="text-gray-500">Loading...</p>;
+  }
+
+  if (error) {
+    return (
+      <p className="text-red-500">Failed to load table data: {String(error)}</p>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 relative">
@@ -63,7 +73,6 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
         <Input
           value={name}
           onChange={setName}
-          onSelect={setName}
           placeholder="Contoh: Jumlah Penduduk Usia Produktif Menurut Pendidikan Terakhir"
         />
         <p className="text-xs text-gray-500 mt-1">
@@ -71,6 +80,7 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
         </p>
         {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
       </div>
+
       {/* Indicator */}
       <div className="flex flex-col">
         <label className="text-sm font-medium mb-1">Indicator</label>
@@ -91,6 +101,7 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
           <p className="text-xs text-red-500">{errors.indicator_id}</p>
         )}
       </div>
+
       {/* Dimension */}
       <div className="flex flex-col">
         <label className="text-sm font-medium mb-1">Dimension</label>
@@ -104,10 +115,13 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
           maximumSelection={2}
           value={dimensionIds}
           onChange={setDimensionIds}
-          multiple={true}
+          multiple
         />
         <p className="text-xs text-gray-500 mt-1">
-          Pilih dimensi yang akan ditampilkan pada tabel (maksimal 2).
+          Pilih dimensi yang akan ditampilkan pada tabel (maksimal 2).{" "}
+          <span className="text-red-600 font-medium">
+            Merubah dimensi akan mempengaruhi data yang telah ada pada tabel.
+          </span>
         </p>
 
         {errors.dimension_ids && (
@@ -120,10 +134,10 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Create</Button>
+        <Button type="submit">Save</Button>
       </div>
     </form>
   );
 };
 
-export default CreateTableForm;
+export default EditTableForm;

@@ -23,3 +23,9 @@ export type CreateTableRequest = {
   indicator_id: string;
   dimension_ids: string[];
 };
+
+export type UpdateTableRequest = {
+  name: string;
+  indicator_id: string;
+  dimension_ids: string[];
+};
