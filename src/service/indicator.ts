@@ -64,10 +64,7 @@ export const updateIndicator = async (
 };
 
 export const useIndicatorNames = () => {
-  const searchParams = new URLSearchParams();
-  searchParams.append("field", "name");
-
-  const url = `${API_BASE_URL}/api/v1/indicators?${searchParams.toString()}`;
+  const url = `${API_BASE_URL}/api/v1/indicators/names`;
 
   const { data, error, isLoading } = useSWR<ApiResponse<IndicatorName[]>>(
     url,
@@ -78,10 +75,7 @@ export const useIndicatorNames = () => {
 };
 
 export const useIndicatorMeasures = () => {
-  const searchParams = new URLSearchParams();
-  searchParams.append("field", "measure");
-
-  const url = `${API_BASE_URL}/api/v1/indicators?${searchParams.toString()}`;
+  const url = `${API_BASE_URL}/api/v1/indicators/measures`;
 
   const { data, error, isLoading } = useSWR<ApiResponse<IndicatorMeasure[]>>(
     url,
@@ -92,10 +86,7 @@ export const useIndicatorMeasures = () => {
 };
 
 export const useIndicatorUnits = () => {
-  const searchParams = new URLSearchParams();
-  searchParams.append("field", "unit");
-
-  const url = `${API_BASE_URL}/api/v1/indicators?${searchParams.toString()}`;
+  const url = `${API_BASE_URL}/api/v1/indicators/units`;
 
   const { data, error, isLoading } = useSWR<ApiResponse<IndicatorUnit[]>>(
     url,

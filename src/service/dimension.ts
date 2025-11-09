@@ -21,10 +21,7 @@ export const useDimensions = createPaginatedResourceHook<
 >("/dimensions");
 
 export const useDimensionNames = () => {
-  const searchParams = new URLSearchParams();
-  searchParams.append("field", "name");
-
-  const url = `${API_BASE_URL}/api/v1/dimensions?${searchParams.toString()}`;
+  const url = `${API_BASE_URL}/api/v1/dimensions/names`;
 
   const { data, error, isLoading } = useSWR<ApiResponse<DimensionName[]>>(
     url,
