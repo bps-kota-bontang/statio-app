@@ -16,7 +16,7 @@ export type Table = {
 export type TableList = {
   id: string;
   name: string;
-  indicator: IndicatorList;
+  indicator: IndicatorList | null;
   organization: Organization | null;
   dimensions: string[];
 };

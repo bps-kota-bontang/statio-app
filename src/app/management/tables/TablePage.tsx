@@ -135,7 +135,7 @@ const TablePage = () => {
         key: "indicator_name",
         label: "Indicator",
         filterOptions: existingIndicatorNames,
-        render: (row) => row.indicator.name,
+        render: (row) => row.indicator?.name,
       },
       {
         key: "organization_id",
@@ -150,13 +150,13 @@ const TablePage = () => {
         key: "indicator_measure",
         label: "Measure",
         filterOptions: existingIndicatorMeasures,
-        render: (row) => row.indicator.measure,
+        render: (row) => row.indicator?.measure,
       },
       {
         key: "indicator_unit",
         label: "Unit",
         filterOptions: existingIndicatorUnits,
-        render: (row) => row.indicator.unit ?? "-",
+        render: (row) => row.indicator?.unit ?? "-",
       },
       {
         key: "dimensions",
