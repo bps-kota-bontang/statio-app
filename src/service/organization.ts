@@ -1,19 +1,21 @@
 import { API_BASE_URL } from "@/config/api";
-import type { Organization } from "@/type/organization";
+import {
+  createPaginatedResourceHook,
+  type FilterValue,
+} from "@/hooks/usePaginatedResource";
+import type {
+  CreateOrganizationRequest,
+  Organization,
+  UpdateOrganizationRequest,
+} from "@/type/organization";
 import type { ApiResponse } from "@/type/response";
-import { fetcher } from "@/utils/network";
-import useSWR from "swr";
 
-export const useOrganizations = () => {
-  const url = `${API_BASE_URL}/api/v1/organizations`;
+type OrganizationFilters = Record<keyof Organization, FilterValue>;
 
-  const { data, error, isLoading } = useSWR<ApiResponse<Organization[]>>(
-    url,
-    fetcher
-  );
-
-  return { data, error, isLoading };
-};
+export const useOrganizations = createPaginatedResourceHook<
+  Organization,
+  OrganizationFilters
+>("/organizations");
 
 export const assignTablesToOrganization = async (
   orgID: string,
@@ -29,6 +31,47 @@ export const assignTablesToOrganization = async (
       body: JSON.stringify({ table_ids: tableIDs }),
     }
   );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message);
+  }
+
+  return result;
+};
+
+export const createOrganization = async (
+  data: CreateOrganizationRequest
+): Promise<ApiResponse<Organization>> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/organizations`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message);
+  }
+
+  return result;
+};
+
+export const updateOrganization = async (
+  id: string,
+  data: UpdateOrganizationRequest
+): Promise<ApiResponse<Organization>> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/organizations/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
   const result = await response.json();
 

@@ -3,70 +3,50 @@
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import {
-  createIndicator,
-  updateIndicator,
-  useIndicatorMeasures,
-  useIndicators,
-  useIndicatorUnits,
-} from "@/service/indicator";
+import { createOrganization, updateOrganization } from "@/service/organization";
 import type {
-  Indicator,
-  UpdateIndicatorRequest,
-  CreateIndicatorRequest,
-} from "@/type/indicator";
+  Organization,
+  UpdateOrganizationRequest,
+  CreateOrganizationRequest,
+} from "@/type/organization";
 import { useMemo, useCallback, useState } from "react";
-import CreateIndicatorForm from "@/app/management/indicators/CreateIndicatorForm";
-import EditIndicatorForm from "@/app/management/indicators/EditIndicatorForm";
+import CreateOrganizationForm from "@/app/management/organizations/CreateOrganizationForm";
+import EditOrganizationForm from "@/app/management/organizations/EditOrganizationForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
+import { useOrganizations } from "@/service/organization";
 
-const IndicatorPage = () => {
-  const table = useDataTable<Indicator>(["measure", "unit"]);
+const OrganizationPage = () => {
+  const table = useDataTable<Organization>();
 
-  const { data: measures } = useIndicatorMeasures();
-
-  const existingIndicatorMeasures = useMemo(
-    () => measures?.data.map((dim) => dim.measure) || [],
-    [measures]
-  );
-
-  const { data: units } = useIndicatorUnits();
-
-  const existingIndicatorUnits = useMemo(
-    () => units?.data.map((unit) => unit.unit) || [],
-    [units]
-  );
-
-  const { data, isLoading, mutate } = useIndicators(table);
+  const { data, isLoading, mutate } = useOrganizations(table);
 
   // Modal create
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Modal edit
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState<Indicator | null>(
-    null
-  );
+  const [editingOrganization, setEditingOrganization] =
+    useState<Organization | null>(null);
 
-  const handleCreateIndicator = async (data: CreateIndicatorRequest) => {
+  const handleCreateOrganization = async (data: CreateOrganizationRequest) => {
     try {
-      await createIndicator(data);
+      await createOrganization(data);
       setIsCreateOpen(false);
       mutate();
       return true;
     } catch (error) {
-      console.error("Error creating indicator:", error);
+      console.error("Error creating organization:", error);
       return false;
     }
   };
 
-  const handleEditIndicator = async (
+  const handleEditOrganization = async (
     id: string,
-    data: UpdateIndicatorRequest
+    data: UpdateOrganizationRequest
   ) => {
     try {
-      await updateIndicator(id, data);
+      await updateOrganization(id, data);
       handleCloseEditModal();
       mutate();
       return true;
@@ -78,15 +58,15 @@ const IndicatorPage = () => {
 
   const handleCloseEditModal = () => {
     setIsEditOpen(false);
-    setEditingIndicator(null);
+    setEditingOrganization(null);
   };
 
-  const openEdit = useCallback((row: Indicator) => {
-    setEditingIndicator(row);
+  const openEdit = useCallback((row: Organization) => {
+    setEditingOrganization(row);
     setIsEditOpen(true);
   }, []);
 
-  const columns = useMemo<Column<Indicator>[]>(
+  const columns = useMemo<Column<Organization>[]>(
     () => [
       {
         key: "no",
@@ -98,19 +78,6 @@ const IndicatorPage = () => {
         key: "name",
         label: "Name",
         sortable: true,
-      },
-      {
-        key: "measure",
-        label: "Measure",
-        sortable: true,
-        filterOptions: existingIndicatorMeasures,
-      },
-      {
-        key: "unit",
-        label: "Unit",
-        sortable: true,
-        filterOptions: existingIndicatorUnits,
-        render: (row) => row.unit || "-",
       },
       {
         key: "actions",
@@ -125,17 +92,17 @@ const IndicatorPage = () => {
         ),
       },
     ],
-    [existingIndicatorMeasures, existingIndicatorUnits, openEdit]
+    [openEdit]
   );
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-semibold">Indicators</h1>
+      <h1 className="text-xl font-semibold">Organizations</h1>
       <DataTable
         actions={
           <Button onClick={() => setIsCreateOpen(true)} size="sm">
             <Plus className="w-5 h-5 mr-2" />
-            New Indicator
+            New Organization
           </Button>
         }
         data={data?.data ?? []}
@@ -151,8 +118,8 @@ const IndicatorPage = () => {
         onClose={() => setIsCreateOpen(false)}
         closeOutside={false}
       >
-        <CreateIndicatorForm
-          onSubmit={handleCreateIndicator}
+        <CreateOrganizationForm
+          onSubmit={handleCreateOrganization}
           onCancel={() => setIsCreateOpen(false)}
         />
       </Modal>
@@ -163,16 +130,16 @@ const IndicatorPage = () => {
         onClose={handleCloseEditModal}
         closeOutside={false}
       >
-        {editingIndicator && (
-          <EditIndicatorForm
-            indicator={editingIndicator}
-            onSubmit={handleEditIndicator}
+        {editingOrganization && (
+          <EditOrganizationForm
+            organization={editingOrganization}
+            onSubmit={handleEditOrganization}
             onCancel={handleCloseEditModal}
           />
         )}
       </Modal>
     </div>
   );
-}
+};
 
-export default IndicatorPage;
+export default OrganizationPage;

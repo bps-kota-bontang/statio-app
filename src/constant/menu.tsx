@@ -17,6 +17,10 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: <Settings />,
     children: [
       {
+        title: "Organizations",
+        href: "/management/organizations",
+      },
+      {
         title: "Indicators",
         href: "/management/indicators",
       },

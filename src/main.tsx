@@ -12,6 +12,7 @@ import TableEdit from "@/app/tables/TableEdit";
 import IndicatorPage from "@/app/management/indicators/IndicatorPage";
 import DimensionPage from "@/app/management/dimensions/DimensionPage";
 import TableOverview from "@/app/tables/TableOverview";
+import OrganizationPage from "@/app/management/organizations/OrganizationPage";
 
 const root = document.getElementById("root");
 
@@ -28,9 +29,8 @@ createRoot(root!).render(
           </Route>
         </Route>
         <Route path="management">
-          <Route path="indicators">
-            <Route index element={<IndicatorPage />} />
-          </Route>
+          <Route path="organizations" element={<OrganizationPage />} />
+          <Route path="indicators" element={<IndicatorPage />} />
           <Route path="dimensions" element={<DimensionPage />} />
           <Route path="tables" element={<TablePage />} />
         </Route>
