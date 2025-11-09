@@ -19,9 +19,7 @@ export function useDataTable<T extends object>(
 
   const pageFromUrl = Number(searchParams.get("page") ?? 1);
 
-  // Cast semua key ke string supaya sesuai dengan createDefaultFilters
   const stringKeys = keys.map((k) => k.toString());
-
   const initialFilters = createDefaultFilters(stringKeys);
 
   const [filters, setFilters] =
@@ -31,6 +29,14 @@ export function useDataTable<T extends object>(
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<string>();
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">();
+
+  // ✅ SELECTION STATE
+  const [selectedIDs, setSelectedIDs] = useState<(string | number)[]>([]);
+
+  const onSelectionChange = useCallback((ids: (string | number)[]) => {
+    setSelectedIDs(ids);
+  }, []);
+  const clearSelection = useCallback(() => setSelectedIDs([]), []);
 
   const onPageChange = useCallback(
     (p: number) => {
@@ -68,6 +74,7 @@ export function useDataTable<T extends object>(
     },
     [onPageChange]
   );
+
   const onFilterChange = useCallback(
     (key: string, value: string | string[]) => {
       setFilters((prev) => {
@@ -98,6 +105,9 @@ export function useDataTable<T extends object>(
     sortBy,
     sortOrder,
     filters,
+    selectedIDs, // ✅ expose selected
+    clearSelection, // ✅ useful after assign
+    onSelectionChange, // ✅ pass to DataTable
     onPageChange,
     onPerPageChange: setPerPage,
     onSearchChange,

@@ -8,6 +8,7 @@ import { useRequiredFields } from "@/hooks/useRequiredFields";
 import { useIndicators } from "@/service/indicator";
 import { useDimensions } from "@/service/dimension";
 import Select from "@/component/ui/Select";
+import { useOrganizations } from "@/service/organization";
 
 interface CreateTableFormProps {
   onSubmit?: (data: CreateTableRequest) => Promise<boolean>;
@@ -17,11 +18,14 @@ interface CreateTableFormProps {
 const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
   const [name, setName] = useState("");
   const [indicatorId, setIndicatorId] = useState<string>("");
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [dimensionIds, setDimensionIds] = useState<string[]>([]);
 
   const { data: indicators } = useIndicators({
     perPage: 1000,
   });
+
+  const { data: organizations } = useOrganizations();
 
   const { data: dimensions } = useDimensions({
     perPage: 1000,
@@ -45,14 +49,16 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
         name,
         indicator_id: indicatorId,
         dimension_ids: dimensionIds,
+        organization_id: organizationId,
       });
       if (success) {
         setName("");
         setIndicatorId("");
+        setOrganizationId(null);
         setDimensionIds([]);
       }
     },
-    [name, indicatorId, dimensionIds, onSubmit, validate]
+    [onSubmit, validate, name, indicatorId, dimensionIds, organizationId]
   );
 
   return (
@@ -89,6 +95,26 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
         </p>
         {errors.indicator_id && (
           <p className="text-xs text-red-500">{errors.indicator_id}</p>
+        )}
+      </div>
+      {/* Organization */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Organization</label>
+        <Select
+          options={
+            organizations?.data.map((organization) => ({
+              value: organization.id,
+              label: organization.name,
+            })) ?? []
+          }
+          value={organizationId ?? ""}
+          onChange={setOrganizationId}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Pilih organisasi yang bertanggung jawab atas tabel ini.
+        </p>
+        {errors.organization_id && (
+          <p className="text-xs text-red-500">{errors.organization_id}</p>
         )}
       </div>
       {/* Dimension */}

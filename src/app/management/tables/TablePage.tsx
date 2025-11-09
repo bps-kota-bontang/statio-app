@@ -12,6 +12,7 @@ import {
 } from "@/service/indicator";
 import { createTable, updateTable, useTables } from "@/service/table";
 import type {
+  AssignOrganizationRequest,
   CreateTableRequest,
   TableList,
   UpdateTableRequest,
@@ -19,9 +20,14 @@ import type {
 import { Plus } from "lucide-react";
 import { useMemo, useCallback, useState } from "react";
 import CreateTableForm from "@/app/management/tables/CreateTableForm";
-import EditTableForm from "./EditIndicatorForm";
+import EditTableForm from "@/app/management/tables/EditTableForm";
 import Badge from "@/component/ui/Badge";
 import { Link } from "react-router";
+import {
+  assignTablesToOrganization,
+  useOrganizations,
+} from "@/service/organization";
+import AssignOrganizationForm from "@/app/management/tables/AssignOrganizationForm";
 
 const TablePage = () => {
   const table = useDataTable<TableList>();
@@ -49,6 +55,7 @@ const TablePage = () => {
   );
 
   const { data: units } = useIndicatorUnits();
+  const { data: organizations } = useOrganizations();
 
   const existingIndicatorUnits = useMemo(
     () => units?.data.map((unit) => unit.unit) || [],
@@ -61,6 +68,9 @@ const TablePage = () => {
   // // Modal edit
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingTableID, setEditingTableID] = useState<string | null>(null);
+
+  // // Modal assign organization
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
 
   const handleCreateTable = async (data: CreateTableRequest) => {
     try {
@@ -81,7 +91,19 @@ const TablePage = () => {
       mutate();
       return true;
     } catch (error) {
-      console.error(error);
+      console.error("Error updating table:", error);
+      return false;
+    }
+  };
+
+  const handleAssignOrganization = async (data: AssignOrganizationRequest) => {
+    try {
+      await assignTablesToOrganization(data.organization_id, table.selectedIDs);
+      setIsAssignOpen(false);
+      mutate();
+      return true;
+    } catch (error) {
+      console.error("Error assigning organization:", error);
       return false;
     }
   };
@@ -114,6 +136,15 @@ const TablePage = () => {
         label: "Indicator",
         filterOptions: existingIndicatorNames,
         render: (row) => row.indicator.name,
+      },
+      {
+        key: "organization_id",
+        label: "Organization",
+        filterOptions:
+          organizations?.data.map((org) => {
+            return { label: org.name, value: org.id };
+          }) || [],
+        render: (row) => row.organization?.name ?? "-",
       },
       {
         key: "indicator_measure",
@@ -161,6 +192,7 @@ const TablePage = () => {
       existingIndicatorNames,
       existingIndicatorUnits,
       openEdit,
+      organizations?.data,
     ]
   );
 
@@ -170,18 +202,27 @@ const TablePage = () => {
       <DataTable
         selectable
         actions={
-          <Button onClick={() => setIsCreateOpen(true)} size="sm">
-            <Plus className="w-5 h-5 mr-2" />
-            New Table
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setIsCreateOpen(true)} size="sm">
+              <Plus className="w-5 h-5 mr-2" />
+              New Table
+            </Button>
+
+            {table.selectedIDs.length > 0 && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setIsAssignOpen(true)}
+              >
+                Assign Organization
+              </Button>
+            )}
+          </div>
         }
         data={data?.data ?? []}
         meta={data?.meta}
         columns={columns}
         isLoading={isLoading}
-        onSelectionChange={(selectedIDs) => {
-          console.log(selectedIDs);
-        }}
         {...table}
       />
 
@@ -210,6 +251,18 @@ const TablePage = () => {
             onCancel={handleCloseEditModal}
           />
         )}
+      </Modal>
+
+      {/* Modal Assign Organization */}
+      <Modal
+        isOpen={isAssignOpen}
+        onClose={() => setIsAssignOpen(false)}
+        closeOutside={false}
+      >
+        <AssignOrganizationForm
+          onCancel={() => setIsAssignOpen(false)}
+          onSubmit={handleAssignOrganization}
+        />
       </Modal>
     </div>
   );

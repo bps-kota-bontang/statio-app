@@ -9,6 +9,7 @@ import { useRequiredFields } from "@/hooks/useRequiredFields";
 import { useIndicators } from "@/service/indicator";
 import { useDimensions } from "@/service/dimension";
 import { useTable } from "@/service/table";
+import { useOrganizations } from "@/service/organization";
 
 interface EditTableFormProps {
   tableID: string;
@@ -20,10 +21,12 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
   const { data, isLoading, error } = useTable(tableID);
   const { data: indicators } = useIndicators({ perPage: 1000 });
   const { data: dimensions } = useDimensions({ perPage: 1000 });
+  const { data: organizations } = useOrganizations();
   const { errors, validate } = useRequiredFields<UpdateTableRequest>();
 
   const [name, setName] = useState("");
   const [indicatorId, setIndicatorId] = useState<string>("");
+  const [organizationId, setOrganizationId] = useState<string>("");
   const [dimensionIds, setDimensionIds] = useState<string[]>([]);
 
   // ✅ Update form values when table data is loaded
@@ -31,6 +34,7 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
     if (data?.data) {
       setName(data.data.name ?? "");
       setIndicatorId(data.data.indicator?.id ?? "");
+      setOrganizationId(data.data.organization?.id ?? "");
       setDimensionIds(data.data.dimensions?.map((d) => d.id) ?? []);
     }
   }, [data]);
@@ -41,8 +45,13 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
       if (!onSubmit) return;
 
       const isValid = validate(
-        { name, indicator_id: indicatorId, dimension_ids: dimensionIds },
-        ["name", "indicator_id"]
+        {
+          name,
+          indicator_id: indicatorId,
+          dimension_ids: dimensionIds,
+          organization_id: organizationId,
+        },
+        ["name", "indicator_id", "organization_id"]
       );
       if (!isValid) return;
 
@@ -50,9 +59,18 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
         name,
         indicator_id: indicatorId,
         dimension_ids: dimensionIds,
+        organization_id: organizationId,
       });
     },
-    [dimensionIds, indicatorId, name, onSubmit, tableID, validate]
+    [
+      dimensionIds,
+      indicatorId,
+      name,
+      onSubmit,
+      organizationId,
+      tableID,
+      validate,
+    ]
   );
 
   if (isLoading) {
@@ -99,6 +117,27 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
         </p>
         {errors.indicator_id && (
           <p className="text-xs text-red-500">{errors.indicator_id}</p>
+        )}
+      </div>
+
+      {/* Organization */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Organization</label>
+        <Select
+          options={
+            organizations?.data.map((indicator) => ({
+              value: indicator.id,
+              label: indicator.name,
+            })) ?? []
+          }
+          value={organizationId}
+          onChange={setOrganizationId}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Pilih organisasi yang bertanggung jawab atas tabel ini.
+        </p>
+        {errors.organization_id && (
+          <p className="text-xs text-red-500">{errors.organization_id}</p>
         )}
       </div>
 

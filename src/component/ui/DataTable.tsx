@@ -5,11 +5,18 @@ import { DropdownPortal } from "@/component/ui/DropdownPortal";
 import { useRef, useState, useEffect, createRef } from "react";
 import type { PaginationMeta } from "@/type/response";
 
+export type FilterOption =
+  | string
+  | {
+      label: string;
+      value: string;
+    };
+
 export type Column<T> = {
   key: keyof T | string;
   label: string;
   sortable?: boolean;
-  filterOptions?: string[];
+  filterOptions?: FilterOption[];
   render?: (row: T, no: number, index: number) => React.ReactNode;
 };
 
@@ -279,7 +286,11 @@ export default function DataTable<
                                     if (onFilterChange) {
                                       const allOptions = [
                                         "__NULL__",
-                                        ...(c.filterOptions || []),
+                                        ...(c.filterOptions?.map((opt) =>
+                                          typeof opt === "string"
+                                            ? opt
+                                            : opt.value
+                                        ) || []),
                                       ];
                                       onFilterChange(
                                         c.key as string,
@@ -327,25 +338,35 @@ export default function DataTable<
                               </label>
 
                               {/* Filter options */}
-                              {c.filterOptions.map((opt) => (
-                                <label
-                                  key={opt}
-                                  className="flex items-center gap-2 text-sm py-1"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={
-                                      filters?.[c.key as string]?.includes(
-                                        opt
-                                      ) ?? false
-                                    }
-                                    onChange={() =>
-                                      onFilterChange?.(c.key as keyof F, opt)
-                                    }
-                                  />
-                                  {opt}
-                                </label>
-                              ))}
+                              {c.filterOptions.map((opt) => {
+                                const option =
+                                  typeof opt === "string"
+                                    ? { label: opt, value: opt }
+                                    : opt;
+
+                                return (
+                                  <label
+                                    key={option.value}
+                                    className="flex items-center gap-2 text-sm py-1"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={
+                                        filters?.[c.key as string]?.includes(
+                                          option.value
+                                        ) ?? false
+                                      }
+                                      onChange={() =>
+                                        onFilterChange?.(
+                                          c.key as keyof F,
+                                          option.value
+                                        )
+                                      }
+                                    />
+                                    {option.label}
+                                  </label>
+                                );
+                              })}
                             </div>
                           </DropdownPortal>
                         )}
