@@ -11,7 +11,7 @@ import TableDetailPage from "@/app/tables/detail/TableDetailPage";
 import TableEdit from "@/app/tables/TableEdit";
 import IndicatorPage from "@/app/management/indicators/IndicatorPage";
 import DimensionPage from "@/app/management/dimensions/DimensionPage";
-import TableOverview from "@/app/tables/TableOverview";
+import TableOverviewPage from "@/app/tables/TableOverviewPage";
 import OrganizationPage from "@/app/management/organizations/OrganizationPage";
 
 const root = document.getElementById("root");
@@ -22,7 +22,7 @@ createRoot(root!).render(
       <Route element={<StatioLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="tables">
-          <Route index element={<TableOverview />} />
+          <Route index element={<TableOverviewPage />} />
           <Route element={<TableLayout />}>
             <Route path=":id" element={<TableDetailPage />} />
             <Route path=":id/edit" element={<TableEdit />} />

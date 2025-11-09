@@ -33,7 +33,7 @@ const Badge = ({ label, copyable = true, className, onClick }: BadgeProps) => {
       } ${className}`}
       title={copyable ? "Click to copy" : undefined}
     >
-      <span className="mr-1">{label}</span>
+      <span>{label}</span>
 
       {/* Badge popup untuk copy */}
       {copyable && (

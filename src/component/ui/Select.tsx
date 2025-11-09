@@ -24,7 +24,7 @@ type SingleSelectProps = BaseSelectProps & {
 
 type MultiSelectProps = BaseSelectProps & {
   multiple: true;
-  maximumSelection: number;
+  maximumSelection?: number;
   value?: string[];
   onChange: (value: string[]) => void;
 };

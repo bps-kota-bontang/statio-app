@@ -16,6 +16,7 @@ export type Table = {
 export type TableList = {
   id: string;
   name: string;
+  labels?: string[];
   indicator: IndicatorList | null;
   organization: Organization | null;
   dimensions: string[];
@@ -37,4 +38,12 @@ export type UpdateTableRequest = {
 
 export type AssignOrganizationRequest = {
   organization_id: string;
+};
+
+export type BulkLabelsTablesRequest = {
+  labels: string[];
+};
+
+export type TableLabelResponse = {
+  name: string;
 };

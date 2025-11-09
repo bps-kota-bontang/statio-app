@@ -4,8 +4,10 @@ import {
   type FilterValue,
 } from "@/hooks/usePaginatedResource";
 import type {
+  BulkLabelsTablesRequest,
   CreateTableRequest,
   Table,
+  TableLabelResponse,
   TableList,
   UpdateTableRequest,
 } from "@/type/table";
@@ -103,4 +105,33 @@ export const updateTable = async (
   return result;
 };
 
+export const addLabelsTables = async (
+  data: BulkLabelsTablesRequest & { table_ids: string[] }
+): Promise<ApiResponse<null>> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/tables/labels`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message);
+  }
+
+  return result;
+};
+
+export const useTableLables = () => {
+  const url = `${API_BASE_URL}/api/v1/tables/labels`;
+
+  const { data, error, isLoading } = useSWR<ApiResponse<TableLabelResponse[]>>(
+    url,
+    fetcher
+  );
+
+  return { data, error, isLoading };
+};
