@@ -5,11 +5,21 @@ import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import { addLabelsTables, useTableLables, useTables } from "@/service/table";
-import type { BulkLabelsTablesRequest, TableList } from "@/type/table";
-import { useMemo, useState } from "react";
+import {
+  addLabelsTables,
+  updateTableLables,
+  useTableLables,
+  useTables,
+} from "@/service/table";
+import type {
+  BulkLabelsTablesRequest,
+  TableList,
+  UpdateTableLabelRequest,
+} from "@/type/table";
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 import BulkLabelTableForm from "@/app/tables/BulkLabelTableForm";
+import EditTableLabelsForm from "./EditTableForm";
 
 const TableOverviewPage = () => {
   const table = useDataTable<TableList>();
@@ -23,6 +33,10 @@ const TableOverviewPage = () => {
 
   // // Modal bulk label table
   const [isBulkLabelOpen, setIsBulkLabelOpen] = useState(false);
+
+  // Modal edit
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingTable, setEditingTable] = useState<TableList | null>(null);
 
   const handleBulkLabelTable = async (data: BulkLabelsTablesRequest) => {
     try {
@@ -38,6 +52,28 @@ const TableOverviewPage = () => {
       return false;
     }
   };
+
+  const handleEditTable = async (id: string, data: UpdateTableLabelRequest) => {
+    try {
+      await updateTableLables(id, data);
+      handleCloseEditModal();
+      mutate(); // refresh table
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditOpen(false);
+    setEditingTable(null);
+  };
+
+  const openEdit = useCallback((row: TableList) => {
+    setEditingTable(row);
+    setIsEditOpen(true);
+  }, []);
 
   const columns = useMemo<Column<TableList>[]>(
     () => [
@@ -57,9 +93,11 @@ const TableOverviewPage = () => {
         filterOptions: existingLabels,
         render: (row) => (
           <div className="flex flex-wrap gap-1">
-            {row.labels?.map((label) => (
-              <Badge key={label} label={label} />
-            )) || <span className="text-sm text-gray-500">No labels</span>}
+            {row.labels && row.labels.length > 0 ? (
+              row.labels.map((label) => <Badge key={label} label={label} />)
+            ) : (
+              <span className="text-sm text-gray-500">No labels</span>
+            )}
           </div>
         ),
       },
@@ -76,11 +114,14 @@ const TableOverviewPage = () => {
             <Link to={`/tables/${row.id}`} target="_blank">
               <Button size="sm">View</Button>
             </Link>
+            <Button size="sm" onClick={() => openEdit(row)}>
+              Edit
+            </Button>
           </div>
         ),
       },
     ],
-    [existingLabels]
+    [existingLabels, openEdit]
   );
 
   return (
@@ -103,6 +144,21 @@ const TableOverviewPage = () => {
         isLoading={isLoading}
         {...table}
       />
+
+      {/* Modal Edit */}
+      <Modal
+        isOpen={isEditOpen}
+        onClose={handleCloseEditModal}
+        closeOutside={false}
+      >
+        {editingTable && (
+          <EditTableLabelsForm
+            table={editingTable}
+            onSubmit={handleEditTable}
+            onCancel={handleCloseEditModal}
+          />
+        )}
+      </Modal>
 
       {/* Modal Bulk Label Table */}
       <Modal

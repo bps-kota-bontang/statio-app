@@ -8,6 +8,7 @@ export type Table = {
   name: string;
   direction: number;
   indicator: Indicator;
+  labels: string[];
   organization: Organization | null;
   dimensions: Dimension[];
   facts: Fact[] | null;
@@ -46,4 +47,8 @@ export type BulkLabelsTablesRequest = {
 
 export type TableLabelResponse = {
   name: string;
+};
+
+export type UpdateTableLabelRequest = {
+  labels: string[];
 };

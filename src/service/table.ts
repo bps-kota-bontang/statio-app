@@ -9,6 +9,7 @@ import type {
   Table,
   TableLabelResponse,
   TableList,
+  UpdateTableLabelRequest,
   UpdateTableRequest,
 } from "@/type/table";
 import type { ApiResponse } from "@/type/response";
@@ -134,4 +135,25 @@ export const useTableLables = () => {
   );
 
   return { data, error, isLoading };
+};
+
+export const updateTableLables = async (
+  id: string,
+  data: UpdateTableLabelRequest
+): Promise<ApiResponse<TableList>> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/tables/${id}/labels`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message);
+  }
+
+  return result;
 };
