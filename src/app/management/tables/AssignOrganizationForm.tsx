@@ -5,7 +5,7 @@ import Button from "@/component/ui/Button";
 import type { AssignOrganizationRequest } from "@/type/table";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
 import Select from "@/component/ui/Select";
-import { useOrganizations } from "@/service/organization";
+import { useOrganizationApi } from "@/service/organization";
 
 interface AssignOrganizationFormProps {
   onSubmit?: (data: AssignOrganizationRequest) => Promise<boolean>;
@@ -16,6 +16,8 @@ const AssignOrganizationForm = ({
   onSubmit,
   onCancel,
 }: AssignOrganizationFormProps) => {
+  const { useOrganizations } = useOrganizationApi();
+
   const [organizationId, setOrganizationId] = useState<string>("");
 
   const { data: organizations } = useOrganizations();

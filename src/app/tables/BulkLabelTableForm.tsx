@@ -4,7 +4,7 @@ import { useCallback, useState, type FormEvent } from "react";
 import Button from "@/component/ui/Button";
 import type { BulkLabelsTablesRequest } from "@/type/table";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
-import { useDimensions } from "@/service/dimension";
+import { useDimensionApi } from "@/service/dimension";
 import Input from "@/component/ui/Input";
 import { Check, Plus, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,6 +19,7 @@ const BulkLabelTableForm = ({
   onSubmit,
   onCancel,
 }: BulkLabelTableFormProps) => {
+  const { useDimensions } = useDimensionApi();
   const [labelInput, setLabelInput] = useState("");
   const [labels, setLabels] = useState<string[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);

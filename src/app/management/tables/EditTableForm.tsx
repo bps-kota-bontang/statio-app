@@ -6,10 +6,10 @@ import Input from "@/component/ui/Input";
 import Select from "@/component/ui/Select";
 import type { UpdateTableRequest } from "@/type/table";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
-import { useIndicators } from "@/service/indicator";
-import { useDimensions } from "@/service/dimension";
-import { useTable } from "@/service/table";
-import { useOrganizations } from "@/service/organization";
+import { useDimensionApi } from "@/service/dimension";
+import { useOrganizationApi } from "@/service/organization";
+import { useIndicatorApi } from "@/service/indicator";
+import { useTableApi } from "@/service/table";
 
 interface EditTableFormProps {
   tableID: string;
@@ -18,6 +18,11 @@ interface EditTableFormProps {
 }
 
 const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
+  const { useDimensions } = useDimensionApi();
+  const { useTable } = useTableApi();
+  const { useIndicators } = useIndicatorApi();
+  const { useOrganizations } = useOrganizationApi();
+
   const { data, isLoading, error } = useTable(tableID);
   const { data: indicators } = useIndicators({ perPage: 1000 });
   const { data: dimensions } = useDimensions({ perPage: 1000 });

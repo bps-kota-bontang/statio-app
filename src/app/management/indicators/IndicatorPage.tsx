@@ -3,13 +3,7 @@
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import {
-  createIndicator,
-  updateIndicator,
-  useIndicatorMeasures,
-  useIndicators,
-  useIndicatorUnits,
-} from "@/service/indicator";
+import { useIndicatorApi } from "@/service/indicator";
 import type {
   Indicator,
   UpdateIndicatorRequest,
@@ -22,6 +16,14 @@ import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
 
 const IndicatorPage = () => {
+  const {
+    createIndicator,
+    updateIndicator,
+    useIndicatorMeasures,
+    useIndicators,
+    useIndicatorUnits,
+  } = useIndicatorApi();
+
   const table = useDataTable<Indicator>(["measure", "unit"]);
 
   const { data: measures } = useIndicatorMeasures();
@@ -173,6 +175,6 @@ const IndicatorPage = () => {
       </Modal>
     </div>
   );
-}
+};
 
 export default IndicatorPage;

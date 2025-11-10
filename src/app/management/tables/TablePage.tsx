@@ -4,13 +4,7 @@ import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import { useDimensionNames } from "@/service/dimension";
-import {
-  useIndicatorMeasures,
-  useIndicatorNames,
-  useIndicatorUnits,
-} from "@/service/indicator";
-import { createTable, updateTable, useTables } from "@/service/table";
+import { useDimensionApi } from "@/service/dimension";
 import type {
   AssignOrganizationRequest,
   CreateTableRequest,
@@ -23,14 +17,21 @@ import CreateTableForm from "@/app/management/tables/CreateTableForm";
 import EditTableForm from "@/app/management/tables/EditTableForm";
 import Badge from "@/component/ui/Badge";
 import { Link } from "react-router";
-import {
-  assignTablesToOrganization,
-  useOrganizations,
-} from "@/service/organization";
+
 import AssignOrganizationForm from "@/app/management/tables/AssignOrganizationForm";
+import { useTableApi } from "@/service/table";
+import { useIndicatorApi } from "@/service/indicator";
+import { useOrganizationApi } from "@/service/organization";
 
 const TablePage = () => {
+  const { useDimensionNames } = useDimensionApi();
   const table = useDataTable<TableList>();
+
+  const { useTables } = useTableApi();
+  const { useIndicatorNames, useIndicatorMeasures, useIndicatorUnits } =
+    useIndicatorApi();
+  const { createTable, updateTable } = useTableApi();
+  const { useOrganizations, assignTablesToOrganization } = useOrganizationApi();
 
   const { data, isLoading, mutate } = useTables(table);
 

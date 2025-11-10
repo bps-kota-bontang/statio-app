@@ -5,12 +5,7 @@ import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import {
-  addLabelsTables,
-  updateTableLables,
-  useTableLables,
-  useTables,
-} from "@/service/table";
+import { useTableApi } from "@/service/table";
 import type {
   BulkLabelsTablesRequest,
   TableList,
@@ -22,6 +17,9 @@ import BulkLabelTableForm from "@/app/tables/BulkLabelTableForm";
 import EditTableLabelsForm from "./EditTableForm";
 
 const TableOverviewPage = () => {
+  const { addLabelsTables, updateTableLabels, useTableLables, useTables } =
+    useTableApi();
+
   const table = useDataTable<TableList>();
   const { data, isLoading, mutate } = useTables(table);
   const { data: labels } = useTableLables();
@@ -55,7 +53,7 @@ const TableOverviewPage = () => {
 
   const handleEditTable = async (id: string, data: UpdateTableLabelRequest) => {
     try {
-      await updateTableLables(id, data);
+      await updateTableLabels(id, data);
       handleCloseEditModal();
       mutate(); // refresh table
       return true;

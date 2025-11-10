@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 import Button from "@/component/ui/Button";
 import Input from "@/component/ui/Input";
-import { useOrganizations } from "@/service/organization";
+import { useOrganizationApi } from "@/service/organization";
 import type { CreateOrganizationRequest } from "@/type/organization";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
 
@@ -16,6 +16,8 @@ const CreateOrganizationForm = ({
   onSubmit,
   onCancel,
 }: CreateOrganizationFormProps) => {
+  const { useOrganizations } = useOrganizationApi();
+
   const [name, setName] = useState("");
 
   const { errors, validate } = useRequiredFields<CreateOrganizationRequest>();

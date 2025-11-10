@@ -1,7 +1,7 @@
+import { useApiFetch } from "./useApiFetch";
+import useSWR, { type SWRConfiguration } from "swr";
 import { API_BASE_URL } from "@/config/api";
 import type { ApiResponse, PaginationMeta } from "@/type/response";
-import { fetcher } from "@/utils/network";
-import useSWR, { type SWRConfiguration } from "swr";
 
 export type FilterValue = string | string[];
 
@@ -30,6 +30,7 @@ export function usePaginatedResource<
   params: PaginatedParams<TFilters> = {},
   config?: SWRConfiguration
 ) {
+  const apiFetch = useApiFetch();
   const page = params.page ?? 1;
   const perPage = params.perPage ?? 10;
 
@@ -44,11 +45,9 @@ export function usePaginatedResource<
   if (params.filters) {
     Object.entries(params.filters).forEach(([key, value]) => {
       if (!value) return;
-      if (Array.isArray(value)) {
+      if (Array.isArray(value))
         value.forEach((v) => searchParams.append(key, v));
-      } else {
-        searchParams.append(key, value);
-      }
+      else searchParams.append(key, value);
     });
   }
 
@@ -57,7 +56,7 @@ export function usePaginatedResource<
 
   const { data, error, isLoading, mutate } = useSWR<
     ApiResponse<TData[], PaginationMeta>
-  >(url, fetcher, swrConfig);
+  >(url, apiFetch, swrConfig);
 
   return { data, error, isLoading, mutate };
 }

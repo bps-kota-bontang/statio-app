@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/config/api";
+import { useApiFetch } from "@/hooks/useApiFetch";
 import {
   createPaginatedResourceHook,
   type FilterValue,
@@ -10,64 +11,46 @@ import type {
   UpdateDimensionRequest,
 } from "@/type/dimension";
 import type { ApiResponse } from "@/type/response";
-import { fetcher } from "@/utils/network";
 import useSWR from "swr";
 
 type DimensionFilters = Record<keyof Dimension, FilterValue>;
 
-export const useDimensions = createPaginatedResourceHook<
-  Dimension,
-  DimensionFilters
->("/dimensions");
+export const useDimensionApi = () => {
+  const apiFetch = useApiFetch();
 
-export const useDimensionNames = () => {
-  const url = `${API_BASE_URL}/api/v1/dimensions/names`;
+  const useDimensions = createPaginatedResourceHook<
+    Dimension,
+    DimensionFilters
+  >("/dimensions");
 
-  const { data, error, isLoading } = useSWR<ApiResponse<DimensionName[]>>(
-    url,
-    fetcher
-  );
+  const useDimensionNames = () => {
+    const url = `${API_BASE_URL}/api/v1/dimensions/names`;
+    const { data, error, isLoading } = useSWR<ApiResponse<DimensionName[]>>(
+      url,
+      apiFetch
+    );
+    return { data, error, isLoading };
+  };
 
-  return { data, error, isLoading };
-};
+  const createDimension = async (data: CreateDimensionRequest) => {
+    return apiFetch<ApiResponse<Dimension>>(
+      `${API_BASE_URL}/api/v1/dimensions`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  };
 
-export const createDimension = async (
-  data: CreateDimensionRequest
-): Promise<ApiResponse<Dimension>> => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/dimensions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  const updateDimension = async (id: string, data: UpdateDimensionRequest) => {
+    return apiFetch<ApiResponse<Dimension>>(
+      `${API_BASE_URL}/api/v1/dimensions/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  };
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message);
-  }
-
-  return result;
-};
-
-export const updateDimension = async (
-  id: string,
-  data: UpdateDimensionRequest
-): Promise<ApiResponse<Dimension>> => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/dimensions/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message);
-  }
-
-  return result;
+  return { useDimensions, useDimensionNames, createDimension, updateDimension };
 };

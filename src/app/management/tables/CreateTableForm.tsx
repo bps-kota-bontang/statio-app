@@ -5,10 +5,10 @@ import Button from "@/component/ui/Button";
 import Input from "@/component/ui/Input";
 import type { CreateTableRequest } from "@/type/table";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
-import { useIndicators } from "@/service/indicator";
-import { useDimensions } from "@/service/dimension";
+import { useIndicatorApi } from "@/service/indicator";
 import Select from "@/component/ui/Select";
-import { useOrganizations } from "@/service/organization";
+import { useOrganizationApi } from "@/service/organization";
+import { useDimensionApi } from "@/service/dimension";
 
 interface CreateTableFormProps {
   onSubmit?: (data: CreateTableRequest) => Promise<boolean>;
@@ -16,6 +16,9 @@ interface CreateTableFormProps {
 }
 
 const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
+  const { useDimensions } = useDimensionApi();
+  const { useIndicators } = useIndicatorApi();
+  const { useOrganizations } = useOrganizationApi();
   const [name, setName] = useState("");
   const [indicatorId, setIndicatorId] = useState<string>("");
   const [organizationId, setOrganizationId] = useState<string | null>(null);

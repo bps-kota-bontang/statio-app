@@ -11,8 +11,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Globe, Plus, Save, Shuffle, Trash } from "lucide-react";
 import type { CellChange } from "handsontable/common";
-import { updateTableFact } from "@/service/table";
 import { createPortal } from "react-dom";
+import { useTableApi } from "@/service/table";
 
 const TableViewer = ({
   id,
@@ -27,6 +27,7 @@ const TableViewer = ({
   years?: number[];
   onRevalidate: () => void;
 }) => {
+  const { updateTableFact } = useTableApi();
   const lastPayloadRef = useRef<string>("");
   const tableRef = useRef<TableStatioHandle>(null);
   const [notes, setNotes] = useState("");
@@ -97,7 +98,7 @@ const TableViewer = ({
         setTimeout(() => setStatus("idle"), 3000);
       }
     },
-    [rowHeaders, dims, year, swap, id]
+    [rowHeaders, dims, year, swap, updateTableFact, id]
   );
 
   const handleNotesChange = (v: string) => setNotes(v);

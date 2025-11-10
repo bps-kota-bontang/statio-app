@@ -3,9 +3,9 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 import Button from "@/component/ui/Button";
 import Input from "@/component/ui/Input";
-import { useIndicators } from "@/service/indicator";
 import type { Indicator, UpdateIndicatorRequest } from "@/type/indicator";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
+import { useIndicatorApi } from "@/service/indicator";
 
 interface EditIndicatorFormProps {
   indicator: Indicator;
@@ -18,6 +18,8 @@ const EditIndicatorForm = ({
   onSubmit,
   onCancel,
 }: EditIndicatorFormProps) => {
+  const { useIndicators } = useIndicatorApi();
+
   const [name, setName] = useState(indicator.name);
   const [measure, setMeasure] = useState(indicator.measure);
   const [unit, setUnit] = useState(indicator.unit || "");

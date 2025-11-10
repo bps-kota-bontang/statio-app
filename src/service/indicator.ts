@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/config/api";
+import { useApiFetch } from "@/hooks/useApiFetch";
 import {
   createPaginatedResourceHook,
   type FilterValue,
@@ -12,86 +13,76 @@ import type {
   UpdateIndicatorRequest,
 } from "@/type/indicator";
 import type { ApiResponse } from "@/type/response";
-import { fetcher } from "@/utils/network";
 import useSWR from "swr";
 
 type IndicatorFilters = Record<keyof Indicator, FilterValue>;
 
-export const useIndicators = createPaginatedResourceHook<
-  Indicator,
-  IndicatorFilters
->("/indicators");
+export const useIndicatorApi = () => {
+  const apiFetch = useApiFetch();
 
-export const createIndicator = async (
-  data: CreateIndicatorRequest
-): Promise<ApiResponse<Indicator>> => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/indicators`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  const useIndicators = createPaginatedResourceHook<
+    Indicator,
+    IndicatorFilters
+  >("/indicators");
 
-  const result = await response.json();
+  const createIndicator = async (
+    data: CreateIndicatorRequest
+  ): Promise<ApiResponse<Indicator>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/indicators`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  };
 
-  if (!response.ok) {
-    throw new Error(result.message);
-  }
+  const updateIndicator = async (
+    id: string,
+    data: UpdateIndicatorRequest
+  ): Promise<ApiResponse<Indicator>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/indicators/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  };
 
-  return result;
-};
+  const useIndicatorNames = () => {
+    const url = `${API_BASE_URL}/api/v1/indicators/names`;
 
-export const updateIndicator = async (
-  id: string,
-  data: UpdateIndicatorRequest
-): Promise<ApiResponse<Indicator>> => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/indicators/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+    const { data, error, isLoading } = useSWR<ApiResponse<IndicatorName[]>>(
+      url,
+      apiFetch
+    );
 
-  const result = await response.json();
+    return { data, error, isLoading };
+  };
 
-  if (!response.ok) {
-    throw new Error(result.message);
-  }
+  const useIndicatorMeasures = () => {
+    const url = `${API_BASE_URL}/api/v1/indicators/measures`;
 
-  return result;
-};
+    const { data, error, isLoading } = useSWR<ApiResponse<IndicatorMeasure[]>>(
+      url,
+      apiFetch
+    );
 
-export const useIndicatorNames = () => {
-  const url = `${API_BASE_URL}/api/v1/indicators/names`;
+    return { data, error, isLoading };
+  };
 
-  const { data, error, isLoading } = useSWR<ApiResponse<IndicatorName[]>>(
-    url,
-    fetcher
-  );
+  const useIndicatorUnits = () => {
+    const url = `${API_BASE_URL}/api/v1/indicators/units`;
 
-  return { data, error, isLoading };
-};
+    const { data, error, isLoading } = useSWR<ApiResponse<IndicatorUnit[]>>(
+      url,
+      apiFetch
+    );
 
-export const useIndicatorMeasures = () => {
-  const url = `${API_BASE_URL}/api/v1/indicators/measures`;
+    return { data, error, isLoading };
+  };
 
-  const { data, error, isLoading } = useSWR<ApiResponse<IndicatorMeasure[]>>(
-    url,
-    fetcher
-  );
-
-  return { data, error, isLoading };
-};
-
-export const useIndicatorUnits = () => {
-  const url = `${API_BASE_URL}/api/v1/indicators/units`;
-
-  const { data, error, isLoading } = useSWR<ApiResponse<IndicatorUnit[]>>(
-    url,
-    fetcher
-  );
-
-  return { data, error, isLoading };
+  return {
+    useIndicators,
+    useIndicatorNames,
+    useIndicatorMeasures,
+    useIndicatorUnits,
+    createIndicator,
+    updateIndicator,
+  };
 };

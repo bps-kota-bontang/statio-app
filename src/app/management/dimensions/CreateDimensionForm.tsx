@@ -5,10 +5,10 @@ import Button from "@/component/ui/Button";
 import Badge from "@/component/ui/Badge";
 import { Plus, X } from "lucide-react";
 import Input from "@/component/ui/Input";
-import { useDimensions } from "@/service/dimension";
 import { AnimatePresence, motion } from "framer-motion";
 import type { CreateDimensionRequest } from "@/type/dimension";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
+import { useDimensionApi } from "@/service/dimension";
 
 interface CreateDimensionFormProps {
   onSubmit?: (data: CreateDimensionRequest) => Promise<boolean>;
@@ -19,6 +19,7 @@ const CreateDimensionForm = ({
   onSubmit,
   onCancel,
 }: CreateDimensionFormProps) => {
+  const { useDimensions } = useDimensionApi();
   const [name, setName] = useState("");
   const [valueInput, setValueInput] = useState("");
   const [values, setValues] = useState<string[]>([]);

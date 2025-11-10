@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { useParams, useSearchParams } from "react-router";
 import TableViewer from "@/app/tables/detail/TableViewer";
 import Tab from "@/component/ui/Tab";
-import { useTable } from "@/service/table";
+import { useTableApi } from "@/service/table";
 
 const TableDetailPage = () => {
+  const { useTable } = useTableApi();
   const { id } = useParams<{ id: string }>();
   const lastYear = new Date().getFullYear() - 1;
   const [searchParams, setSearchParams] = useSearchParams();

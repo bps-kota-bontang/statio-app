@@ -19,6 +19,7 @@ interface InputProps {
   onEnter?: () => void;
   disabled?: boolean;
   required?: boolean;
+  type?: string;
 }
 
 const Input = ({
@@ -32,6 +33,7 @@ const Input = ({
   onEnter,
   disabled,
   required,
+  type = "text",
 }: InputProps) => {
   const [filtered, setFiltered] = useState<string[]>([]);
   const [show, setShow] = useState(false);
@@ -82,7 +84,7 @@ const Input = ({
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <input
-        type="text"
+        type={type}
         value={value}
         required={required}
         onChange={handleInputChange}

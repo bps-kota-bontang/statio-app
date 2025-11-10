@@ -3,9 +3,9 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 import Button from "@/component/ui/Button";
 import Input from "@/component/ui/Input";
-import { useIndicators } from "@/service/indicator";
 import type { CreateIndicatorRequest } from "@/type/indicator";
 import { useRequiredFields } from "@/hooks/useRequiredFields";
+import { useIndicatorApi } from "@/service/indicator";
 
 interface CreateIndicatorFormProps {
   onSubmit?: (data: CreateIndicatorRequest) => Promise<boolean>;
@@ -16,6 +16,8 @@ const CreateIndicatorForm = ({
   onSubmit,
   onCancel,
 }: CreateIndicatorFormProps) => {
+  const { useIndicators } = useIndicatorApi();
+
   const [name, setName] = useState("");
   const [measure, setMeasure] = useState("");
   const [unit, setUnit] = useState("");

@@ -5,11 +5,6 @@ import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import {
-  createDimension,
-  updateDimension,
-  useDimensions,
-} from "@/service/dimension";
 import type {
   CreateDimensionRequest,
   Dimension,
@@ -19,9 +14,11 @@ import { useMemo, useCallback, useState } from "react";
 import CreateDimensionForm from "@/app/management/dimensions/CreateDimensionForm";
 import EditDimensionForm from "@/app/management/dimensions/EditDimensionForm";
 import { Plus } from "lucide-react";
+import { useDimensionApi } from "@/service/dimension";
 
 export default function DimensionExample() {
   const table = useDataTable<Dimension>();
+  const { useDimensions, createDimension, updateDimension } = useDimensionApi();
   const { data, isLoading, mutate } = useDimensions(table);
   // Modal create
   const [isCreateOpen, setIsCreateOpen] = useState(false);

@@ -6,7 +6,7 @@ import Button from "@/component/ui/Button";
 import Badge from "@/component/ui/Badge";
 import { Plus, Check, X } from "lucide-react";
 import Input from "@/component/ui/Input";
-import { useDimensions } from "@/service/dimension";
+import { useDimensionApi } from "@/service/dimension";
 import type {
   Dimension,
   UpdateDimensionRequest,
@@ -25,6 +25,7 @@ const EditDimensionForm = ({
   onSubmit,
   onCancel,
 }: EditDimensionFormProps) => {
+  const { useDimensions } = useDimensionApi();
   const [name, setName] = useState(dimension.name);
   const [valueInput, setValueInput] = useState("");
   const [values, setValues] = useState<UpdateDimensionValueRequest[]>(

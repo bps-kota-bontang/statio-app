@@ -13,28 +13,40 @@ import IndicatorPage from "@/app/management/indicators/IndicatorPage";
 import DimensionPage from "@/app/management/dimensions/DimensionPage";
 import TableOverviewPage from "@/app/tables/TableOverviewPage";
 import OrganizationPage from "@/app/management/organizations/OrganizationPage";
+import { AuthProvider } from "@/context/auth/AuthProvider";
+import { ProtectedRoute } from "@/component/auth/ProtectedRoute";
+import LoginPage from "@/app/auth/LoginPage";
 
 const root = document.getElementById("root");
 
 createRoot(root!).render(
-  <BrowserRouter>
-    <Routes>
-      <Route element={<StatioLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="tables">
-          <Route index element={<TableOverviewPage />} />
-          <Route element={<TableLayout />}>
-            <Route path=":id" element={<TableDetailPage />} />
-            <Route path=":id/edit" element={<TableEdit />} />
+  <AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          element={
+            <ProtectedRoute>
+              <StatioLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="tables">
+            <Route index element={<TableOverviewPage />} />
+            <Route element={<TableLayout />}>
+              <Route path=":id" element={<TableDetailPage />} />
+              <Route path=":id/edit" element={<TableEdit />} />
+            </Route>
+          </Route>
+          <Route path="management">
+            <Route path="organizations" element={<OrganizationPage />} />
+            <Route path="indicators" element={<IndicatorPage />} />
+            <Route path="dimensions" element={<DimensionPage />} />
+            <Route path="tables" element={<TablePage />} />
           </Route>
         </Route>
-        <Route path="management">
-          <Route path="organizations" element={<OrganizationPage />} />
-          <Route path="indicators" element={<IndicatorPage />} />
-          <Route path="dimensions" element={<DimensionPage />} />
-          <Route path="tables" element={<TablePage />} />
-        </Route>
-      </Route>
-    </Routes>
-  </BrowserRouter>
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </BrowserRouter>
+  </AuthProvider>
 );

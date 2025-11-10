@@ -3,7 +3,7 @@
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import { createOrganization, updateOrganization } from "@/service/organization";
+import { useOrganizationApi } from "@/service/organization";
 import type {
   Organization,
   UpdateOrganizationRequest,
@@ -14,9 +14,11 @@ import CreateOrganizationForm from "@/app/management/organizations/CreateOrganiz
 import EditOrganizationForm from "@/app/management/organizations/EditOrganizationForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
-import { useOrganizations } from "@/service/organization";
 
 const OrganizationPage = () => {
+  const { useOrganizations, createOrganization, updateOrganization } =
+    useOrganizationApi();
+
   const table = useDataTable<Organization>();
 
   const { data, isLoading, mutate } = useOrganizations(table);

@@ -6,8 +6,8 @@ import Button from "@/component/ui/Button";
 import Badge from "@/component/ui/Badge";
 import { Plus, Check, X } from "lucide-react";
 import Input from "@/component/ui/Input";
-import { useTables } from "@/service/table";
 import type { TableList, UpdateTableLabelRequest } from "@/type/table";
+import { useTableApi } from "@/service/table";
 
 interface EditTableLabelsFormProps {
   table: TableList;
@@ -20,6 +20,7 @@ const EditTableLabelsForm = ({
   onSubmit,
   onCancel,
 }: EditTableLabelsFormProps) => {
+  const { useTables } = useTableApi();
   const [labelInput, setLabelInput] = useState("");
   const [labels, setLabels] = useState<string[]>(table.labels || []);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);

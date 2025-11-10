@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 import Button from "@/component/ui/Button";
 import Input from "@/component/ui/Input";
-import { useOrganizations } from "@/service/organization";
+import { useOrganizationApi } from "@/service/organization";
 import type {
   Organization,
   UpdateOrganizationRequest,
@@ -21,6 +21,8 @@ const EditOrganizationForm = ({
   onSubmit,
   onCancel,
 }: EditOrganizationFormProps) => {
+  const { useOrganizations } = useOrganizationApi();
+
   const [name, setName] = useState(organization.name);
 
   const { errors, validate } = useRequiredFields<UpdateOrganizationRequest>();
