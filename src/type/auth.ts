@@ -6,3 +6,8 @@ export type LoginRequest = {
 export type LoginResponse = {
   access_token: string;
 };
+
+export type LoginSsoRequest = {
+  token: string;
+  state: string;
+};

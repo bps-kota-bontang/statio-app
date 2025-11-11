@@ -1,24 +1,49 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useAuth } from "@/context/auth/useAuth";
 import Input from "@/component/ui/Input";
-import { login } from "@/service/auth";
+import { login, loginSso } from "@/service/auth";
+import { API_BASE_URL } from "@/config/api";
 
 const LoginPage = () => {
   const { token, setToken } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    if (token) {
-      navigate("/", { replace: true });
-    }
-  }, [token, navigate]);
+  const paramsToken = searchParams.get("token");
+  const paramsState = searchParams.get("state");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ Auto-login dari callback SSO
+  useEffect(() => {
+    const processSso = async () => {
+      if (!paramsToken || !paramsState) return;
+
+      try {
+        setFormLoading(true);
+        const data = await loginSso({ token: paramsToken, state: paramsState });
+        setToken(data.data.access_token);
+        navigate("/", { replace: true });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unexpected error");
+      } finally {
+        setFormLoading(false);
+      }
+    };
+
+    processSso();
+  }, [paramsToken, paramsState, setToken, navigate]);
+
+  // ✅ Sudah login → redirect
+  useEffect(() => {
+    if (token) navigate("/", { replace: true });
+  }, [token, navigate]);
+
+  // ✅ Login manual
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -37,6 +62,11 @@ const LoginPage = () => {
     },
     [email, password, setToken, navigate]
   );
+
+  // ✅ Redirect ke endpoint SSO backend
+  const handleSSOLogin = () => {
+    window.location.href = `${API_BASE_URL}/api/v1/auth/sso`;
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -80,10 +110,18 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-blue-700 transition"
             disabled={formLoading}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-4"
           >
             {formLoading ? "Logging in..." : "Login"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSSOLogin}
+            className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-100 transition"
+          >
+            <img src="/bps.svg" alt="SSO BPS" className="w-5 h-5" /> Login with
+            SSO BPS{" "}
           </button>
         </form>
       </div>
