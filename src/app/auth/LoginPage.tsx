@@ -1,21 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/context/auth/useAuth";
-import { login } from "@/service/auth";
 import Input from "@/component/ui/Input";
+import { login } from "@/service/auth";
 
 const LoginPage = () => {
-  const { token, setToken } = useAuth(); // rename untuk membedakan
+  const { token, setToken } = useAuth();
   const navigate = useNavigate();
 
-  // redirect jika sudah login dan refresh token selesai
   useEffect(() => {
     if (token) {
       navigate("/", { replace: true });
     }
   }, [token, navigate]);
 
-  // state untuk form login
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formLoading, setFormLoading] = useState(false);

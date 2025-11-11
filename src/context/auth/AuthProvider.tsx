@@ -7,7 +7,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const logout = useCallback(() => setToken(null), []);
+  const logout = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "x-refresh-attempt": "true" },
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
+      setToken(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }, []);
 
   // Unified refresh function
   const refreshToken = useCallback(async (): Promise<string | null> => {

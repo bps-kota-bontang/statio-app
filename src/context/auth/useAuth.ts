@@ -4,7 +4,7 @@ import { AuthContext } from "@/context/auth/AuthContext";
 export interface AuthContextType {
   token: string | null;
   setToken: (token: string | null) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
 }
 
