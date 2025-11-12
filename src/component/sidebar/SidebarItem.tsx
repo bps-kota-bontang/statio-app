@@ -1,15 +1,19 @@
 import { NavLink, useLocation } from "react-router";
-import type { MenuItem as MenuItemType } from "@/type/menu";
+import type { MenuItem } from "@/type/menu";
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 
-interface MenuItemProps {
-  item: MenuItemType;
+interface SidebarItemProps {
+  item: MenuItem;
   collapsed?: boolean;
   level?: number; // untuk indentasi submenu
 }
 
-const MenuItem = ({ item, collapsed = false, level = 0 }: MenuItemProps) => {
+const SidebarItem = ({
+  item,
+  collapsed = false,
+  level = 0,
+}: SidebarItemProps) => {
   const [open, setOpen] = useState(false);
   const hasChildren = item.children && item.children.length > 0;
   const location = useLocation();
@@ -87,7 +91,7 @@ const MenuItem = ({ item, collapsed = false, level = 0 }: MenuItemProps) => {
           className="overflow-hidden pl-9 my-1 space-y-1 transition-all duration-300 ease-in-out"
         >
           {item.children!.map((child) => (
-            <MenuItem
+            <SidebarItem
               key={child.href || child.title}
               item={child}
               collapsed={collapsed}
@@ -100,4 +104,4 @@ const MenuItem = ({ item, collapsed = false, level = 0 }: MenuItemProps) => {
   );
 };
 
-export default MenuItem;
+export default SidebarItem;

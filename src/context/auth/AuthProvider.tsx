@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode, useCallback } from "react";
 import { AuthContext } from "@/context/auth/AuthContext";
 import type { AuthContextType } from "@/context/auth/useAuth";
 import { API_BASE_URL } from "@/config/api";
+import Loading from "@/component/ui/Loading";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, [refreshToken]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loading />;
 
   const value: AuthContextType & {
     refreshToken: () => Promise<string | null>;

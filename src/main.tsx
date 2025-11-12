@@ -3,9 +3,9 @@ import { BrowserRouter, Route, Routes } from "react-router";
 
 import "@/style/index.css";
 
-import StatioLayout from "@/component/layout/statio/StatioLayout";
+import StatioLayout from "@/component/layout/StatioLayout";
 import Dashboard from "@/app/Dashboard";
-import TableLayout from "@/component/layout/table/TableLayout";
+import TableLayout from "@/component/layout/TableLayout";
 import TablePage from "@/app/management/tables/TablePage";
 import TableDetailPage from "@/app/tables/detail/TableDetailPage";
 import TableEdit from "@/app/tables/TableEdit";

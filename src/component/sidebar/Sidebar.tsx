@@ -1,4 +1,4 @@
-import MenuItem from "@/component/layout/statio/MenuItem";
+import SidebarItem from "@/component/sidebar/SidebarItem";
 import { MENU_ITEMS } from "@/constant/menu";
 import { useAuth } from "@/context/auth/useAuth";
 import { PanelRight, LogOut } from "lucide-react";
@@ -41,7 +41,7 @@ const Sidebar = () => {
       <nav className="flex-1 overflow-y-auto">
         <ul className="space-y-1 p-4">
           {MENU_ITEMS.map((item) => (
-            <MenuItem
+            <SidebarItem
               key={item.href || item.title}
               item={item}
               collapsed={collapsed}

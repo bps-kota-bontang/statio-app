@@ -1,4 +1,4 @@
-import Sidebar from "@/component/layout/statio/Sidebar";
+import Sidebar from "@/component/sidebar/Sidebar";
 import { Outlet } from "react-router";
 
 const StatioLayout = () => {
