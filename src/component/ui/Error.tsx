@@ -1,4 +1,5 @@
 import { ShieldAlert, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const Error = ({
   message = "You do not have permission to view this page.",
@@ -9,6 +10,7 @@ const Error = ({
   backTo?: string;
   hideButton?: boolean;
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col items-center justify-center text-center bg-background text-foreground min-h-[80vh]">
       {/* Icon */}
@@ -23,7 +25,7 @@ const Error = ({
       {/* Back Button */}
       {!hideButton && (
         <button
-          onClick={() => (window.location.href = backTo)}
+          onClick={() => navigate(backTo)}
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
