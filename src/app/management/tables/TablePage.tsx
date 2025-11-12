@@ -165,9 +165,13 @@ const TablePage = () => {
         filterOptions: existingDimensionNames,
         render: (row) => (
           <div className="flex flex-wrap gap-2">
-            {row.dimensions.map((dimension, index) => (
-              <Badge key={index} label={dimension} />
-            ))}
+            {row.dimensions.length > 0 ? (
+              row.dimensions.map((dimension, index) => (
+                <Badge key={index} label={dimension} />
+              ))
+            ) : (
+              <span className="text-sm text-gray-500">No dimensions</span>
+            )}
           </div>
         ),
       },
