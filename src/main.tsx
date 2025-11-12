@@ -16,6 +16,7 @@ import OrganizationPage from "@/app/management/organizations/OrganizationPage";
 import { AuthProvider } from "@/context/auth/AuthProvider";
 import { ProtectedRoute } from "@/component/auth/ProtectedRoute";
 import LoginPage from "@/app/auth/LoginPage";
+import ManagementLayout from "@/component/layout/ManagementLayout";
 
 const root = document.getElementById("root");
 
@@ -38,7 +39,7 @@ createRoot(root!).render(
               <Route path=":id/edit" element={<TableEdit />} />
             </Route>
           </Route>
-          <Route path="management">
+          <Route path="management" element={<ManagementLayout />}>
             <Route path="organizations" element={<OrganizationPage />} />
             <Route path="indicators" element={<IndicatorPage />} />
             <Route path="dimensions" element={<DimensionPage />} />

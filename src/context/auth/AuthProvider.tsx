@@ -3,9 +3,11 @@ import { AuthContext } from "@/context/auth/AuthContext";
 import type { AuthContextType } from "@/context/auth/useAuth";
 import { API_BASE_URL } from "@/config/api";
 import Loading from "@/component/ui/Loading";
+import type { User } from "@/type/user";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const logout = useCallback(async () => {
@@ -45,13 +47,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const fetchUser = useCallback(async (accessToken: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch user");
+
+      const result = await res.json();
+      setUser(result.data);
+    } catch (err) {
+      console.error("Fetch user failed:", err);
+      setUser(null);
+    }
+  }, []);
+
   // On mount, initialize token
   useEffect(() => {
     (async () => {
-      await refreshToken();
+      const newToken = await refreshToken();
+      if (newToken) await fetchUser(newToken);
       setLoading(false);
     })();
-  }, [refreshToken]);
+  }, [refreshToken, fetchUser]);
 
   if (loading) return <Loading />;
 
@@ -59,7 +81,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshToken: () => Promise<string | null>;
   } = {
     token,
+    user,
     setToken,
+    setUser,
     logout,
     refreshToken,
   };

@@ -5,7 +5,7 @@ import { PanelRight, LogOut } from "lucide-react";
 import { useState } from "react";
 
 const Sidebar = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   const handleLogout = async () => {
@@ -40,7 +40,16 @@ const Sidebar = () => {
       {/* Menu Items */}
       <nav className="flex-1 overflow-y-auto">
         <ul className="space-y-1 p-4">
-          {MENU_ITEMS.map((item) => (
+          {MENU_ITEMS.filter((item) => {
+            // Jika menu tidak punya batasan roles → tampil untuk semua
+            if (!item.roles) return true;
+
+            // Jika user tidak punya roles → sembunyikan menu
+            if (!user?.roles || user.roles.length === 0) return false;
+
+            // Tampilkan jika ada salah satu role user cocok dengan role menu
+            return item.roles.some((r) => user.roles.includes(r));
+          }).map((item) => (
             <SidebarItem
               key={item.href || item.title}
               item={item}

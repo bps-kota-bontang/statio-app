@@ -15,6 +15,7 @@ export const MENU_ITEMS: MenuItem[] = [
   {
     title: "Management",
     icon: <Settings />,
+    roles: ["admin"],
     children: [
       {
         title: "Organizations",
