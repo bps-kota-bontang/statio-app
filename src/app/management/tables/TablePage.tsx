@@ -13,12 +13,12 @@ import type {
 } from "@/type/table";
 import { Plus } from "lucide-react";
 import { useMemo, useCallback, useState } from "react";
-import CreateTableForm from "@/app/management/tables/CreateTableForm";
-import EditTableForm from "@/app/management/tables/EditTableForm";
+import CreateTableForm from "@/component/management/tables/CreateTableForm";
+import EditTableForm from "@/component/management/tables/EditTableForm";
 import Badge from "@/component/ui/Badge";
 import { Link } from "react-router";
 
-import AssignOrganizationForm from "@/app/management/tables/AssignOrganizationForm";
+import AssignOrganizationForm from "@/component/management/tables/AssignOrganizationForm";
 import { useTableApi } from "@/service/table";
 import { useIndicatorApi } from "@/service/indicator";
 import { useOrganizationApi } from "@/service/organization";

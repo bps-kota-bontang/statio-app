@@ -8,7 +8,6 @@ import Dashboard from "@/app/Dashboard";
 import TableLayout from "@/component/layout/TableLayout";
 import TablePage from "@/app/management/tables/TablePage";
 import TableDetailPage from "@/app/tables/detail/TableDetailPage";
-import TableEdit from "@/app/tables/TableEdit";
 import IndicatorPage from "@/app/management/indicators/IndicatorPage";
 import DimensionPage from "@/app/management/dimensions/DimensionPage";
 import TableOverviewPage from "@/app/tables/TableOverviewPage";
@@ -36,7 +35,6 @@ createRoot(root!).render(
             <Route index element={<TableOverviewPage />} />
             <Route element={<TableLayout />}>
               <Route path=":id" element={<TableDetailPage />} />
-              <Route path=":id/edit" element={<TableEdit />} />
             </Route>
           </Route>
           <Route path="management" element={<ManagementLayout />}>

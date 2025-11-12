@@ -10,8 +10,8 @@ import type {
   CreateIndicatorRequest,
 } from "@/type/indicator";
 import { useMemo, useCallback, useState } from "react";
-import CreateIndicatorForm from "@/app/management/indicators/CreateIndicatorForm";
-import EditIndicatorForm from "@/app/management/indicators/EditIndicatorForm";
+import CreateIndicatorForm from "@/component/management/indicators/CreateIndicatorForm";
+import EditIndicatorForm from "@/component/management/indicators/EditIndicatorForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
 

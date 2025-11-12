@@ -10,8 +10,8 @@ import type {
   CreateOrganizationRequest,
 } from "@/type/organization";
 import { useMemo, useCallback, useState } from "react";
-import CreateOrganizationForm from "@/app/management/organizations/CreateOrganizationForm";
-import EditOrganizationForm from "@/app/management/organizations/EditOrganizationForm";
+import CreateOrganizationForm from "@/component/management/organizations/CreateOrganizationForm";
+import EditOrganizationForm from "@/component/management/organizations/EditOrganizationForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
 

@@ -1,13 +1,13 @@
 import { useAuth } from "@/context/auth/useAuth";
 import { Outlet } from "react-router";
-import AccessDenied from "@/component/ui/AccessDenied";
+import Error from "@/component/ui/Error";
 
 const ManagementLayout = () => {
   const { user } = useAuth();
 
   if (!user?.roles?.includes("admin")) {
     return (
-      <AccessDenied message="Only administrators can access the management section." />
+      <Error message="Only administrators can access the management section." />
     );
   }
 

@@ -1,11 +1,13 @@
 import { ShieldAlert, ArrowLeft } from "lucide-react";
 
-const AccessDenied = ({
+const Error = ({
   message = "You do not have permission to view this page.",
   backTo = "/",
+  hideButton = false,
 }: {
   message?: string;
   backTo?: string;
+  hideButton?: boolean;
 }) => {
   return (
     <div className="flex flex-col items-center justify-center text-center bg-background text-foreground min-h-[80vh]">
@@ -19,15 +21,17 @@ const AccessDenied = ({
       <p className="text-gray-600 max-w-md mb-6">{message}</p>
 
       {/* Back Button */}
-      <button
-        onClick={() => (window.location.href = backTo)}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Go Back
-      </button>
+      {!hideButton && (
+        <button
+          onClick={() => (window.location.href = backTo)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Go Back
+        </button>
+      )}
     </div>
   );
 };
 
-export default AccessDenied;
+export default Error;

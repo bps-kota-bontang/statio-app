@@ -11,8 +11,8 @@ import type {
   UpdateDimensionRequest,
 } from "@/type/dimension";
 import { useMemo, useCallback, useState } from "react";
-import CreateDimensionForm from "@/app/management/dimensions/CreateDimensionForm";
-import EditDimensionForm from "@/app/management/dimensions/EditDimensionForm";
+import CreateDimensionForm from "@/component/management/dimensions/CreateDimensionForm";
+import EditDimensionForm from "@/component/management/dimensions/EditDimensionForm";
 import { Plus } from "lucide-react";
 import { useDimensionApi } from "@/service/dimension";
 

@@ -10,6 +10,8 @@ import { useDimensionApi } from "@/service/dimension";
 import { useOrganizationApi } from "@/service/organization";
 import { useIndicatorApi } from "@/service/indicator";
 import { useTableApi } from "@/service/table";
+import Loading from "@/component/ui/Loading";
+import Error from "@/component/ui/Error";
 
 interface EditTableFormProps {
   tableID: string;
@@ -78,15 +80,8 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
     ]
   );
 
-  if (isLoading) {
-    return <p className="text-gray-500">Loading...</p>;
-  }
-
-  if (error) {
-    return (
-      <p className="text-red-500">Failed to load table data: {String(error)}</p>
-    );
-  }
+  if (isLoading) return <Loading />;
+  if (error) return <Error message={error.message} hideButton />;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 relative">

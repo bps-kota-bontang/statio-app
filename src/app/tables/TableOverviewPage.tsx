@@ -13,8 +13,8 @@ import type {
 } from "@/type/table";
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
-import BulkLabelTableForm from "@/app/tables/BulkLabelTableForm";
-import EditTableLabelsForm from "./EditTableForm";
+import BulkLabelTableForm from "@/component/tables/BulkLabelTableForm";
+import EditTableLabelsForm from "../../component/tables/EditTableForm";
 
 const TableOverviewPage = () => {
   const { addLabelsTables, updateTableLabels, useTableLables, useTables } =

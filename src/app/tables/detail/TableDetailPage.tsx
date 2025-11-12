@@ -1,8 +1,10 @@
 import { useMemo } from "react";
 import { useParams, useSearchParams } from "react-router";
-import TableViewer from "@/app/tables/detail/TableViewer";
+import TableViewer from "@/component/tables/detail/TableViewer";
 import Tab from "@/component/ui/Tab";
 import { useTableApi } from "@/service/table";
+import Error from "@/component/ui/Error";
+import Loading from "@/component/ui/Loading";
 
 const TableDetailPage = () => {
   const { useTable } = useTableApi();
@@ -30,10 +32,10 @@ const TableDetailPage = () => {
     );
   }, [data?.data]);
 
-  if (!id) return <div>Table ID is missing</div>;
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading table data.</div>;
-  if (!data?.data) return <div>No data available.</div>;
+  if (!id) return <Error message="Table ID is missing." />;
+  if (isLoading) return <Loading />;
+  if (error) return <Error message={error.message} />;
+  if (!data?.data) return <Error message="Table not found." />;
 
   const handleYearSelect = (year: number) => {
     setSearchParams({ year: year.toString() });

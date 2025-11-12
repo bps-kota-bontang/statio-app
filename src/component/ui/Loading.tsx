@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 
 const Loading = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] bg-background text-foreground">
       {/* Logo / Icon animasi */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -23,7 +23,7 @@ const Loading = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          Memuat sesi Anda, harap tunggu...
+          Memuat data, harap tunggu...
         </motion.p>
       </motion.div>
     </div>
