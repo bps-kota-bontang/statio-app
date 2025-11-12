@@ -1,4 +1,10 @@
-import { useState, useEffect, type ReactNode, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from "react";
 import { AuthContext } from "@/context/auth/AuthContext";
 import type { AuthContextType } from "@/context/auth/useAuth";
 import { API_BASE_URL } from "@/config/api";
@@ -10,18 +16,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 ref untuk mencegah fetchUser ganda
+  const hasFetchedUser = useRef(false);
+
   const logout = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
         method: "POST",
         credentials: "include",
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
       setToken(null);
+      setUser(null);
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -66,14 +75,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // On mount, initialize token
+  // 🔹 Efek pertama: hanya untuk refresh token di awal
   useEffect(() => {
     (async () => {
       const newToken = await refreshToken();
-      if (newToken) await fetchUser(newToken);
+      if (newToken) {
+        hasFetchedUser.current = true;
+        await fetchUser(newToken);
+      }
       setLoading(false);
     })();
   }, [refreshToken, fetchUser]);
+
+  // 🔹 Efek kedua: untuk kasus token berubah karena login manual / SSO
+  useEffect(() => {
+    if (token && !hasFetchedUser.current) {
+      fetchUser(token);
+    }
+  }, [token, fetchUser]);
 
   if (loading) return <Loading />;
 
