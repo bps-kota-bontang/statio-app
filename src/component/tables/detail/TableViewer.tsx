@@ -13,6 +13,7 @@ import { Globe, Plus, Save, Shuffle, Trash } from "lucide-react";
 import type { CellChange } from "handsontable/common";
 import { createPortal } from "react-dom";
 import { useTableApi } from "@/service/table";
+import Switch from "@/component/ui/Switch";
 
 const TableViewer = ({
   id,
@@ -196,22 +197,12 @@ const TableViewer = ({
               </span>
             )}
           </div>
-
-          <label className="flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-gray-700">
-            Auto Simpan
-            <div
-              onClick={() => setAutoSave((v) => !v)}
-              className={`w-11 h-6 flex items-center rounded-full p-1 transition ${
-                autoSave ? "bg-green-500/80" : "bg-gray-300/60"
-              }`}
-            >
-              <div
-                className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
-                  autoSave ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </div>
-          </label>
+          <Switch
+            disabled
+            label="Auto Simpan"
+            checked={autoSave}
+            onChange={setAutoSave}
+          />
         </div>
       </div>
 
