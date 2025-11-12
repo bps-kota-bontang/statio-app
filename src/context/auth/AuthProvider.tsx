@@ -12,7 +12,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
         method: "POST",
         credentials: "include",
-        headers: { "x-refresh-attempt": "true" },
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
@@ -20,9 +22,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Logout failed:", error);
     }
-  }, []);
+  }, [token]);
 
-  // Unified refresh function
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
