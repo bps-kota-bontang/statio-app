@@ -6,6 +6,7 @@ import {
 import type {
   BulkLabelsTablesRequest,
   CreateTableRequest,
+  MissingFactsResponse,
   Table,
   TableLabelResponse,
   TableList,
@@ -41,6 +42,24 @@ export const useTableApi = () => {
         refreshInterval: 0, // refresh every 3 seconds
       }
     );
+
+    return { data, error, isLoading, mutate };
+  };
+
+  const useTableMissingFacts = (
+    id?: string,
+    fromYear?: number,
+    toYear?: number
+  ) => {
+    const params = new URLSearchParams();
+    if (fromYear) params.append("from_year", String(fromYear));
+    if (toYear) params.append("to_year", String(toYear));
+
+    const url = `${API_BASE_URL}/api/v1/tables/${id}/facts/missing?${params.toString()}`;
+
+    const { data, error, isLoading, mutate } = useSWR<
+      ApiResponse<MissingFactsResponse>
+    >(id ? url : null, apiFetch);
 
     return { data, error, isLoading, mutate };
   };
@@ -129,6 +148,7 @@ export const useTableApi = () => {
 
   return {
     useTable,
+    useTableMissingFacts,
     useTables,
     createTable,
     updateTable,

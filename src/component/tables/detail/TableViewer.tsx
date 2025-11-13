@@ -26,7 +26,7 @@ const TableViewer = ({
   year: number | null;
   table: Table;
   years?: number[];
-  onRevalidate: () => void;
+  onRevalidate: (type: string) => void;
 }) => {
   const { updateTableFact, updateTableNotes } = useTableApi(); // ✅ add note API
   const lastPayloadRef = useRef<string>("");
@@ -98,12 +98,13 @@ const TableViewer = ({
         lastPayloadRef.current = payloadString;
         setStatus("saved");
         setTimeout(() => setStatus("idle"), 2000);
+        onRevalidate("facts");
       } catch {
         setStatus("error");
         setTimeout(() => setStatus("idle"), 3000);
       }
     },
-    [rowHeaders, dims, year, swap, updateTableFact, id]
+    [rowHeaders, dims, year, swap, updateTableFact, id, onRevalidate]
   );
 
   const handleNotesChange = (v: string) => setNotes(v);
@@ -116,7 +117,7 @@ const TableViewer = ({
       await updateTableNotes(id, { notes });
       setNoteStatus("saved");
       setTimeout(() => setNoteStatus("idle"), 2000);
-      onRevalidate();
+      onRevalidate("notes");
     } catch {
       setNoteStatus("error");
       setTimeout(() => setNoteStatus("idle"), 3000);
@@ -153,7 +154,7 @@ const TableViewer = ({
           variant="ghost"
           onClick={() => {
             setSwap((p) => !p);
-            onRevalidate();
+            onRevalidate("swap");
           }}
           className="flex items-center gap-1"
         >

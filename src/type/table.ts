@@ -61,3 +61,25 @@ export type UpdateTableNameRequest = {
 export type UpdateTableNotesRequest = {
   notes: string;
 };
+
+export type SummaryMissingFactsResponse = {
+  expected_per_year: number;
+  total_expected: number;
+  total_filled: number;
+  total_missing: number;
+};
+
+export type DataMissingFactsResponse = {
+  year: number;
+  expected: number;
+  filled: number;
+  missing: number;
+};
+
+export type MissingFactsResponse = {
+  table_id: string;
+  from_year: number;
+  to_year: number;
+  summary: SummaryMissingFactsResponse;
+  data: DataMissingFactsResponse[];
+};

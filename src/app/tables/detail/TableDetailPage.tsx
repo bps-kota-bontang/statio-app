@@ -9,21 +9,24 @@ import { Pencil, Check, X } from "lucide-react";
 import Input from "@/component/ui/Input";
 
 const TableDetailPage = () => {
-  const { useTable, updateTableName } = useTableApi();
+  const { useTable, updateTableName, useTableMissingFacts } = useTableApi();
   const { id } = useParams<{ id: string }>();
   const lastYear = new Date().getFullYear() - 1;
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get("year");
+
+  const years = useMemo(
+    () => Array.from({ length: 4 }, (_, i) => lastYear - i),
+    [lastYear]
+  );
 
   const { data, isLoading, error, mutate } = useTable(
     id,
     yearParam ? Number(yearParam) : null
   );
 
-  const years = useMemo(
-    () => Array.from({ length: 4 }, (_, i) => lastYear - i),
-    [lastYear]
-  );
+  const { data: missingFacts, mutate: mutateMissingFacts } =
+    useTableMissingFacts(id, Math.min(...years), Math.max(...years));
 
   const sortedDimensions = useMemo(() => {
     if (!data?.data) return [];
@@ -60,6 +63,11 @@ const TableDetailPage = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleRevalidate = (type: string) => {
+    mutate();
+    if (type === "facts") mutateMissingFacts();
   };
 
   return (
@@ -113,6 +121,13 @@ const TableDetailPage = () => {
           items={years}
           selected={yearParam ? Number(yearParam) : lastYear}
           onSelect={handleYearSelect}
+          badges={
+            missingFacts?.data
+              ? Object.fromEntries(
+                  missingFacts?.data?.data.map((d) => [d.year, d.missing])
+                )
+              : {}
+          }
         />
       )}
 
@@ -120,7 +135,7 @@ const TableDetailPage = () => {
         id={id}
         year={yearParam ? Number(yearParam) : lastYear}
         table={{ ...data.data, dimensions: sortedDimensions }}
-        onRevalidate={() => mutate()}
+        onRevalidate={handleRevalidate}
         years={years}
       />
     </div>
