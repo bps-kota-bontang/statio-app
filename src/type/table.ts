@@ -22,6 +22,7 @@ export type TableList = {
   indicator: IndicatorList | null;
   organization: Organization | null;
   dimensions: string[];
+  missing_facts_summary?: SummaryMissingFactsResponse | null;
 };
 
 export type CreateTableRequest = {
