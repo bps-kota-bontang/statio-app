@@ -10,6 +10,8 @@ import type {
   TableLabelResponse,
   TableList,
   UpdateTableLabelRequest,
+  UpdateTableNameRequest,
+  UpdateTableNotesRequest,
   UpdateTableRequest,
 } from "@/type/table";
 import type { ApiResponse } from "@/type/response";
@@ -105,6 +107,26 @@ export const useTableApi = () => {
     });
   };
 
+  const updateTableName = async (
+    id: string,
+    data: UpdateTableNameRequest
+  ): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/name`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  };
+
+  const updateTableNotes = async (
+    id: string,
+    data: UpdateTableNotesRequest
+  ): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/notes`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  };
+
   return {
     useTable,
     useTables,
@@ -114,5 +136,7 @@ export const useTableApi = () => {
     useTableLables,
     updateTableLabels,
     addLabelsTables,
+    updateTableName,
+    updateTableNotes,
   };
 };

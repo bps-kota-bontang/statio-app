@@ -9,6 +9,7 @@ export type Table = {
   direction: number;
   indicator: Indicator;
   labels: string[];
+  notes: string | null;
   organization: Organization | null;
   dimensions: Dimension[];
   facts: Fact[] | null;
@@ -51,4 +52,12 @@ export type TableLabelResponse = {
 
 export type UpdateTableLabelRequest = {
   labels: string[];
+};
+
+export type UpdateTableNameRequest = {
+  name: string;
+};
+
+export type UpdateTableNotesRequest = {
+  notes: string;
 };

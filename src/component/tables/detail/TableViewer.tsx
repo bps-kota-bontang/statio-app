@@ -28,10 +28,10 @@ const TableViewer = ({
   years?: number[];
   onRevalidate: () => void;
 }) => {
-  const { updateTableFact } = useTableApi();
+  const { updateTableFact, updateTableNotes } = useTableApi(); // ✅ add note API
   const lastPayloadRef = useRef<string>("");
   const tableRef = useRef<TableStatioHandle>(null);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(table.notes || ""); // ✅ preload notes if exist
   const [locale, setLocale] = useState<"id" | "en">("id");
   const [showLocaleHelp, setShowLocaleHelp] = useState(false);
   const [helpPos, setHelpPos] = useState<{ top: number; left: number } | null>(
@@ -43,6 +43,9 @@ const TableViewer = ({
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
     "idle"
   );
+  const [noteStatus, setNoteStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle"); // ✅ for note saving state
 
   const dims = useMemo(() => table?.dimensions ?? [], [table]);
 
@@ -73,6 +76,7 @@ const TableViewer = ({
     return baseTransposed;
   }, [table, years, swap]);
 
+  // 🔹 Save table data
   const handleSave = useCallback(
     async (changes: CellChange[]) => {
       const payloadFactRequest = formatCellsToPayload(
@@ -104,11 +108,26 @@ const TableViewer = ({
 
   const handleNotesChange = (v: string) => setNotes(v);
 
-  // 🔹 Hitung posisi tombol "?" saat popup dibuka
+  // ✅ Save notes to backend
+  const handleSaveNote = async () => {
+    if (!notes.trim()) return;
+    setNoteStatus("saving");
+    try {
+      await updateTableNotes(id, { notes });
+      setNoteStatus("saved");
+      setTimeout(() => setNoteStatus("idle"), 2000);
+      onRevalidate();
+    } catch {
+      setNoteStatus("error");
+      setTimeout(() => setNoteStatus("idle"), 3000);
+    }
+  };
+
+  // 🔹 Hitung posisi popup locale
   useEffect(() => {
     if (showLocaleHelp && helpButtonRef.current) {
       const rect = helpButtonRef.current.getBoundingClientRect();
-      setHelpPos({ top: rect.bottom + 6, left: rect.right - 260 }); // muncul di bawah tombol
+      setHelpPos({ top: rect.bottom + 6, left: rect.right - 260 });
     }
   }, [showLocaleHelp]);
 
@@ -165,7 +184,6 @@ const TableViewer = ({
             <option value="en">English</option>
           </select>
 
-          {/* Help Button */}
           <button
             ref={helpButtonRef}
             onClick={(e) => {
@@ -178,21 +196,22 @@ const TableViewer = ({
             ?
           </button>
         </div>
+
         {/* 💾 Status + Auto Save */}
         <div className="flex items-center gap-3">
           <div className="text-xs font-medium">
             {status === "saving" && (
-              <span className="px-3 rounded-full bg-white/40 backdrop-blur-md border border-white/40 text-gray-700 animate-pulse">
+              <span className="px-3 rounded-full bg-white/40 text-gray-700 animate-pulse">
                 Menyimpan…
               </span>
             )}
             {status === "saved" && (
-              <span className="px-3 rounded-full bg-green-400/30 backdrop-blur-md border border-green-400/40 text-green-800 transition-opacity duration-700">
+              <span className="px-3 rounded-full bg-green-400/30 text-green-800">
                 Tersimpan ✓
               </span>
             )}
             {status === "error" && (
-              <span className="px-3 rounded-full bg-red-400/30 backdrop-blur-md border border-red-400/50 text-red-800">
+              <span className="px-3 rounded-full bg-red-400/30 text-red-800">
                 Gagal menyimpan — mencoba lagi…
               </span>
             )}
@@ -233,16 +252,30 @@ const TableViewer = ({
           onChange={(e) => handleNotesChange(e.target.value)}
         />
 
-        <Button
-          variant="primary"
-          size="md"
-          className="flex items-center gap-2 shadow-lg backdrop-blur-xl border"
-        >
-          <Save className="w-4 h-4" /> Simpan Catatan
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleSaveNote}
+            disabled={noteStatus === "saving"}
+            className="flex items-center gap-2 shadow-lg backdrop-blur-xl border"
+          >
+            <Save className="w-4 h-4" />
+            {noteStatus === "saving" ? "Menyimpan..." : "Simpan Catatan"}
+          </Button>
+
+          {noteStatus === "saved" && (
+            <span className="text-sm text-green-600">Catatan tersimpan ✓</span>
+          )}
+          {noteStatus === "error" && (
+            <span className="text-sm text-red-600">
+              Gagal menyimpan catatan
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* 🌐 Popup Portal (agar tidak terpotong TableStatio) */}
+      {/* 🌐 Popup Portal */}
       {showLocaleHelp &&
         helpPos &&
         createPortal(
