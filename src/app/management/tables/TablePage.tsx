@@ -148,6 +148,61 @@ const TablePage = () => {
         render: (row) => row.organization?.name ?? "-",
       },
       {
+        key: "missing_facts",
+        label: "Missing Facts",
+        filterOptions: [
+          {
+            label: "Missing Facts",
+            value: String(true),
+          },
+          {
+            label: "No Missing Facts",
+            value: String(false),
+          },
+        ],
+        filterIncludeEmpty: false,
+        render: (row) => {
+          const summary = row.missing_facts_summary;
+          if (!summary)
+            return <span className="text-sm text-gray-500">No data</span>;
+
+          const percentFilled = Math.round(
+            (summary.total_filled / summary.total_expected) * 100
+          );
+
+          return (
+            <div className="flex flex-col gap-1 w-32">
+              {/* Badge Total Missing */}
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded-full inline-block
+            ${
+              summary.total_missing === 0
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+              >
+                {summary.total_missing} missing
+              </span>
+
+              {/* Progress Bar */}
+              <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`absolute top-0 left-0 h-2 rounded-full transition-all ${
+                    percentFilled === 100 ? "bg-green-500" : "bg-blue-500"
+                  }`}
+                  style={{ width: `${percentFilled}%` }}
+                />
+              </div>
+
+              {/* Optional: percent text */}
+              <span className="text-[10px] text-gray-500 text-right">
+                {percentFilled}% filled
+              </span>
+            </div>
+          );
+        },
+      },
+      {
         key: "indicator_measure",
         label: "Measure",
         filterOptions: existingIndicatorMeasures,

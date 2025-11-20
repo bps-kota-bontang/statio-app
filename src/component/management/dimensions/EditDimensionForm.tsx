@@ -169,7 +169,7 @@ const EditDimensionForm = ({
             suggestions={existingValues}
             onSelect={setValueInput}
             className="flex-1"
-            placeholder="Contoh: Total, Rata-rata, Nilai, Indeks, Persentase"
+            placeholder="Contoh: Padi, SMA, Laki-laki, Puskesmas"
             onEnter={() => handleAddValue()}
           />
           <Button

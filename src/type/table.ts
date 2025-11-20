@@ -10,6 +10,8 @@ export type Table = {
   indicator: Indicator;
   labels: string[];
   notes: string | null;
+  is_locked: boolean;
+  status: "draft" | "submitted" | "finalized";
   organization: Organization | null;
   dimensions: Dimension[];
   facts: Fact[] | null;

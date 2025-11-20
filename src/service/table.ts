@@ -146,6 +146,27 @@ export const useTableApi = () => {
     });
   };
 
+  const submitTable = async (id: string): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "submitted" }),
+    });
+  };
+
+  const finalizeTable = async (id: string): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "finalized" }),
+    });
+  };
+
+  const revertTable = async (id: string): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "draft" }),
+    });
+  }
+
   return {
     useTable,
     useTableMissingFacts,
@@ -158,5 +179,8 @@ export const useTableApi = () => {
     addLabelsTables,
     updateTableName,
     updateTableNotes,
+    submitTable,
+    finalizeTable,
+    revertTable,
   };
 };

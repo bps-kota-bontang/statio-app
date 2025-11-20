@@ -110,7 +110,7 @@ const EditTableLabelsForm = ({
             suggestions={existingValues}
             onSelect={setLabelInput}
             className="flex-1"
-            placeholder="Contoh: Total, Rata-rata, Nilai, Indeks, Persentase"
+            placeholder="Contoh: Bidang Statistik, Bidang IT, dll."
             onEnter={handleAddValue}
           />
           <Button
