@@ -100,8 +100,19 @@ const TableOverviewPage = () => {
         ),
       },
       {
-        key: "missing_facts_summary",
+        key: "missing_facts",
         label: "Missing Facts",
+        filterOptions: [
+          {
+            label: "Missing Facts",
+            value: String(true),
+          },
+          {
+            label: "No Missing Facts",
+            value: String(false),
+          },
+        ],
+        filterIncludeEmpty: false,
         render: (row) => {
           const summary = row.missing_facts_summary;
           if (!summary)

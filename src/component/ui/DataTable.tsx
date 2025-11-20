@@ -17,6 +17,7 @@ export type Column<T> = {
   label: string;
   sortable?: boolean;
   filterOptions?: FilterOption[];
+  filterIncludeEmpty?: boolean;
   render?: (row: T, no: number, index: number) => React.ReactNode;
 };
 
@@ -318,24 +319,26 @@ export default function DataTable<
                                 </button>
                               </div>
 
-                              {/* Kosong option */}
-                              <label className="flex items-center gap-2 text-sm py-1">
-                                <input
-                                  type="checkbox"
-                                  checked={
-                                    filters?.[c.key as string]?.includes(
-                                      "__NULL__"
-                                    ) ?? false
-                                  }
-                                  onChange={() =>
-                                    onFilterChange?.(
-                                      c.key as keyof F,
-                                      "__NULL__"
-                                    )
-                                  }
-                                />
-                                (Kosong)
-                              </label>
+                              {/* Kosong option — default muncul kecuali filterIncludeEmpty = false */}
+                              {c.filterIncludeEmpty !== false && (
+                                <label className="flex items-center gap-2 text-sm py-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      filters?.[c.key as string]?.includes(
+                                        "__NULL__"
+                                      ) ?? false
+                                    }
+                                    onChange={() =>
+                                      onFilterChange?.(
+                                        c.key as keyof F,
+                                        "__NULL__"
+                                      )
+                                    }
+                                  />
+                                  (Kosong)
+                                </label>
+                              )}
 
                               {/* Filter options */}
                               {c.filterOptions.map((opt) => {
