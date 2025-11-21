@@ -1,3 +1,10 @@
+import type {
+  CellDisplay,
+  CellStatus,
+  PivotColumn,
+  PivotRow,
+  PivotTable,
+} from "@/component/ui/TablePivot";
 import { TOTAL_KEY } from "@/component/ui/TableStatio";
 import type { Dimension } from "@/type/dimension";
 import type { FactRequest } from "@/type/fact";
@@ -261,3 +268,331 @@ export function getRowNumber(
 ): number {
   return index + 1 + (page - 1) * perPage;
 }
+
+const formatNumber = (n: number | null): string => {
+  if (n === null) return "-";
+  return n.toLocaleString("id-ID");
+};
+
+export const buildCellDisplay = (
+  value: number | null,
+  oldValue: number | null,
+  isOutlier: boolean | null | undefined,
+  rowId: string,
+  colId: string
+): CellDisplay => {
+  const hasValue = value !== null && value !== undefined;
+  const hasOld = oldValue !== null && oldValue !== undefined;
+
+  let hasChanged = false;
+  let diffAbs: number | null = null;
+  let diffPct: number | null = null;
+
+  if (hasValue && hasOld && value !== oldValue) {
+    hasChanged = true;
+    diffAbs = (value as number) - (oldValue as number);
+    if (oldValue && oldValue !== 0) {
+      diffPct = (diffAbs / (oldValue as number)) * 100;
+    }
+  }
+
+  let text: string;
+  if (!hasValue) {
+    // value null → highlight khusus
+    text = "-"; // atau "Belum diisi"
+  } else if (hasChanged && hasOld) {
+    const arrow = "→";
+    const sign = diffAbs! > 0 ? "+" : "";
+    const diffAbsStr = `${sign}${formatNumber(diffAbs!)}`;
+    const diffPctStr = diffPct !== null ? `${sign}${diffPct.toFixed(1)}%` : "";
+
+    // multi-line
+    text =
+      `${formatNumber(oldValue)} ${arrow} ${formatNumber(value)}\n` +
+      `(${diffAbsStr}${diffPctStr ? " / " + diffPctStr : ""})`;
+  } else {
+    text = formatNumber(value);
+  }
+
+  let status: CellStatus = "normal";
+  let className = "";
+
+  // prioritas: outlier > null > changed > normal
+  if (isOutlier) {
+    status = "outlier";
+    className = "bg-red-100 text-red-900 font-semibold";
+  } else if (!hasValue) {
+    status = "null";
+    className = "bg-yellow-50 text-yellow-900 italic";
+  } else if (hasChanged) {
+    status = "changed";
+    className = "bg-blue-50";
+  } else {
+    status = "normal";
+    className = "";
+  }
+
+  return {
+    rowId,
+    colId,
+    value: hasValue ? (value as number) : null,
+    oldValue: hasOld ? (oldValue as number) : null,
+    isOutlier: !!isOutlier,
+    hasChanged,
+    diffAbs,
+    diffPct,
+    text,
+    status,
+    className,
+  };
+};
+
+const SINGLE_VALUE_COL_ID = "value";
+
+function buildPivot0Dim(data: Table, years?: number[]): PivotTable {
+  // gunakan years kalau dikirim, kalau tidak ambil distinct dari facts
+  const yearList =
+    years && years.length > 0
+      ? years
+      : Array.from(new Set((data.facts || []).map((f) => f.year))).sort(
+          (a, b) => a - b
+        );
+
+  const columns: PivotColumn[] = [
+    {
+      id: SINGLE_VALUE_COL_ID,
+      name: data.indicator.name,
+    },
+  ];
+
+  const factMap = new Map<
+    number,
+    { value: number | null; old: number | null; outlier: boolean | null }
+  >();
+
+  for (const fact of data.facts || []) {
+    // asumsi 1 fact per tahun (karena tidak ada dimension)
+    factMap.set(fact.year, {
+      value: fact.value,
+      old: fact.old_value,
+      outlier: fact.is_outlier,
+    });
+  }
+
+  const rows: PivotRow[] = yearList.map((year) => {
+    const fact = factMap.get(year);
+    const value = fact ? fact.value : null;
+    const oldValue = fact ? fact.old : null;
+    const isOutlier = fact ? fact.outlier : null;
+
+    const cells: PivotRow["cells"] = {
+      [SINGLE_VALUE_COL_ID]: buildCellDisplay(
+        value,
+        oldValue,
+        isOutlier,
+        String(year),
+        SINGLE_VALUE_COL_ID
+      ),
+    };
+
+    return {
+      id: String(year),
+      name: String(year),
+      cells,
+    };
+  });
+
+  return {
+    tableName: data.name,
+    rowLabel: "Tahun",
+    columns,
+    rows,
+  };
+}
+
+function buildPivot1Dim(
+  data: Table,
+  rowDimensionId: string,
+  yearFilter?: number
+): PivotTable {
+  const rowDim = data.dimensions.find((d) => d.id === rowDimensionId);
+  if (!rowDim) {
+    throw new Error("Row dimension not found");
+  }
+
+  const columns: PivotColumn[] = [
+    {
+      id: SINGLE_VALUE_COL_ID,
+      name: data.indicator.name,
+    },
+  ];
+
+  // key: rowId
+  const factMap = new Map<
+    string,
+    { value: number | null; old: number | null; outlier: boolean | null }
+  >();
+
+  for (const fact of data.facts || []) {
+    if (yearFilter !== undefined && fact.year !== yearFilter) continue;
+
+    const rowDimVal = fact.dimensions.find((d) => d.id === rowDimensionId);
+    if (!rowDimVal) continue;
+
+    const key = rowDimVal.value.id;
+    factMap.set(key, {
+      value: fact.value,
+      old: fact.old_value,
+      outlier: fact.is_outlier,
+    });
+  }
+
+  const rows: PivotRow[] = rowDim.values
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((rv) => {
+      const fact = factMap.get(rv.id);
+      const value = fact ? fact.value : null;
+      const oldValue = fact ? fact.old : null;
+      const isOutlier = fact ? fact.outlier : null;
+
+      const cells: PivotRow["cells"] = {
+        [SINGLE_VALUE_COL_ID]: buildCellDisplay(
+          value,
+          oldValue,
+          isOutlier,
+          rv.id,
+          SINGLE_VALUE_COL_ID
+        ),
+      };
+
+      return {
+        id: rv.id,
+        name: rv.name,
+        cells,
+      };
+    });
+
+  return {
+    tableName: data.name,
+    rowLabel: rowDim.name,
+    columns,
+    rows,
+  };
+}
+
+function buildPivot2Dim(
+  data: Table,
+  rowDimensionId: string,
+  colDimensionId: string,
+  yearFilter?: number
+): PivotTable {
+  const rowDim = data.dimensions.find((d) => d.id === rowDimensionId);
+  const colDim = data.dimensions.find((d) => d.id === colDimensionId);
+
+  if (!rowDim || !colDim) {
+    throw new Error("Row/column dimension not found");
+  }
+
+  const columns: PivotColumn[] = colDim.values
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((v) => ({
+      id: v.id,
+      name: v.name,
+    }));
+
+  const factMap = new Map<
+    string,
+    { value: number | null; old: number | null; outlier: boolean | null }
+  >();
+
+  for (const fact of data?.facts || []) {
+    if (yearFilter !== undefined && fact.year !== yearFilter) continue;
+
+    const rowDimVal = fact.dimensions.find((d) => d.id === rowDimensionId);
+    const colDimVal = fact.dimensions.find((d) => d.id === colDimensionId);
+
+    if (!rowDimVal || !colDimVal) continue;
+
+    const key = `${rowDimVal.value.id}__${colDimVal.value.id}`;
+
+    factMap.set(key, {
+      value: fact.value,
+      old: fact.old_value,
+      outlier: fact.is_outlier,
+    });
+  }
+
+  const rows: PivotRow[] = rowDim.values
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((rv) => {
+      const cells: PivotRow["cells"] = {};
+
+      for (const col of columns) {
+        const key = `${rv.id}__${col.id}`;
+        const fact = factMap.get(key);
+
+        const value = fact ? fact.value : null;
+        const oldValue = fact ? fact.old : null;
+        const isOutlier = fact ? fact.outlier : null;
+
+        cells[col.id] = buildCellDisplay(
+          value,
+          oldValue,
+          isOutlier,
+          rv.id,
+          col.id
+        );
+      }
+
+      return {
+        id: rv.id,
+        name: rv.name,
+        cells,
+      };
+    });
+
+  return {
+    tableName: data.name,
+    rowLabel: rowDim.name,
+    columns,
+    rows,
+  };
+}
+
+/**
+ * Wrapper utama:
+ * - dimensi = 0 → gunakan years sebagai dimension (1 dimensi, rows = tahun)
+ * - dimensi = 1 → 1 dimensi (rows = dim[0], kolom = "Nilai")
+ * - dimensi = 2 → 2 dimensi (rows = dim[0], cols = dim[1])
+ *
+ * @param data table
+ * @param years optional, dipakai untuk:
+ *  - dim 0: sumber list tahun
+ *  - dim 1 & 2: jika dikirim, pakai years[0] sebagai filter tahun aktif
+ */
+export const buildPivotFromFacts = (
+  data: Table,
+  years?: number[]
+): PivotTable => {
+  const dimCount = data.dimensions.length;
+
+  if (dimCount === 0) {
+    return buildPivot0Dim(data, years);
+  }
+
+  if (dimCount === 1) {
+    const rowDim = data.dimensions[0];
+    const yearFilter = years && years.length > 0 ? years[0] : undefined;
+    return buildPivot1Dim(data, rowDim.id, yearFilter);
+  }
+
+  // dimCount >= 2 → pakai 2 dimensi pertama
+  const rowDim = data.dimensions[0];
+  const colDim = data.dimensions[1];
+  const yearFilter = years && years.length > 0 ? years[0] : undefined;
+
+  return buildPivot2Dim(data, rowDim.id, colDim.id, yearFilter);
+};

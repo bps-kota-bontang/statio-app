@@ -9,7 +9,7 @@ import {
   transpose,
 } from "@/utils/table";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Globe, Plus, Save, Shuffle, Trash } from "lucide-react";
+import { Globe, Plus, Shuffle, Trash } from "lucide-react";
 import type { CellChange } from "handsontable/common";
 import { createPortal } from "react-dom";
 import { useTableApi } from "@/service/table";
@@ -30,10 +30,10 @@ const TableViewer = ({
   years?: number[];
   onRevalidate: (type: string) => void;
 }) => {
-  const { updateTableFact, updateTableNotes } = useTableApi(); // ✅ add note API
+  const { updateTableFact } = useTableApi(); // ✅ add note API
   const lastPayloadRef = useRef<string>("");
   const tableRef = useRef<TableStatioHandle>(null);
-  const [notes, setNotes] = useState(table.notes || ""); // ✅ preload notes if exist
+
   const [locale, setLocale] = useState<"id" | "en">("id");
   const [showLocaleHelp, setShowLocaleHelp] = useState(false);
   const [helpPos, setHelpPos] = useState<{ top: number; left: number } | null>(
@@ -45,9 +45,6 @@ const TableViewer = ({
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
     "idle"
   );
-  const [noteStatus, setNoteStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle"); // ✅ for note saving state
 
   const dims = useMemo(() => table?.dimensions ?? [], [table]);
 
@@ -108,23 +105,6 @@ const TableViewer = ({
     },
     [rowHeaders, dims, year, swap, updateTableFact, id, onRevalidate]
   );
-
-  const handleNotesChange = (v: string) => setNotes(v);
-
-  // ✅ Save notes to backend
-  const handleSaveNote = async () => {
-    if (!notes.trim()) return;
-    setNoteStatus("saving");
-    try {
-      await updateTableNotes(id, { notes });
-      setNoteStatus("saved");
-      setTimeout(() => setNoteStatus("idle"), 2000);
-      onRevalidate("notes");
-    } catch {
-      setNoteStatus("error");
-      setTimeout(() => setNoteStatus("idle"), 3000);
-    }
-  };
 
   // 🔹 Hitung posisi popup locale
   useEffect(() => {
@@ -246,46 +226,6 @@ const TableViewer = ({
         Untuk 1.234 (Indonesia), ketik <code>1234</code> <br />• Untuk 1,234
         (English), ketik <code>1234</code>
       </p>
-
-      {/* 📝 Notes + Save */}
-      <div className="mt-4 flex gap-4 flex-col">
-        <textarea
-          className={`w-full h-32 p-3 rounded-lg font-mono text-xs ${
-            isLocked
-              ? "bg-gray-200 opacity-60 cursor-not-allowed"
-              : "bg-gray-100"
-          }`}
-          placeholder="Jika ada catatan khusus terkait data pada tabel ini, silakan tuliskan di sini ya..."
-          value={notes}
-          onChange={(e) => handleNotesChange(e.target.value)}
-          disabled={isLocked}
-        />
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleSaveNote}
-            disabled={noteStatus === "saving" || isLocked}
-            className={`flex items-center gap-2 shadow-lg backdrop-blur-xl border ${
-              isLocked ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <Save className="w-4 h-4" />
-            {noteStatus === "saving" ? "Menyimpan..." : "Simpan Catatan"}
-          </Button>
-
-          {noteStatus === "saved" && !isLocked && (
-            <span className="text-sm text-green-600">Catatan tersimpan ✓</span>
-          )}
-
-          {noteStatus === "error" && !isLocked && (
-            <span className="text-sm text-red-600">
-              Gagal menyimpan catatan
-            </span>
-          )}
-        </div>
-      </div>
 
       {/* 🌐 Popup Portal */}
       {showLocaleHelp &&

@@ -1,6 +1,7 @@
 export type DimensionValue = {
   id: string;
   name: string;
+  order: number;
 };
 
 export type Dimension = {

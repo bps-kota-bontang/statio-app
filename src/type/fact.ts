@@ -6,6 +6,8 @@ export type FactDimension = Omit<Dimension, "values"> & {
 
 export type Fact = {
   value: number | null;
+  old_value: number | null;
+  is_outlier: boolean | null;
   year: number;
   dimensions: FactDimension[];
 };

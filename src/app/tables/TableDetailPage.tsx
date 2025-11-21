@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useOutletContext, useParams, useSearchParams } from "react-router";
-import TableViewer from "@/component/tables/detail/TableViewer";
+import TableViewer from "@/component/tables/TableViewer";
 import Tab from "@/component/ui/Tab";
 import { useTableApi } from "@/service/table";
 import Error from "@/component/ui/Error";
 import Loading from "@/component/ui/Loading";
-import { Pencil, Check, X, Lock, RotateCcw } from "lucide-react";
+import { Pencil, Check, X, Lock, RotateCcw, Save } from "lucide-react";
 import Input from "@/component/ui/Input";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
+import Button from "@/component/ui/Button";
 
 const TableDetailPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -19,6 +20,7 @@ const TableDetailPage = () => {
     submitTable,
     finalizeTable,
     revertTable,
+    updateTableNotes,
   } = useTableApi();
   const { id } = useParams<{ id: string }>();
   const lastYear = new Date().getFullYear() - 1;
@@ -59,6 +61,14 @@ const TableDetailPage = () => {
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReverting, setIsReverting] = useState(false);
+  const [notes, setNotes] = useState<string>(); // ✅ preload notes if exist
+  const [noteStatus, setNoteStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle"); // ✅ for note saving state
+
+  useEffect(() => {
+    setNotes(data?.data.notes || ""); // ✅ preload notes if exist
+  }, [data?.data.notes]);
 
   if (!id) return <Error message="Table ID is missing." />;
   if (isLoading) return <Loading />;
@@ -89,6 +99,23 @@ const TableDetailPage = () => {
   const handleRevalidate = (type: string) => {
     mutate();
     if (type === "facts") mutateMissingFacts();
+  };
+
+  const handleNotesChange = (v: string) => setNotes(v);
+
+  // ✅ Save notes to backend
+  const handleSaveNote = async () => {
+    if (!notes?.trim()) return;
+    setNoteStatus("saving");
+    try {
+      await updateTableNotes(id, { notes });
+      setNoteStatus("saved");
+      setTimeout(() => setNoteStatus("idle"), 2000);
+      mutate();
+    } catch {
+      setNoteStatus("error");
+      setTimeout(() => setNoteStatus("idle"), 3000);
+    }
   };
 
   return (
@@ -269,6 +296,46 @@ const TableDetailPage = () => {
         onRevalidate={handleRevalidate}
         years={years}
       />
+
+      {/* 📝 Notes + Save */}
+      <div className="mt-4 flex gap-4 flex-col">
+        <textarea
+          className={`w-full h-32 p-3 rounded-lg font-mono text-xs ${
+            data.data.is_locked
+              ? "bg-gray-200 opacity-60 cursor-not-allowed"
+              : "bg-gray-100"
+          }`}
+          placeholder="Jika ada catatan khusus terkait data pada tabel ini, silakan tuliskan di sini ya..."
+          value={notes}
+          onChange={(e) => handleNotesChange(e.target.value)}
+          disabled={data.data.is_locked}
+        />
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleSaveNote}
+            disabled={noteStatus === "saving" || data.data.is_locked}
+            className={`flex items-center gap-2 shadow-lg backdrop-blur-xl border ${
+              data.data.is_locked ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            <Save className="w-4 h-4" />
+            {noteStatus === "saving" ? "Menyimpan..." : "Simpan Catatan"}
+          </Button>
+
+          {noteStatus === "saved" && !data.data.is_locked && (
+            <span className="text-sm text-green-600">Catatan tersimpan ✓</span>
+          )}
+
+          {noteStatus === "error" && !data.data.is_locked && (
+            <span className="text-sm text-red-600">
+              Gagal menyimpan catatan
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

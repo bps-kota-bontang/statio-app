@@ -1,5 +1,5 @@
 import type { MenuItem } from "@/type/menu";
-import { LayoutDashboard, Settings, Table } from "lucide-react";
+import { ChartScatter, LayoutDashboard, Settings, Table } from "lucide-react";
 
 export const MENU_ITEMS: MenuItem[] = [
   {
@@ -11,6 +11,12 @@ export const MENU_ITEMS: MenuItem[] = [
     title: "Tables",
     href: "/tables",
     icon: <Table />,
+  },
+  {
+    title: "Analysis",
+    icon: <ChartScatter />,
+    roles: ["admin"],
+    href: "/analysis",
   },
   {
     title: "Management",

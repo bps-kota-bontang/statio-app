@@ -6,7 +6,7 @@ import "@/style/index.css";
 import StatioLayout from "@/component/layout/StatioLayout";
 import Dashboard from "@/app/Dashboard";
 import TablePage from "@/app/management/tables/TablePage";
-import TableDetailPage from "@/app/tables/detail/TableDetailPage";
+import TableDetailPage from "@/app/tables/TableDetailPage";
 import IndicatorPage from "@/app/management/indicators/IndicatorPage";
 import DimensionPage from "@/app/management/dimensions/DimensionPage";
 import TableOverviewPage from "@/app/tables/TableOverviewPage";
@@ -15,6 +15,9 @@ import { AuthProvider } from "@/context/auth/AuthProvider";
 import { ProtectedRoute } from "@/component/auth/ProtectedRoute";
 import LoginPage from "@/app/auth/LoginPage";
 import ManagementLayout from "@/component/layout/ManagementLayout";
+import AnalysisLayout from "@/component/layout/AnalysisLayout";
+import TableAnalysis from "@/app/analysis/TableAnalysisPage";
+import TableReviewPage from "@/app/analysis/TableReviewPage";
 
 const root = document.getElementById("root");
 
@@ -32,9 +35,11 @@ createRoot(root!).render(
           <Route index element={<Dashboard />} />
           <Route path="tables">
             <Route index element={<TableOverviewPage />} />
-            <Route>
-              <Route path=":id" element={<TableDetailPage />} />
-            </Route>
+            <Route path=":id" element={<TableDetailPage />} />
+          </Route>
+          <Route path="analysis" element={<AnalysisLayout />}>
+            <Route index element={<TableAnalysis />} />
+            <Route path=":id" element={<TableReviewPage />} />
           </Route>
           <Route path="management" element={<ManagementLayout />}>
             <Route path="organizations" element={<OrganizationPage />} />
