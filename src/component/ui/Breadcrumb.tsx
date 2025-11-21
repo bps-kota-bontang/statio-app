@@ -35,7 +35,7 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
                   <span className={textClass}>{item.label}</span>
                 )
               ) : (
-                <div className="h-4 w-20 bg-linear-to-r from-gray-200 via-gray-300 to-gray-200 animate-skeleton" />
+                <div className="bg-gray-200 rounded relative overflow-hidden h-4 w-20 bg-linear-to-r from-gray-200 via-gray-300 to-gray-200 animate-skeleton" />
               )}
 
               {!isLast && <span>/</span>}
