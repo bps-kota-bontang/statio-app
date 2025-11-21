@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useParams, useSearchParams } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useOutletContext, useParams, useSearchParams } from "react-router";
 import TableViewer from "@/component/tables/detail/TableViewer";
 import Tab from "@/component/ui/Tab";
 import { useTableApi } from "@/service/table";
@@ -7,8 +7,11 @@ import Error from "@/component/ui/Error";
 import Loading from "@/component/ui/Loading";
 import { Pencil, Check, X, Lock, RotateCcw } from "lucide-react";
 import Input from "@/component/ui/Input";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
 
 const TableDetailPage = () => {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+
   const {
     useTable,
     updateTableName,
@@ -31,6 +34,14 @@ const TableDetailPage = () => {
     id,
     yearParam ? Number(yearParam) : null
   );
+
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: "Dashboard", href: "/" },
+      { label: "Tables", href: "/tables" },
+      { label: data?.data.name || "Table Detail" },
+    ]);
+  }, [setBreadcrumbs, data?.data.name]);
 
   const { data: missingFacts, mutate: mutateMissingFacts } =
     useTableMissingFacts(id, Math.min(...years), Math.max(...years));

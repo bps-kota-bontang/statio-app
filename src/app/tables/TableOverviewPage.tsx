@@ -11,15 +11,22 @@ import type {
   TableList,
   UpdateTableLabelRequest,
 } from "@/type/table";
-import { useCallback, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useOutletContext } from "react-router";
 import BulkLabelTableForm from "@/component/tables/BulkLabelTableForm";
 import EditTableLabelsForm from "@/component/tables/EditTableForm";
 import { CheckCircle, FileIcon, SendIcon } from "lucide-react";
 import { useAuth } from "@/context/auth/useAuth";
 import { useOrganizationApi } from "@/service/organization";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
 
 const TableOverviewPage = () => {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+
+  useEffect(() => {
+    setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Tables" }]);
+  }, [setBreadcrumbs]);
+
   const { user } = useAuth();
   const { addLabelsTables, updateTableLabels, useTableLables, useTables } =
     useTableApi();

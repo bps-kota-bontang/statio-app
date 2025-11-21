@@ -5,7 +5,6 @@ import "@/style/index.css";
 
 import StatioLayout from "@/component/layout/StatioLayout";
 import Dashboard from "@/app/Dashboard";
-import TableLayout from "@/component/layout/TableLayout";
 import TablePage from "@/app/management/tables/TablePage";
 import TableDetailPage from "@/app/tables/detail/TableDetailPage";
 import IndicatorPage from "@/app/management/indicators/IndicatorPage";
@@ -33,7 +32,7 @@ createRoot(root!).render(
           <Route index element={<Dashboard />} />
           <Route path="tables">
             <Route index element={<TableOverviewPage />} />
-            <Route element={<TableLayout />}>
+            <Route>
               <Route path=":id" element={<TableDetailPage />} />
             </Route>
           </Route>

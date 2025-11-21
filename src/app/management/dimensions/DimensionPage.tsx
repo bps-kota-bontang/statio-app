@@ -10,13 +10,25 @@ import type {
   Dimension,
   UpdateDimensionRequest,
 } from "@/type/dimension";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import CreateDimensionForm from "@/component/management/dimensions/CreateDimensionForm";
 import EditDimensionForm from "@/component/management/dimensions/EditDimensionForm";
 import { Plus } from "lucide-react";
 import { useDimensionApi } from "@/service/dimension";
+import { useOutletContext } from "react-router";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
 
 export default function DimensionExample() {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: "Dashboard", href: "/" },
+      { label: "Management", highlight: false },
+      { label: "Dimensions" },
+    ]);
+  }, [setBreadcrumbs]);
+
   const table = useDataTable<Dimension>();
   const { useDimensions, createDimension, updateDimension } = useDimensionApi();
   const { data, isLoading, mutate } = useDimensions(table);

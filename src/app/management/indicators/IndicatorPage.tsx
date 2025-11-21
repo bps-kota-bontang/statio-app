@@ -9,13 +9,25 @@ import type {
   UpdateIndicatorRequest,
   CreateIndicatorRequest,
 } from "@/type/indicator";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import CreateIndicatorForm from "@/component/management/indicators/CreateIndicatorForm";
 import EditIndicatorForm from "@/component/management/indicators/EditIndicatorForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
+import { useOutletContext } from "react-router";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
 
 const IndicatorPage = () => {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: "Dashboard", href: "/" },
+      { label: "Management", highlight: false },
+      { label: "Indicators" },
+    ]);
+  }, [setBreadcrumbs]);
+
   const {
     createIndicator,
     updateIndicator,

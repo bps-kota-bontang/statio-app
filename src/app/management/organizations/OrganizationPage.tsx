@@ -9,13 +9,25 @@ import type {
   UpdateOrganizationRequest,
   CreateOrganizationRequest,
 } from "@/type/organization";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import CreateOrganizationForm from "@/component/management/organizations/CreateOrganizationForm";
 import EditOrganizationForm from "@/component/management/organizations/EditOrganizationForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
+import { useOutletContext } from "react-router";
 
 const OrganizationPage = () => {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: "Dashboard", href: "/" },
+      { label: "Management", highlight: false },
+      { label: "Organizations" },
+    ]);
+  }, [setBreadcrumbs]);
+
   const { useOrganizations, createOrganization, updateOrganization } =
     useOrganizationApi();
 

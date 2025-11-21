@@ -12,18 +12,29 @@ import type {
   UpdateTableRequest,
 } from "@/type/table";
 import { Plus } from "lucide-react";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import CreateTableForm from "@/component/management/tables/CreateTableForm";
 import EditTableForm from "@/component/management/tables/EditTableForm";
 import Badge from "@/component/ui/Badge";
-import { Link } from "react-router";
+import { Link, useOutletContext } from "react-router";
 
 import AssignOrganizationForm from "@/component/management/tables/AssignOrganizationForm";
 import { useTableApi } from "@/service/table";
 import { useIndicatorApi } from "@/service/indicator";
 import { useOrganizationApi } from "@/service/organization";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
 
 const TablePage = () => {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: "Dashboard", href: "/" },
+      { label: "Management", highlight: false },
+      { label: "Tables" },
+    ]);
+  }, [setBreadcrumbs]);
+
   const { useDimensionNames } = useDimensionApi();
   const table = useDataTable<TableList>();
 
