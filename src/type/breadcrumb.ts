@@ -1,5 +1,5 @@
 export type BreadcrumbItem = {
-  label: string;
+  label?: string;
   highlight?: boolean;
   href?: string;
 };

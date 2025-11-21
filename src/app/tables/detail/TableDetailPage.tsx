@@ -39,7 +39,7 @@ const TableDetailPage = () => {
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
       { label: "Tables", href: "/tables" },
-      { label: data?.data.name || "Table Detail" },
+      { label: data?.data.name },
     ]);
   }, [setBreadcrumbs, data?.data.name]);
 

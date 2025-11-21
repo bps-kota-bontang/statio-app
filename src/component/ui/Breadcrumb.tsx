@@ -14,7 +14,6 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
         {items.map((item, i) => {
           const isLast = i === items.length - 1;
 
-          // Style untuk highlight (biasanya item terakhir)
           const textClass =
             item.highlight === false
               ? "text-gray-600 font-normal"
@@ -23,9 +22,10 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
               : "text-gray-700";
 
           return (
-            <li key={i} className="flex items-center gap-2">
-              {/* Jika href DAN bukan last → clickable */}
-              {item.href && !isLast ? (
+            <li key={i} className="flex items-center gap-2 relative">
+              {item.label == null ? (
+                <div className="absolute top-0 left-0 h-full w-full bg-linear-to-r from-gray-200 via-gray-300 to-gray-200 animate-skeleton" />
+              ) : item.href && !isLast ? (
                 <Link
                   to={item.href}
                   className={`hover:underline hover:text-gray-900 ${textClass}`}
