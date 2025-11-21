@@ -18,12 +18,14 @@ import Switch from "@/component/ui/Switch";
 const TableViewer = ({
   id,
   year,
+  isLocked,
   table,
   onRevalidate,
   years,
 }: {
   id: string;
   year: number | null;
+  isLocked?: boolean;
   table: Table;
   years?: number[];
   onRevalidate: (type: string) => void;
@@ -229,6 +231,7 @@ const TableViewer = ({
       {/* 🧮 Table */}
       <TableStatio
         ref={tableRef}
+        isLocked={isLocked}
         data={data}
         colHeaders={colHeaders}
         rowHeaders={rowHeaders}

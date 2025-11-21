@@ -23,6 +23,7 @@ import { buildDataWithTotals, formattedNumber } from "@/utils/table";
 
 interface TableStatioProps {
   data: RowObject[];
+  isLocked?: boolean;
   rowHeaders: string[];
   colHeaders: string[];
   dimensionCount: number;
@@ -74,7 +75,15 @@ export interface TableStatioHandle {
 
 const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
   (
-    { data, rowHeaders, colHeaders, dimensionCount, onChange, locale = "id" },
+    {
+      data,
+      isLocked,
+      rowHeaders,
+      colHeaders,
+      dimensionCount,
+      onChange,
+      locale = "id",
+    },
     ref
   ) => {
     const hotRef = useRef<HotTableRef>(null);
@@ -246,7 +255,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
             ) {
               return { copyPaste: false, readOnly: true };
             }
-            return { readOnly: false };
+            return { readOnly: isLocked };
           }}
           wordWrap={true}
           autoWrapCol={true}

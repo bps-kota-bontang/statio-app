@@ -262,6 +262,7 @@ const TableDetailPage = () => {
 
       <TableViewer
         id={id}
+        isLocked={data.data.is_locked}
         year={yearParam ? Number(yearParam) : lastYear}
         table={{ ...data.data, dimensions: sortedDimensions }}
         onRevalidate={handleRevalidate}
