@@ -23,17 +23,19 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
 
           return (
             <li key={i} className="flex items-center gap-2 relative">
-              {item.label == null ? (
-                <div className="absolute top-0 left-0 h-full w-full bg-linear-to-r from-gray-200 via-gray-300 to-gray-200 animate-skeleton" />
-              ) : item.href && !isLast ? (
-                <Link
-                  to={item.href}
-                  className={`hover:underline hover:text-gray-900 ${textClass}`}
-                >
-                  {item.label}
-                </Link>
+              {item.label ? (
+                item.href && !isLast ? (
+                  <Link
+                    to={item.href}
+                    className={`hover:underline hover:text-gray-900 ${textClass}`}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span className={textClass}>{item.label}</span>
+                )
               ) : (
-                <span className={textClass}>{item.label}</span>
+                <div className="h-4 w-20 bg-linear-to-r from-gray-200 via-gray-300 to-gray-200 animate-skeleton" />
               )}
 
               {!isLast && <span>/</span>}
