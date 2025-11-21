@@ -1,15 +1,47 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import type { BreadcrumbItem } from "@/type/breadcrumb";
+import { ArrowLeft } from "lucide-react";
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
+  onBack?: () => void;
 }
 
-const Breadcrumb = ({ items }: BreadcrumbProps) => {
+const Breadcrumb = ({ items, onBack }: BreadcrumbProps) => {
+  const navigate = useNavigate();
+
   if (!items || items.length === 0) return null;
 
+  const handleBack = () => {
+    if (onBack) return onBack();
+
+    // Cari item sebelumnya yang punya href
+    for (let i = items.length - 2; i >= 0; i--) {
+      const candidate = items[i];
+      if (candidate.href) {
+        return navigate(candidate.href);
+      }
+    }
+
+    // Jika tidak ada href sama sekali → fallback
+    navigate(-1);
+  };
+
+  const showBack = items.length > 1; // ⬅️ hanya tampil jika item > 1
+
   return (
-    <nav className="text-sm mb-4">
+    <nav className="text-sm mb-4 flex items-center gap-3">
+      {/* Back Button (only if items > 1) */}
+      {showBack && (
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition"
+        >
+          <ArrowLeft size={16} />
+        </button>
+      )}
+
+      {/* Breadcrumb Items */}
       <ol className="flex items-center gap-2 text-gray-600">
         {items.map((item, i) => {
           const isLast = i === items.length - 1;
