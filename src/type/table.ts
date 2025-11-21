@@ -26,6 +26,8 @@ export type TableList = {
   dimensions: string[];
   status: "draft" | "submitted" | "finalized";
   missing_facts_summary?: SummaryMissingFactsResponse | null;
+  outlier_facts_summary?: SummaryOutlierFactsResponse | null;
+  revision_facts_summary?: SummaryRevisionFactsResponse | null;
 };
 
 export type CreateTableRequest = {
@@ -71,6 +73,14 @@ export type SummaryMissingFactsResponse = {
   total_expected: number;
   total_filled: number;
   total_missing: number;
+};
+
+export type SummaryOutlierFactsResponse = {
+  total_outliers: number;
+};
+
+export type SummaryRevisionFactsResponse = {
+  total_revisions: number;
 };
 
 export type DataMissingFactsResponse = {
