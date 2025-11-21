@@ -14,11 +14,17 @@ import type {
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 import BulkLabelTableForm from "@/component/tables/BulkLabelTableForm";
-import EditTableLabelsForm from "../../component/tables/EditTableForm";
+import EditTableLabelsForm from "@/component/tables/EditTableForm";
+import { CheckCircle, FileIcon, SendIcon } from "lucide-react";
+import { useAuth } from "@/context/auth/useAuth";
+import { useOrganizationApi } from "@/service/organization";
 
 const TableOverviewPage = () => {
+  const { user } = useAuth();
   const { addLabelsTables, updateTableLabels, useTableLables, useTables } =
     useTableApi();
+  const { useOrganizations } = useOrganizationApi();
+  const { data: organizations } = useOrganizations();
 
   const table = useDataTable<TableList>();
   const { data, isLoading, mutate } = useTables(table);
@@ -85,6 +91,20 @@ const TableOverviewPage = () => {
         label: "Name",
         sortable: true,
       },
+      ...(user?.roles.includes("admin")
+        ? [
+            {
+              key: "organization_id",
+              label: "Organization",
+              sortable: true,
+              filterOptions:
+                organizations?.data.map((org) => {
+                  return { label: org.name, value: org.id };
+                }) || [],
+              render: (row: TableList) => row.organization?.name ?? "-",
+            },
+          ]
+        : []),
       {
         key: "labels",
         label: "Labels",
@@ -157,6 +177,53 @@ const TableOverviewPage = () => {
       {
         key: "status",
         label: "Status",
+        filterOptions: [
+          {
+            label: "Draft",
+            value: "draft",
+          },
+          {
+            label: "Submitted",
+            value: "submitted",
+          },
+          {
+            label: "Finalized",
+            value: "finalized",
+          },
+        ],
+        filterIncludeEmpty: false,
+        render: (row) => {
+          const status = row.status;
+
+          const variants = {
+            draft: {
+              text: "Draft",
+              class: "bg-gray-100 text-gray-700 border border-gray-300",
+              icon: <FileIcon className="w-3 h-3" />,
+            },
+            submitted: {
+              text: "Submitted",
+              class: "bg-blue-100 text-blue-700 border border-blue-300",
+              icon: <SendIcon className="w-3 h-3" />,
+            },
+            finalized: {
+              text: "Finalized",
+              class: "bg-green-100 text-green-700 border border-green-300",
+              icon: <CheckCircle className="w-3 h-3" />,
+            },
+          };
+
+          const s = variants[status];
+
+          return (
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${s.class}`}
+            >
+              {s.icon}
+              {s.text}
+            </span>
+          );
+        },
       },
       {
         key: "actions",
@@ -174,7 +241,7 @@ const TableOverviewPage = () => {
         ),
       },
     ],
-    [existingLabels, openEdit]
+    [existingLabels, openEdit, organizations?.data, user?.roles]
   );
 
   return (

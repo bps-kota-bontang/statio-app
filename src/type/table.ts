@@ -24,6 +24,7 @@ export type TableList = {
   indicator: IndicatorList | null;
   organization: Organization | null;
   dimensions: string[];
+  status: "draft" | "submitted" | "finalized";
   missing_facts_summary?: SummaryMissingFactsResponse | null;
 };
 

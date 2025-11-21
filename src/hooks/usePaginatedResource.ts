@@ -1,4 +1,4 @@
-import { useApiFetch } from "./useApiFetch";
+import { useApiFetch } from "@/hooks/useApiFetch";
 import useSWR, { type SWRConfiguration } from "swr";
 import { API_BASE_URL } from "@/config/api";
 import type { ApiResponse, PaginationMeta } from "@/type/response";
