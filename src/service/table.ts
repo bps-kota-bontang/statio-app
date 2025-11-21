@@ -165,7 +165,20 @@ export const useTableApi = () => {
       method: "PUT",
       body: JSON.stringify({ status: "draft" }),
     });
-  }
+  };
+
+  const analyzeTable = async (id: string): Promise<ApiResponse<null>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/analyze`, {
+      method: "POST",
+    });
+  };
+
+  const analyzeTables = async (ids: string[]): Promise<ApiResponse<null>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/analyze`, {
+      method: "POST",
+      body: JSON.stringify({ table_ids: ids }),
+    });
+  };
 
   return {
     useTable,
@@ -182,5 +195,7 @@ export const useTableApi = () => {
     submitTable,
     finalizeTable,
     revertTable,
+    analyzeTable,
+    analyzeTables,
   };
 };

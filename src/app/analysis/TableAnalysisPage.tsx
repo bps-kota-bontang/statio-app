@@ -2,18 +2,11 @@
 
 import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
-import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
 import { useTableApi } from "@/service/table";
-import type {
-  BulkLabelsTablesRequest,
-  TableList,
-  UpdateTableLabelRequest,
-} from "@/type/table";
-import { useEffect, useMemo, useState } from "react";
+import type { TableList } from "@/type/table";
+import { useCallback, useEffect, useMemo } from "react";
 import { Link, useOutletContext } from "react-router";
-import BulkLabelTableForm from "@/component/tables/BulkLabelTableForm";
-import EditTableLabelsForm from "@/component/tables/EditTableForm";
 import {
   AlertTriangle,
   CheckCircle,
@@ -31,51 +24,36 @@ const TableAnalysis = () => {
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Analysis" }]);
   }, [setBreadcrumbs]);
 
-  const { addLabelsTables, updateTableLabels, useTables } = useTableApi();
+  const { useTables, analyzeTable, analyzeTables } = useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
 
   const table = useDataTable<TableList>();
   const { data, isLoading, mutate } = useTables(table);
 
-  // // Modal bulk label table
-  const [isBulkLabelOpen, setIsBulkLabelOpen] = useState(false);
+  const handleAnalyzeTable = useCallback(
+    async (tableID: string) => {
+      try {
+        await analyzeTable(tableID);
+        mutate();
+      } catch (error) {
+        console.error("Error analyzing table:", error);
+      }
+    },
+    [analyzeTable, mutate]
+  );
 
-  // Modal edit
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingTable, setEditingTable] = useState<TableList | null>(null);
-
-  const handleBulkLabelTable = async (data: BulkLabelsTablesRequest) => {
-    try {
-      await addLabelsTables({
-        labels: data.labels,
-        table_ids: table.selectedIDs.map(String),
-      });
-      setIsBulkLabelOpen(false);
-      mutate();
-      return true;
-    } catch (error) {
-      console.error("Error assigning organization:", error);
-      return false;
-    }
-  };
-
-  const handleEditTable = async (id: string, data: UpdateTableLabelRequest) => {
-    try {
-      await updateTableLabels(id, data);
-      handleCloseEditModal();
-      mutate(); // refresh table
-      return true;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  };
-
-  const handleCloseEditModal = () => {
-    setIsEditOpen(false);
-    setEditingTable(null);
-  };
+  const handleAnalyzeTables = useCallback(
+    async (tableIDs: string[]) => {
+      try {
+        await analyzeTables(tableIDs);
+        mutate();
+      } catch (error) {
+        console.error("Error analyzing tables:", error);
+      }
+    },
+    [analyzeTables, mutate]
+  );
 
   const columns = useMemo<Column<TableList>[]>(
     () => [
@@ -344,6 +322,14 @@ const TableAnalysis = () => {
         sortable: false,
         render: (row) => (
           <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                handleAnalyzeTable(row.id);
+              }}
+            >
+              Analyze
+            </Button>
             <Link to={`/analysis/${row.id}`} target="_blank">
               <Button size="sm">Review</Button>
             </Link>
@@ -351,7 +337,7 @@ const TableAnalysis = () => {
         ),
       },
     ],
-    [organizations?.data]
+    [handleAnalyzeTable, organizations?.data]
   );
 
   return (
@@ -362,8 +348,13 @@ const TableAnalysis = () => {
         actions={
           <div className="flex gap-2">
             {table.selectedIDs.length > 0 && (
-              <Button size="sm" onClick={() => setIsBulkLabelOpen(true)}>
-                New Label
+              <Button
+                size="sm"
+                onClick={() =>
+                  handleAnalyzeTables(table.selectedIDs.map((t) => String(t)))
+                }
+              >
+                Bulk Analyze
               </Button>
             )}
           </div>
@@ -374,33 +365,6 @@ const TableAnalysis = () => {
         isLoading={isLoading}
         {...table}
       />
-
-      {/* Modal Edit */}
-      <Modal
-        isOpen={isEditOpen}
-        onClose={handleCloseEditModal}
-        closeOutside={false}
-      >
-        {editingTable && (
-          <EditTableLabelsForm
-            table={editingTable}
-            onSubmit={handleEditTable}
-            onCancel={handleCloseEditModal}
-          />
-        )}
-      </Modal>
-
-      {/* Modal Bulk Label Table */}
-      <Modal
-        isOpen={isBulkLabelOpen}
-        onClose={() => setIsBulkLabelOpen(false)}
-        closeOutside={false}
-      >
-        <BulkLabelTableForm
-          onCancel={() => setIsBulkLabelOpen(false)}
-          onSubmit={handleBulkLabelTable}
-        />
-      </Modal>
     </div>
   );
 };
