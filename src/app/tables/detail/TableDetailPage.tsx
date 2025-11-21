@@ -127,11 +127,12 @@ const TableDetailPage = () => {
             <>
               <h3 className="text-xl font-semibold">{data.data.name}</h3>
               <button
+                disabled={data.data.is_locked}
                 onClick={() => {
                   setIsEditing(true);
                   setNewName(data.data.name);
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                className={`text-gray-500  hover:text-gray-700 disabled:opacity-40 disabled:hover:text-gray-500 disabled:cursor-not-allowed`}
               >
                 <Pencil size={16} />
               </button>

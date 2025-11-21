@@ -250,10 +250,15 @@ const TableViewer = ({
       {/* 📝 Notes + Save */}
       <div className="mt-4 flex gap-4 flex-col">
         <textarea
-          className="w-full h-32 p-3 rounded-lg bg-gray-100 font-mono text-xs"
+          className={`w-full h-32 p-3 rounded-lg font-mono text-xs ${
+            isLocked
+              ? "bg-gray-200 opacity-60 cursor-not-allowed"
+              : "bg-gray-100"
+          }`}
           placeholder="Jika ada catatan khusus terkait data pada tabel ini, silakan tuliskan di sini ya..."
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
+          disabled={isLocked}
         />
 
         <div className="flex items-center gap-3">
@@ -261,17 +266,20 @@ const TableViewer = ({
             variant="primary"
             size="md"
             onClick={handleSaveNote}
-            disabled={noteStatus === "saving"}
-            className="flex items-center gap-2 shadow-lg backdrop-blur-xl border"
+            disabled={noteStatus === "saving" || isLocked}
+            className={`flex items-center gap-2 shadow-lg backdrop-blur-xl border ${
+              isLocked ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <Save className="w-4 h-4" />
             {noteStatus === "saving" ? "Menyimpan..." : "Simpan Catatan"}
           </Button>
 
-          {noteStatus === "saved" && (
+          {noteStatus === "saved" && !isLocked && (
             <span className="text-sm text-green-600">Catatan tersimpan ✓</span>
           )}
-          {noteStatus === "error" && (
+
+          {noteStatus === "error" && !isLocked && (
             <span className="text-sm text-red-600">
               Gagal menyimpan catatan
             </span>
