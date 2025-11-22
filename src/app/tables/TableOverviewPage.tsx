@@ -141,12 +141,12 @@ const TableOverviewPage = () => {
         ],
         filterIncludeEmpty: false,
         render: (row) => {
-          const summary = row.missing_facts_summary;
+          const summary = row.insight_facts_summary;
           if (!summary)
             return <span className="text-sm text-gray-500">No data</span>;
 
           const percentFilled = Math.round(
-            (summary.total_filled / summary.total_expected) * 100
+            (summary.total_filleds / summary.total_expecteds) * 100
           );
 
           return (
@@ -155,12 +155,12 @@ const TableOverviewPage = () => {
               <span
                 className={`text-xs font-semibold px-2 py-1 rounded-full inline-block
             ${
-              summary.total_missing === 0
+              summary.total_missings === 0
                 ? "bg-green-100 text-green-800"
                 : "bg-red-100 text-red-800"
             }`}
               >
-                {summary.total_missing} missing
+                {summary.total_missings} missing
               </span>
 
               {/* Progress Bar */}

@@ -92,12 +92,12 @@ const TableAnalysis = () => {
         ],
         filterIncludeEmpty: false,
         render: (row) => {
-          const summary = row.missing_facts_summary;
+          const summary = row.insight_facts_summary;
           if (!summary)
             return <span className="text-sm text-gray-500">No data</span>;
 
           const percentFilled = Math.round(
-            (summary.total_filled / summary.total_expected) * 100
+            (summary.total_filleds / summary.total_expecteds) * 100
           );
 
           return (
@@ -105,12 +105,12 @@ const TableAnalysis = () => {
               {/* Badge Total Missing */}
               <span
                 className={`text-xs font-semibold px-2 py-1 rounded-full inline-block ${
-                  summary.total_missing === 0
+                  summary.total_missings === 0
                     ? "bg-green-100 text-green-800"
                     : "bg-red-100 text-red-800"
                 }`}
               >
-                {summary.total_missing}/{summary.total_expected} missing
+                {summary.total_missings}/{summary.total_expecteds} missing
               </span>
 
               {/* Progress Bar */}
@@ -125,7 +125,7 @@ const TableAnalysis = () => {
 
               {/* Optional: percent text */}
               <span className="text-[10px] text-gray-500">
-                {percentFilled}% filled ({summary.total_missing} missing)
+                {percentFilled}% filled ({summary.total_missings} missing)
               </span>
             </div>
           );
@@ -146,14 +146,14 @@ const TableAnalysis = () => {
         ],
         filterIncludeEmpty: false,
         render: (row: TableList) => {
-          const summary = row.outlier_facts_summary;
+          const summary = row.insight_facts_summary;
 
           if (!summary) {
             return <span className="text-sm text-gray-500">No data</span>;
           }
 
           const totalOutliers = summary.total_outliers;
-          const totalExpected = row.missing_facts_summary?.total_expected || 0;
+          const totalExpected = row.insight_facts_summary?.total_expecteds || 0;
 
           const ratio =
             totalExpected > 0 ? (totalOutliers / totalExpected) * 100 : 0;
@@ -213,14 +213,14 @@ const TableAnalysis = () => {
         ],
         filterIncludeEmpty: false,
         render: (row: TableList) => {
-          const summary = row.revision_facts_summary;
+          const summary = row.insight_facts_summary;
 
           if (!summary) {
             return <span className="text-sm text-gray-500">No data</span>;
           }
 
           const total = summary.total_revisions;
-          const totalExpected = row.missing_facts_summary?.total_expected || 0;
+          const totalExpected = row.insight_facts_summary?.total_expecteds || 0;
 
           const ratio = totalExpected > 0 ? (total / totalExpected) * 100 : 0;
 

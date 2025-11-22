@@ -25,9 +25,7 @@ export type TableList = {
   organization: Organization | null;
   dimensions: string[];
   status: "draft" | "submitted" | "finalized";
-  missing_facts_summary?: SummaryMissingFactsResponse | null;
-  outlier_facts_summary?: SummaryOutlierFactsResponse | null;
-  revision_facts_summary?: SummaryRevisionFactsResponse | null;
+  insight_facts_summary?: SummaryInsightFactsResponse | null;
 };
 
 export type CreateTableRequest = {
@@ -68,13 +66,6 @@ export type UpdateTableNotesRequest = {
   notes: string;
 };
 
-export type SummaryMissingFactsResponse = {
-  expected_per_year: number;
-  total_expected: number;
-  total_filled: number;
-  total_missing: number;
-};
-
 export type SummaryInsightFactsResponse = {
   expected_per_year: number;
   total_expecteds: number;
@@ -82,14 +73,6 @@ export type SummaryInsightFactsResponse = {
   total_missings: number;
   total_revisions: number;
   total_outliers: number;
-};
-
-export type SummaryOutlierFactsResponse = {
-  total_outliers: number;
-};
-
-export type SummaryRevisionFactsResponse = {
-  total_revisions: number;
 };
 
 export type DataInsightFactsResponse = {
