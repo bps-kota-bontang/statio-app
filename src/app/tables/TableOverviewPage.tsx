@@ -139,6 +139,7 @@ const TableOverviewPage = () => {
             value: String(false),
           },
         ],
+        sortable: true,
         filterIncludeEmpty: false,
         render: (row) => {
           const summary = row.insight_facts_summary;
@@ -153,14 +154,13 @@ const TableOverviewPage = () => {
             <div className="flex flex-col gap-1 w-32">
               {/* Badge Total Missing */}
               <span
-                className={`text-xs font-semibold px-2 py-1 rounded-full inline-block
-            ${
-              summary.total_missings === 0
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
+                className={`text-xs font-semibold px-2 py-1 rounded-full inline-block ${
+                  summary.total_missings === 0
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
               >
-                {summary.total_missings} missing
+                {summary.total_missings}/{summary.total_expecteds} missing
               </span>
 
               {/* Progress Bar */}
@@ -174,8 +174,8 @@ const TableOverviewPage = () => {
               </div>
 
               {/* Optional: percent text */}
-              <span className="text-[10px] text-gray-500 text-right">
-                {percentFilled}% filled
+              <span className="text-[10px] text-gray-500">
+                {percentFilled}% filled ({summary.total_missings} missing)
               </span>
             </div>
           );
