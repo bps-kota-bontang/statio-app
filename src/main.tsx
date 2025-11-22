@@ -17,7 +17,7 @@ import LoginPage from "@/app/auth/LoginPage";
 import ManagementLayout from "@/component/layout/ManagementLayout";
 import AnalysisLayout from "@/component/layout/AnalysisLayout";
 import TableAnalysis from "@/app/analysis/TableAnalysisPage";
-import TableReviewPage from "@/app/analysis/TableReviewPage";
+import TableDetailReviewPage from "@/app/analysis/TableDetailReviewPage";
 
 const root = document.getElementById("root");
 
@@ -39,7 +39,7 @@ createRoot(root!).render(
           </Route>
           <Route path="analysis" element={<AnalysisLayout />}>
             <Route index element={<TableAnalysis />} />
-            <Route path=":id" element={<TableReviewPage />} />
+            <Route path=":id" element={<TableDetailReviewPage />} />
           </Route>
           <Route path="management" element={<ManagementLayout />}>
             <Route path="organizations" element={<OrganizationPage />} />

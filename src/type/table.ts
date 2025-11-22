@@ -75,6 +75,15 @@ export type SummaryMissingFactsResponse = {
   total_missing: number;
 };
 
+export type SummaryInsightFactsResponse = {
+  expected_per_year: number;
+  total_expecteds: number;
+  total_filleds: number;
+  total_missings: number;
+  total_revisions: number;
+  total_outliers: number;
+};
+
 export type SummaryOutlierFactsResponse = {
   total_outliers: number;
 };
@@ -83,17 +92,19 @@ export type SummaryRevisionFactsResponse = {
   total_revisions: number;
 };
 
-export type DataMissingFactsResponse = {
+export type DataInsightFactsResponse = {
   year: number;
   expected: number;
   filled: number;
   missing: number;
+  revision: number;
+  outlier: number;
 };
 
-export type MissingFactsResponse = {
+export type InsightFactsResponse = {
   table_id: string;
   from_year: number;
   to_year: number;
-  summary: SummaryMissingFactsResponse;
-  data: DataMissingFactsResponse[];
+  summary: SummaryInsightFactsResponse;
+  data: DataInsightFactsResponse[];
 };

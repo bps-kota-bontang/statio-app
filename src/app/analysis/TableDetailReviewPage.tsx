@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOutletContext, useParams, useSearchParams } from "react-router";
 import Tab from "@/component/ui/Tab";
 import { useTableApi } from "@/service/table";
@@ -8,12 +8,12 @@ import { Check, Lock, RotateCcw } from "lucide-react";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import TableReviewer from "@/component/analysis/TableReviewer";
 
-const TableReviewPage = () => {
+const TableDetailReviewPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   const {
     useTable,
-    useTableMissingFacts,
+    useTableInsightFacts,
     submitTable,
     finalizeTable,
     revertTable,
@@ -41,18 +41,25 @@ const TableReviewPage = () => {
     ]);
   }, [setBreadcrumbs, data?.data.name]);
 
-  const { data: missingFacts } = useTableMissingFacts(
+  const { data: insightFacts } = useTableInsightFacts(
     id,
     Math.min(...years),
     Math.max(...years)
   );
 
   const sortedDimensions = useMemo(() => {
-    if (!data?.data) return [];
+    if (!data?.data?.dimensions) return [];
     return [...data.data.dimensions].sort(
-      (a, b) => (b.values?.length || 0) - (a.values?.length || 0)
+      (a, b) => (b.values?.length ?? 0) - (a.values?.length ?? 0)
     );
-  }, [data?.data]);
+  }, [data?.data?.dimensions]);
+
+  const handleYearSelect = useCallback(
+    (year: number) => {
+      setSearchParams({ year: year.toString() });
+    },
+    [setSearchParams]
+  );
 
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,10 +69,6 @@ const TableReviewPage = () => {
   if (isLoading) return <Loading />;
   if (error) return <Error message={error.message} />;
   if (!data?.data) return <Error message="Table not found." />;
-
-  const handleYearSelect = (year: number) => {
-    setSearchParams({ year: year.toString() });
-  };
 
   return (
     <div>
@@ -188,9 +191,12 @@ const TableReviewPage = () => {
           selected={yearParam ? Number(yearParam) : lastYear}
           onSelect={handleYearSelect}
           badges={
-            missingFacts?.data
+            insightFacts?.data
               ? Object.fromEntries(
-                  missingFacts?.data?.data.map((d) => [d.year, d.missing])
+                  insightFacts?.data?.data.map((d) => [
+                    d.year,
+                    d.missing + d.outlier + d.revision,
+                  ])
                 )
               : {}
           }
@@ -212,4 +218,4 @@ const TableReviewPage = () => {
   );
 };
 
-export default TableReviewPage;
+export default TableDetailReviewPage;

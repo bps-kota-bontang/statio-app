@@ -1,13 +1,13 @@
+import { TOTAL_KEY } from "@/component/ui/TableStatio";
+import type { Dimension } from "@/type/dimension";
+import type { FactRequest } from "@/type/fact";
 import type {
   CellDisplay,
   CellStatus,
   PivotColumn,
   PivotRow,
   PivotTable,
-} from "@/component/ui/TablePivot";
-import { TOTAL_KEY } from "@/component/ui/TableStatio";
-import type { Dimension } from "@/type/dimension";
-import type { FactRequest } from "@/type/fact";
+} from "@/type/pivot";
 import type { Table } from "@/type/table";
 import type { CellChange, RowObject } from "handsontable/common";
 
@@ -290,59 +290,60 @@ export const buildCellDisplay = (
 
   if (hasValue && hasOld && value !== oldValue) {
     hasChanged = true;
-    diffAbs = (value as number) - (oldValue as number);
-    if (oldValue && oldValue !== 0) {
-      diffPct = (diffAbs / (oldValue as number)) * 100;
-    }
+    diffAbs = value - oldValue;
+    if (oldValue !== 0) diffPct = (diffAbs / oldValue) * 100;
   }
 
   let text: string;
   if (!hasValue) {
-    // value null → highlight khusus
-    text = "-"; // atau "Belum diisi"
+    text = "-";
   } else if (hasChanged && hasOld) {
-    const arrow = "→";
     const sign = diffAbs! > 0 ? "+" : "";
     const diffAbsStr = `${sign}${formatNumber(diffAbs!)}`;
     const diffPctStr = diffPct !== null ? `${sign}${diffPct.toFixed(1)}%` : "";
-
-    // multi-line
     text =
-      `${formatNumber(oldValue)} ${arrow} ${formatNumber(value)}\n` +
+      `${formatNumber(oldValue)} → ${formatNumber(value)}\n` +
       `(${diffAbsStr}${diffPctStr ? " / " + diffPctStr : ""})`;
   } else {
     text = formatNumber(value);
   }
 
-  let status: CellStatus = "normal";
-  let className = "";
+  // Build status array berdasarkan prioritas sebenarnya
+  const statuses: CellStatus[] = [];
 
-  // prioritas: outlier > null > changed > normal
-  if (isOutlier) {
-    status = "outlier";
-    className = "bg-red-100 text-red-900 font-semibold";
-  } else if (!hasValue) {
-    status = "null";
-    className = "bg-yellow-50 text-yellow-900 italic";
-  } else if (hasChanged) {
-    status = "changed";
-    className = "bg-blue-50";
-  } else {
-    status = "normal";
-    className = "";
+  if (isOutlier) statuses.push("outlier");
+  if (!hasValue) statuses.push("null");
+  if (hasChanged) statuses.push("changed");
+  if (statuses.length === 0) statuses.push("normal");
+
+  // className pakai status prioritas paling tinggi
+  const primary = statuses[0];
+  let className = "";
+  switch (primary) {
+    case "outlier":
+      className = "bg-red-100 text-red-900 font-semibold";
+      break;
+    case "null":
+      className = "bg-yellow-50 text-yellow-900 italic";
+      break;
+    case "changed":
+      className = "bg-blue-50";
+      break;
+    default:
+      className = "";
   }
 
   return {
     rowId,
     colId,
-    value: hasValue ? (value as number) : null,
-    oldValue: hasOld ? (oldValue as number) : null,
+    value: hasValue ? value : null,
+    oldValue: hasOld ? oldValue : null,
     isOutlier: !!isOutlier,
     hasChanged,
     diffAbs,
     diffPct,
     text,
-    status,
+    status: statuses, // ← ARRAY
     className,
   };
 };

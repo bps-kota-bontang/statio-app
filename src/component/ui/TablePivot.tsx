@@ -1,43 +1,5 @@
-export type CellStatus = "normal" | "changed" | "null" | "outlier";
-
-export interface CellDisplay {
-  rowId: string;
-  colId: string;
-
-  value: number | null;
-  oldValue: number | null;
-  isOutlier: boolean;
-
-  hasChanged: boolean;
-  diffAbs: number | null;
-  diffPct: number | null;
-
-  text: string;
-  status: CellStatus;
-  className: string;
-}
-
-export interface PivotColumn {
-  id: string;
-  name: string;
-}
-
-export interface PivotRow {
-  id: string;
-  name: string;
-  cells: Record<string, CellDisplay>; // key = colId
-}
-
-export interface PivotTable {
-  tableName: string;
-  rowLabel: string; // nama header kolom pertama (misal: "Kategori ASN", "Tahun", dsb.)
-  columns: PivotColumn[];
-  rows: PivotRow[];
-}
-
-interface TablePivotProps {
-  pivot: PivotTable;
-}
+import type { PivotTable } from "@/type/pivot";
+import { useMemo } from "react";
 
 interface TablePivotProps {
   pivot: PivotTable;
@@ -47,41 +9,40 @@ const TablePivot = ({ pivot }: TablePivotProps) => {
   const rows = pivot.rows;
   const cols = pivot.columns;
 
-  const outlierCount = rows.reduce(
-    (acc, row) =>
-      acc + cols.filter((col) => row.cells[col.id].status === "outlier").length,
-    0
-  );
+  const { outlierCount, nullCount, changedCount } = useMemo(() => {
+    let out = 0,
+      nul = 0,
+      chg = 0;
 
-  const nullCount = rows.reduce(
-    (acc, row) =>
-      acc + cols.filter((col) => row.cells[col.id].status === "null").length,
-    0
-  );
+    for (const row of rows) {
+      for (const col of cols) {
+        const status = row.cells[col.id].status;
+        if (status.includes("outlier")) out++;
+        if (status.includes("null")) nul++;
+        if (status.includes("changed")) chg++;
+      }
+    }
 
-  const changedCount = rows.reduce(
-    (acc, row) =>
-      acc + cols.filter((col) => row.cells[col.id].status === "changed").length,
-    0
-  );
+    return { outlierCount: out, nullCount: nul, changedCount: chg };
+  }, [rows, cols]);
 
   return (
     <div className="w-full rounded-lg border bg-white">
-      {/* Header  ringkas */}
-
       {/* Tabel compact */}
-      <div className="relative max-h-[360px] overflow-auto">
+      <div className="relative max-h-[500px] overflow-auto">
         <table className="min-w-full text-[11px]">
           <thead>
-            <tr className="bg-slate-100 sticky top-0 z-10 ">
-              <th className="border-r px-2 py-1 text-left align-middle sticky left-0 z-20 rounded-tl-lg  text-[10px] font-semibold text-slate-600">
+            <tr className="bg-slate-100  sticky top-0 z-10 ">
+              <th className="border-r px-2 py-1 text-left align-middle  left-0 rounded-tl-lg  text-[10px] font-semibold text-slate-600">
                 {pivot.rowLabel}
               </th>
               {pivot.columns.map((col, index) => (
                 <th
                   key={col.id}
                   className={`${
-                    index === pivot.columns.length - 1 ? "rounded-tr-lg" : ""
+                    index === pivot.columns.length - 1
+                      ? "rounded-tr-lg"
+                      : "border-r"
                   } px-2 py-1 text-center align-middle text-[10px] font-semibold text-slate-600`}
                 >
                   <span className="line-clamp-1">{col.name}</span>
@@ -93,9 +54,9 @@ const TablePivot = ({ pivot }: TablePivotProps) => {
             {pivot.rows.map((row, rowIndex) => (
               <tr
                 key={row.id}
-                className={rowIndex % 2 === 0 ? "bg-white" : "bg-slate-50/40"}
+                className={rowIndex % 2 === 0 ? "bg-white " : "bg-slate-50/40 "}
               >
-                <td className="border-r border-b border-t px-2 py-1 bg-slate-100 sticky left-0 z-10 text-[11px] font-medium text-slate-700 align-middle">
+                <td className="border-r border-b border-t px-2 py-1 bg-slate-100 sticky left-0 text-[11px] font-medium text-slate-700 align-middle">
                   <span className="line-clamp-1">{row.name}</span>
                 </td>
                 {pivot.columns.map((col, index) => {
@@ -103,12 +64,16 @@ const TablePivot = ({ pivot }: TablePivotProps) => {
                   return (
                     <td
                       key={col.id}
-                      className={`${
-                        index === 0 ? "border-r" : ""
-                      } border-b border-t px-1.5 py-0.5 whitespace-pre-line text-right font-mono leading-tight text-[10px] align-middle ${
+                      className={`border-t border-b ${
+                        index === 0 ? "border-l " : ""
+                      } ${
+                        index === pivot.columns.length - 1 ? "" : "border-r"
+                      } px-1.5 py-0.5 whitespace-pre-line text-right font-mono leading-tight text-[10px] align-middle ${
                         cell.className
                       } ${
-                        cell.status === "normal"
+                        !cell.status.includes("outlier") &&
+                        !cell.status.includes("null") &&
+                        !cell.status.includes("changed")
                           ? "hover:bg-slate-50"
                           : "hover:brightness-105"
                       } transition-[background-color,filter]`}

@@ -16,7 +16,7 @@ const TableDetailPage = () => {
   const {
     useTable,
     updateTableName,
-    useTableMissingFacts,
+    useTableInsightFacts,
     submitTable,
     finalizeTable,
     revertTable,
@@ -45,8 +45,8 @@ const TableDetailPage = () => {
     ]);
   }, [setBreadcrumbs, data?.data.name]);
 
-  const { data: missingFacts, mutate: mutateMissingFacts } =
-    useTableMissingFacts(id, Math.min(...years), Math.max(...years));
+  const { data: insightFacts, mutate: mutateInsightFacts } =
+    useTableInsightFacts(id, Math.min(...years), Math.max(...years));
 
   const sortedDimensions = useMemo(() => {
     if (!data?.data) return [];
@@ -98,7 +98,7 @@ const TableDetailPage = () => {
 
   const handleRevalidate = (type: string) => {
     mutate();
-    if (type === "facts") mutateMissingFacts();
+    if (type === "facts") mutateInsightFacts();
   };
 
   const handleNotesChange = (v: string) => setNotes(v);
@@ -279,9 +279,9 @@ const TableDetailPage = () => {
           selected={yearParam ? Number(yearParam) : lastYear}
           onSelect={handleYearSelect}
           badges={
-            missingFacts?.data
+            insightFacts?.data
               ? Object.fromEntries(
-                  missingFacts?.data?.data.map((d) => [d.year, d.missing])
+                  insightFacts?.data?.data.map((d) => [d.year, d.missing])
                 )
               : {}
           }

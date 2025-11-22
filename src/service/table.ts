@@ -6,7 +6,7 @@ import {
 import type {
   BulkLabelsTablesRequest,
   CreateTableRequest,
-  MissingFactsResponse,
+  InsightFactsResponse,
   Table,
   TableLabelResponse,
   TableList,
@@ -46,7 +46,7 @@ export const useTableApi = () => {
     return { data, error, isLoading, mutate };
   };
 
-  const useTableMissingFacts = (
+  const useTableInsightFacts = (
     id?: string,
     fromYear?: number,
     toYear?: number
@@ -55,10 +55,10 @@ export const useTableApi = () => {
     if (fromYear) params.append("from_year", String(fromYear));
     if (toYear) params.append("to_year", String(toYear));
 
-    const url = `${API_BASE_URL}/api/v1/tables/${id}/facts/missing?${params.toString()}`;
+    const url = `${API_BASE_URL}/api/v1/tables/${id}/facts/insight?${params.toString()}`;
 
     const { data, error, isLoading, mutate } = useSWR<
-      ApiResponse<MissingFactsResponse>
+      ApiResponse<InsightFactsResponse>
     >(id ? url : null, apiFetch);
 
     return { data, error, isLoading, mutate };
@@ -182,7 +182,7 @@ export const useTableApi = () => {
 
   return {
     useTable,
-    useTableMissingFacts,
+    useTableInsightFacts,
     useTables,
     createTable,
     updateTable,
