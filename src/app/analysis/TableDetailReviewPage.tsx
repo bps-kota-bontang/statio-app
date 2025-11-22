@@ -203,7 +203,10 @@ const TableDetailReviewPage = () => {
         />
       )}
 
-      <TableReviewer table={{ ...data.data, dimensions: sortedDimensions }} />
+      <TableReviewer
+        table={{ ...data.data, dimensions: sortedDimensions }}
+        years={years}
+      />
 
       {/* 📝 Notes + Save */}
       <div className="mt-4 flex gap-4 flex-col">

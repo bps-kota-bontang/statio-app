@@ -348,13 +348,13 @@ export const buildCellDisplay = (
   };
 };
 
-const SINGLE_VALUE_COL_ID = "value";
+export const SINGLE_VALUE_COL_ID = "value";
 
 function buildPivot0Dim(data: Table, years?: number[]): PivotTable {
   // gunakan years kalau dikirim, kalau tidak ambil distinct dari facts
   const yearList =
     years && years.length > 0
-      ? years
+      ? years.sort((a, b) => a - b)
       : Array.from(new Set((data.facts || []).map((f) => f.year))).sort(
           (a, b) => a - b
         );

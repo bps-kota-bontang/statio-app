@@ -17,7 +17,7 @@ import type {
 } from "@/type/table";
 import type { ApiResponse } from "@/type/response";
 import useSWR from "swr";
-import type { FactRequest } from "@/type/fact";
+import type { Fact, FactRequest } from "@/type/fact";
 import { useApiFetch } from "@/hooks/useApiFetch";
 
 type TableFilters = Record<keyof Table, FilterValue>;
@@ -180,6 +180,21 @@ export const useTableApi = () => {
     });
   };
 
+  const getTableFacts = (id: string, dimensionValueIDs?: string[]) => {
+    const params = new URLSearchParams();
+    if (dimensionValueIDs && dimensionValueIDs.length > 0) {
+      dimensionValueIDs.forEach((id) =>
+        params.append("dimension_value_ids", id)
+      );
+    }
+
+    const url = `${API_BASE_URL}/api/v1/tables/${id}/facts${
+      params.toString() ? `?${params.toString()}` : ""
+    }`;
+
+    return apiFetch<ApiResponse<Fact[]>>(url);
+  };
+
   return {
     useTable,
     useTableInsightFacts,
@@ -197,5 +212,6 @@ export const useTableApi = () => {
     revertTable,
     analyzeTable,
     analyzeTables,
+    getTableFacts,
   };
 };

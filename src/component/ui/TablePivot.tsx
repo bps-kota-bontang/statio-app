@@ -1,11 +1,12 @@
-import type { PivotTable } from "@/type/pivot";
+import type { PivotColumn, PivotRow, PivotTable } from "@/type/pivot";
 import { useMemo } from "react";
 
 interface TablePivotProps {
   pivot: PivotTable;
+  onClickCell?: (row: PivotRow, col: PivotColumn) => void;
 }
 
-const TablePivot = ({ pivot }: TablePivotProps) => {
+const TablePivot = ({ pivot, onClickCell }: TablePivotProps) => {
   const rows = pivot.rows;
   const cols = pivot.columns;
 
@@ -64,6 +65,7 @@ const TablePivot = ({ pivot }: TablePivotProps) => {
                   return (
                     <td
                       key={col.id}
+                      onClick={() => onClickCell && onClickCell(row, col)}
                       className={`border-t border-b ${
                         index === 0 ? "border-l " : ""
                       } ${
