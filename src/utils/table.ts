@@ -586,14 +586,12 @@ export const buildPivotFromFacts = (
 
   if (dimCount === 1) {
     const rowDim = data.dimensions[0];
-    const yearFilter = years && years.length > 0 ? years[0] : undefined;
-    return buildPivot1Dim(data, rowDim.id, yearFilter);
+    return buildPivot1Dim(data, rowDim.id);
   }
 
   // dimCount >= 2 → pakai 2 dimensi pertama
   const rowDim = data.dimensions[0];
   const colDim = data.dimensions[1];
-  const yearFilter = years && years.length > 0 ? years[0] : undefined;
 
-  return buildPivot2Dim(data, rowDim.id, colDim.id, yearFilter);
+  return buildPivot2Dim(data, rowDim.id, colDim.id);
 };
