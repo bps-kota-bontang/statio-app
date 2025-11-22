@@ -595,3 +595,21 @@ export const buildPivotFromFacts = (
 
   return buildPivot2Dim(data, rowDim.id, colDim.id);
 };
+
+export const formatThousand = (val: number | string | null) => {
+  if (val === null || val === "-" || val === undefined) return "-";
+
+  const num = Number(val);
+  if (isNaN(num)) return "-";
+
+  return num.toLocaleString("id-ID");
+};
+
+// ========= Formatters ========= //
+export const formatNumberUnit = (num: number | null) => {
+  if (num === null || isNaN(num)) return "-";
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + "B";
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+  // if (num >= 1_000) return (num / 1_000).toFixed(0) + "K";
+  return num.toString();
+};

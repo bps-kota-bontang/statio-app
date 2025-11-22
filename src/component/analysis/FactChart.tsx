@@ -19,24 +19,7 @@ import {
 } from "lucide-react";
 
 import InsightCard from "@/component/analysis/InsightCard";
-
-// ========= Formatters ========= //
-const formatNumber = (num: number | null) => {
-  if (num === null || isNaN(num)) return "-";
-  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + "B";
-  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
-  if (num >= 1_000) return (num / 1_000).toFixed(0) + "K";
-  return num.toString();
-};
-
-const formatThousand = (val: number | string | null) => {
-  if (val === null || val === "-" || val === undefined) return "-";
-
-  const num = Number(val);
-  if (isNaN(num)) return "-";
-
-  return num.toLocaleString("id-ID");
-};
+import { formatNumberUnit, formatThousand } from "@/utils/table";
 
 const FactChart = ({
   facts,
@@ -91,36 +74,42 @@ const FactChart = ({
     () => [
       {
         label: "Missing",
-        value: formatThousand(insight.totalMissing),
+        value: formatNumberUnit(insight.totalMissing),
+        realValue: insight.totalMissing,
         icon: <MinusCircle className="w-4 h-4 text-blue-500" />,
       },
       {
         label: "Null",
-        value: formatThousand(insight.totalNull),
+        value: formatNumberUnit(insight.totalNull),
+        realValue: insight.totalNull,
         icon: <MinusCircle className="w-4 h-4 text-gray-500" />,
       },
       {
         label: "Outlier",
-        value: formatThousand(insight.totalOutlier),
+        value: formatNumberUnit(insight.totalOutlier),
+        realValue: insight.totalOutlier,
         icon: <AlertTriangle className="w-4 h-4 text-red-500" />,
       },
       {
         label: "Changed",
-        value: formatThousand(insight.changed),
+        value: formatNumberUnit(insight.changed),
+        realValue: insight.changed,
         icon: <TrendingUp className="w-4 h-4 text-amber-500" />,
       },
       {
         label: "Min",
         value: isFinite(insight.minValue)
-          ? formatThousand(insight.minValue)
+          ? formatNumberUnit(insight.minValue)
           : "-",
+        realValue: insight.minValue,
         icon: <TrendingDown className="w-4 h-4 text-green-600" />,
       },
       {
         label: "Max",
         value: isFinite(insight.maxValue)
-          ? formatThousand(insight.maxValue)
+          ? formatNumberUnit(insight.maxValue)
           : "-",
+        realValue: insight.maxValue,
         icon: <TrendingUp className="w-4 h-4 text-purple-600" />,
       },
     ],
@@ -131,7 +120,7 @@ const FactChart = ({
   //      Memoized Tooltip Formatter
   // =======================================
   const tooltipFormatter = useCallback(
-    (v: string) => formatNumber(Number(v)),
+    (v: string) => formatThousand(Number(v)),
     []
   );
 
@@ -153,6 +142,7 @@ const FactChart = ({
             icon={item.icon}
             label={item.label}
             value={item.value}
+            realValue={item.realValue}
           />
         ))}
       </div>
@@ -163,7 +153,7 @@ const FactChart = ({
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="year" />
-            <YAxis tickFormatter={formatNumber} />
+            <YAxis tickFormatter={formatNumberUnit} />
             <Tooltip formatter={tooltipFormatter} />
             <Legend />
 
@@ -173,7 +163,32 @@ const FactChart = ({
               name="Value"
               stroke="#6366F1"
               strokeWidth={2}
-              dot={{ r: 4 }}
+              dot={(props) => {
+                const { cx, cy, payload } = props;
+
+                if (cx === undefined || cy === undefined) return null;
+
+                if (payload.is_outlier) {
+                  // DOT khusus untuk outlier (merah + lebih besar + segitiga)
+                  return (
+                    <svg x={cx - 6} y={cy - 6} width={12} height={12}>
+                      <polygon points="6,0 12,12 0,12" fill="#EF4444" />
+                    </svg>
+                  );
+                }
+
+                // DOT normal
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={4}
+                    fill="#6366F1"
+                    stroke="white"
+                    strokeWidth={1}
+                  />
+                );
+              }}
             />
 
             <Line
