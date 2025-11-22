@@ -90,6 +90,7 @@ const TableAnalysis = () => {
             value: String(false),
           },
         ],
+        sortable: true,
         filterIncludeEmpty: false,
         render: (row) => {
           const summary = row.insight_facts_summary;
@@ -134,6 +135,7 @@ const TableAnalysis = () => {
       {
         key: "outlier_facts",
         label: "Outlier Facts",
+        sortable: true,
         filterOptions: [
           {
             label: "Outlier Facts",
@@ -201,6 +203,7 @@ const TableAnalysis = () => {
       {
         key: "revision_facts",
         label: "Revision Facts",
+        sortable: true,
         filterOptions: [
           {
             label: "Revision Facts",
