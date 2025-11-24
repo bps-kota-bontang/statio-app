@@ -469,6 +469,13 @@ export default function DataTable<
           <div className="flex items-center gap-1.5">
             <button
               disabled={meta.page === 1}
+              onClick={() => onPageChange(1)}
+              className="px-2 bg-gray-200 rounded"
+            >
+              First
+            </button>
+            <button
+              disabled={meta.page === 1}
               onClick={() => onPageChange(meta.page - 1)}
               className="px-2 bg-gray-200 rounded"
             >
@@ -493,6 +500,13 @@ export default function DataTable<
               className="px-2 bg-gray-200 rounded"
             >
               Next
+            </button>
+            <button
+              disabled={meta.page === meta.pages}
+              onClick={() => onPageChange(meta.pages)}
+              className="px-2 bg-gray-200 rounded"
+            >
+              Last
             </button>
           </div>
         </div>
