@@ -115,7 +115,7 @@ export default function DataTable<
   );
   const renderRow = createRenderRow(columns, selectable);
   const selected = selectedKeys ?? internalSelected;
-
+  const [filterSearch, setFilterSearch] = useState<Record<string, string>>({});
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -277,7 +277,20 @@ export default function DataTable<
 
                         {dropdownOpen[c.key as string] && anchorRect && (
                           <DropdownPortal anchorRect={anchorRect}>
-                            <div className="filter-dropdown bg-white border border-gray-200 rounded shadow p-2 max-h-48 overflow-auto w-40">
+                            <div className="filter-dropdown bg-white border border-gray-200 rounded shadow p-2 max-h-56 overflow-auto w-48">
+                              {/* === SEARCH BOX === */}
+                              <input
+                                type="text"
+                                value={filterSearch[c.key as string] ?? ""}
+                                onChange={(e) =>
+                                  setFilterSearch((prev) => ({
+                                    ...prev,
+                                    [c.key as string]: e.target.value,
+                                  }))
+                                }
+                                placeholder="Search options..."
+                                className="w-full mb-2 px-2 py-1 text-xs border border-gray-300 rounded"
+                              />
                               {/* Actions */}
                               <div className="flex justify-between mb-1 text-xs">
                                 <button
@@ -341,35 +354,48 @@ export default function DataTable<
                               )}
 
                               {/* Filter options */}
-                              {c.filterOptions.map((opt) => {
-                                const option =
-                                  typeof opt === "string"
-                                    ? { label: opt, value: opt }
-                                    : opt;
+                              {c.filterOptions
+                                .filter((opt) => {
+                                  const option =
+                                    typeof opt === "string"
+                                      ? { label: opt, value: opt }
+                                      : opt;
+                                  const term = (
+                                    filterSearch[c.key as string] || ""
+                                  ).toLowerCase();
+                                  return option.label
+                                    .toLowerCase()
+                                    .includes(term);
+                                })
+                                .map((opt) => {
+                                  const option =
+                                    typeof opt === "string"
+                                      ? { label: opt, value: opt }
+                                      : opt;
 
-                                return (
-                                  <label
-                                    key={option.value}
-                                    className="flex items-center gap-2 text-sm py-1"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={
-                                        filters?.[c.key as string]?.includes(
-                                          option.value
-                                        ) ?? false
-                                      }
-                                      onChange={() =>
-                                        onFilterChange?.(
-                                          c.key as keyof F,
-                                          option.value
-                                        )
-                                      }
-                                    />
-                                    {option.label}
-                                  </label>
-                                );
-                              })}
+                                  return (
+                                    <label
+                                      key={option.value}
+                                      className="flex items-center gap-2 text-sm py-1"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={
+                                          filters?.[c.key as string]?.includes(
+                                            option.value
+                                          ) ?? false
+                                        }
+                                        onChange={() =>
+                                          onFilterChange?.(
+                                            c.key as keyof F,
+                                            option.value
+                                          )
+                                        }
+                                      />
+                                      {option.label}
+                                    </label>
+                                  );
+                                })}
                             </div>
                           </DropdownPortal>
                         )}
