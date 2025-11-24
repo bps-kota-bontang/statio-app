@@ -12,7 +12,7 @@ const InsightCard = ({
   realValue: number;
 }) => (
   <div
-    className="flex items-center gap-2 p-2 rounded-md border bg-white shadow-sm"
+    className="flex items-center gap-2 p-2 rounded-md border border-gray-200 bg-white shadow-md"
     title={formatThousand(realValue)}
   >
     <div>{icon}</div>

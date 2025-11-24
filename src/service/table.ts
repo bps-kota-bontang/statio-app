@@ -55,7 +55,7 @@ export const useTableApi = () => {
     if (fromYear) params.append("from_year", String(fromYear));
     if (toYear) params.append("to_year", String(toYear));
 
-    const url = `${API_BASE_URL}/api/v1/tables/${id}/facts/insight?${params.toString()}`;
+    const url = `${API_BASE_URL}/api/v1/tables/${id}/insight?${params.toString()}`;
 
     const { data, error, isLoading, mutate } = useSWR<
       ApiResponse<InsightFactsResponse>
@@ -180,6 +180,19 @@ export const useTableApi = () => {
     });
   };
 
+  const commitTable = async (id: string): Promise<ApiResponse<null>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/commit`, {
+      method: "POST",
+    });
+  };
+
+  const commitTables = async (ids: string[]): Promise<ApiResponse<null>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/commit`, {
+      method: "POST",
+      body: JSON.stringify({ table_ids: ids }),
+    });
+  };
+
   const getTableFacts = (id: string, dimensionValueIDs?: string[]) => {
     const params = new URLSearchParams();
     if (dimensionValueIDs && dimensionValueIDs.length > 0) {
@@ -213,5 +226,7 @@ export const useTableApi = () => {
     analyzeTable,
     analyzeTables,
     getTableFacts,
+    commitTable,
+    commitTables,
   };
 };

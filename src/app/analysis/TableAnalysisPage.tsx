@@ -24,7 +24,8 @@ const TableAnalysis = () => {
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Analysis" }]);
   }, [setBreadcrumbs]);
 
-  const { useTables, analyzeTable, analyzeTables } = useTableApi();
+  const { useTables, analyzeTable, analyzeTables, commitTable, commitTables } =
+    useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
 
@@ -43,6 +44,18 @@ const TableAnalysis = () => {
     [analyzeTable, mutate]
   );
 
+  const handleCommitTable = useCallback(
+    async (tableID: string) => {
+      try {
+        await commitTable(tableID);
+        mutate();
+      } catch (error) {
+        console.error("Error committing table:", error);
+      }
+    },
+    [commitTable, mutate]
+  );
+
   const handleAnalyzeTables = useCallback(
     async (tableIDs: string[]) => {
       try {
@@ -53,6 +66,18 @@ const TableAnalysis = () => {
       }
     },
     [analyzeTables, mutate]
+  );
+
+  const handleCommitTables = useCallback(
+    async (tableIDs: string[]) => {
+      try {
+        await commitTables(tableIDs);
+        mutate();
+      } catch (error) {
+        console.error("Error committing tables:", error);
+      }
+    },
+    [commitTables, mutate]
   );
 
   const columns = useMemo<Column<TableList>[]>(
@@ -325,6 +350,9 @@ const TableAnalysis = () => {
         sortable: false,
         render: (row) => (
           <div className="flex gap-2">
+            <Link to={`/analysis/${row.id}`} target="_blank">
+              <Button size="sm">Review</Button>
+            </Link>
             <Button
               size="sm"
               onClick={() => {
@@ -333,14 +361,21 @@ const TableAnalysis = () => {
             >
               Analyze
             </Button>
-            <Link to={`/analysis/${row.id}`} target="_blank">
-              <Button size="sm">Review</Button>
-            </Link>
+            {row.status == "finalized" && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  handleCommitTable(row.id);
+                }}
+              >
+                Commit
+              </Button>
+            )}
           </div>
         ),
       },
     ],
-    [handleAnalyzeTable, organizations?.data]
+    [handleAnalyzeTable, handleCommitTable, organizations?.data]
   );
 
   return (
@@ -351,14 +386,24 @@ const TableAnalysis = () => {
         actions={
           <div className="flex gap-2">
             {table.selectedIDs.length > 0 && (
-              <Button
-                size="sm"
-                onClick={() =>
-                  handleAnalyzeTables(table.selectedIDs.map((t) => String(t)))
-                }
-              >
-                Bulk Analyze
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    handleAnalyzeTables(table.selectedIDs.map((t) => String(t)))
+                  }
+                >
+                  Bulk Analyze
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    handleCommitTables(table.selectedIDs.map((t) => String(t)))
+                  }
+                >
+                  Bulk Commit
+                </Button>
+              </>
             )}
           </div>
         }
