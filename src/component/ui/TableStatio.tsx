@@ -207,7 +207,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
     );
 
     return (
-      <div className="max-h-[600px] my-4">
+      <div className="my-4">
         <HotTable
           ref={hotRef}
           height={"auto"} // set table height to auto
