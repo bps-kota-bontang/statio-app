@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams, useNavigate } from "react-router";
+import { useCallback, useState } from "react";
 
-// membuat object default filters dari array key string/number
 export function createDefaultFilters(keys: (string | number)[]) {
   return keys.reduce((acc, key) => {
     acc[key.toString()] = [];
@@ -17,18 +16,12 @@ export function useDataTable<T extends object>(
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const pageFromUrl = Number(searchParams.get("page") ?? 1);
-
   const stringKeys = keys.map((k) => k.toString());
   const initialFilters = createDefaultFilters(stringKeys);
 
   const [filters, setFilters] =
     useState<Record<string, string[]>>(initialFilters);
-  const [perPage, setPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<string>();
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">();
 
   // ✅ SELECTION STATE
   const [selectedIDs, setSelectedIDs] = useState<(string | number)[]>([]);
@@ -38,41 +31,71 @@ export function useDataTable<T extends object>(
   }, []);
   const clearSelection = useCallback(() => setSelectedIDs([]), []);
 
-  const onPageChange = useCallback(
-    (p: number) => {
+  const updateQuery = useCallback(
+    (cb: (params: URLSearchParams) => void) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("page", String(p));
+      cb(params);
       navigate({ search: params.toString() }, { replace: true });
     },
     [navigate, searchParams]
   );
 
-  useEffect(() => {
-    const t = setTimeout(() => setSearch(searchTerm), 300);
-    return () => clearTimeout(t);
-  }, [searchTerm]);
+  // === READ FROM QUERY ===
+  const page = Number(searchParams.get("page") ?? "1");
+  const perPage = Number(searchParams.get("per_page") ?? "10");
+  const search = searchParams.get("search") ?? "";
+  const sortBy = searchParams.get("sort_by") ?? undefined;
+  const sortOrder =
+    (searchParams.get("sort_order") as "asc" | "desc") ?? undefined;
+
+  // === WRITE TO QUERY ===
+
+  const onPageChange = useCallback(
+    (p: number) => {
+      updateQuery((params) => {
+        params.set("page", String(p));
+      });
+    },
+    [updateQuery]
+  );
+
+  const onPerPageChange = useCallback(
+    (v: number) => {
+      updateQuery((params) => {
+        params.set("per_page", String(v));
+        params.set("page", "1");
+      });
+    },
+    [updateQuery]
+  );
 
   const onSearchChange = useCallback(
     (value: string) => {
       setSearchTerm(value);
-      onPageChange(1);
+      updateQuery((params) => {
+        params.set("search", value);
+        params.set("page", "1");
+      });
     },
-    [onPageChange]
+    [updateQuery]
   );
 
   const onSort = useCallback(
     (field: string) => {
-      setSortBy((prev) => {
-        if (prev === field) {
-          setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+      updateQuery((params) => {
+        const currentField = params.get("sort_by");
+        const currentOrder = params.get("sort_order") as "asc" | "desc";
+
+        if (currentField === field) {
+          params.set("sort_order", currentOrder === "asc" ? "desc" : "asc");
         } else {
-          setSortOrder("asc");
+          params.set("sort_by", field);
+          params.set("sort_order", "asc");
         }
-        return field;
+        params.set("page", "1");
       });
-      onPageChange(1);
     },
-    [onPageChange]
+    [updateQuery]
   );
 
   const onFilterChange = useCallback(
@@ -92,13 +115,15 @@ export function useDataTable<T extends object>(
           [key]: newArr,
         };
       });
-      onPageChange(1);
+      updateQuery((params) => {
+        params.set("page", "1");
+      });
     },
-    [onPageChange]
+    [updateQuery]
   );
 
   return {
-    page: pageFromUrl,
+    page,
     perPage,
     search,
     searchTerm,
@@ -109,7 +134,7 @@ export function useDataTable<T extends object>(
     clearSelection, // ✅ useful after assign
     onSelectionChange, // ✅ pass to DataTable
     onPageChange,
-    onPerPageChange: setPerPage,
+    onPerPageChange,
     onSearchChange,
     onSort,
     onFilterChange,
