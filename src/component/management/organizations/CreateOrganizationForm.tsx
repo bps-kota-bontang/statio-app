@@ -19,7 +19,7 @@ const CreateOrganizationForm = ({
   const { useOrganizations } = useOrganizationApi();
 
   const [name, setName] = useState("");
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { errors, validate } = useRequiredFields<CreateOrganizationRequest>();
 
   const { data } = useOrganizations({
@@ -39,7 +39,9 @@ const CreateOrganizationForm = ({
       const isValid = validate({ name }, ["name"]);
       if (!isValid) return;
 
+      setIsSubmitting(true);
       const success = await onSubmit({ name });
+      setIsSubmitting(false);
       if (success) {
         setName("");
       }
@@ -69,7 +71,9 @@ const CreateOrganizationForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Create</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating..." : "Create"}
+        </Button>
       </div>
     </form>
   );

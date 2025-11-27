@@ -23,7 +23,7 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
   const [indicatorId, setIndicatorId] = useState<string>("");
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [dimensionIds, setDimensionIds] = useState<string[]>([]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: indicators } = useIndicators({
     perPage: 1000,
   });
@@ -48,12 +48,14 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
 
       if (!isValid) return;
 
+      setIsSubmitting(true);
       const success = await onSubmit({
         name,
         indicator_id: indicatorId,
         dimension_ids: dimensionIds,
         organization_id: organizationId,
       });
+      setIsSubmitting(false);
       if (success) {
         setName("");
         setIndicatorId("");
@@ -149,7 +151,9 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Create</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating..." : "Create"}
+        </Button>
       </div>
     </form>
   );

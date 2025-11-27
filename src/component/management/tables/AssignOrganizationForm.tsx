@@ -19,7 +19,7 @@ const AssignOrganizationForm = ({
   const { useOrganizations } = useOrganizationApi();
 
   const [organizationId, setOrganizationId] = useState<string>("");
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: organizations } = useOrganizations();
 
   const { errors, validate } = useRequiredFields<AssignOrganizationRequest>();
@@ -34,10 +34,11 @@ const AssignOrganizationForm = ({
       ]);
 
       if (!isValid) return;
-
+      setIsSubmitting(true);
       const success = await onSubmit({
         organization_id: organizationId,
       });
+      setIsSubmitting(false);
       if (success) {
         setOrganizationId("");
       }
@@ -72,7 +73,9 @@ const AssignOrganizationForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Assign</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Assigning..." : "Assign"}
+        </Button>
       </div>
     </form>
   );

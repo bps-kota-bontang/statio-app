@@ -26,7 +26,7 @@ const BulkLabelTableForm = ({
   const { data: dimensions } = useDimensions({
     perPage: 1000,
   });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { errors, validate } = useRequiredFields<BulkLabelsTablesRequest>();
 
   const handleSubmit = useCallback(
@@ -37,10 +37,11 @@ const BulkLabelTableForm = ({
       const isValid = validate({ labels: labels }, ["labels"]);
 
       if (!isValid) return;
-
+      setIsSubmitting(true);
       const success = await onSubmit({
         labels: labels,
       });
+      setIsSubmitting(false);
       if (success) {
         setLabels([]);
       }
@@ -172,7 +173,9 @@ const BulkLabelTableForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Create</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating..." : "Create"}
+        </Button>
       </div>
     </form>
   );

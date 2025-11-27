@@ -23,7 +23,7 @@ const CreateDimensionForm = ({
   const [name, setName] = useState("");
   const [valueInput, setValueInput] = useState("");
   const [values, setValues] = useState<string[]>([]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { errors, validate } = useRequiredFields<CreateDimensionRequest>();
 
   const { data } = useDimensions({
@@ -61,8 +61,9 @@ const CreateDimensionForm = ({
 
       const isValid = validate({ name, values }, ["name"], ["values"]);
       if (!isValid) return;
-
+      setIsSubmitting(true);
       const success = await onSubmit({ name, values });
+      setIsSubmitting(false);
       if (success) {
         setName("");
         setValues([]);
@@ -152,7 +153,9 @@ const CreateDimensionForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Create</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating..." : "Create"}
+        </Button>
       </div>
     </form>
   );

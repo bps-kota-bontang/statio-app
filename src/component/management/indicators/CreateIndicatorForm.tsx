@@ -21,7 +21,7 @@ const CreateIndicatorForm = ({
   const [name, setName] = useState("");
   const [measure, setMeasure] = useState("");
   const [unit, setUnit] = useState("");
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { errors, validate } = useRequiredFields<CreateIndicatorRequest>();
 
   const { data } = useIndicators({
@@ -51,8 +51,9 @@ const CreateIndicatorForm = ({
 
       const isValid = validate({ name, measure, unit }, ["name", "measure"]);
       if (!isValid) return;
-
+      setIsSubmitting(true);
       const success = await onSubmit({ name, measure, unit: unit || null });
+      setIsSubmitting(false);
       if (success) {
         setName("");
         setMeasure("");
@@ -118,7 +119,9 @@ const CreateIndicatorForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Create</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating..." : "Create"}
+        </Button>
       </div>
     </form>
   );

@@ -24,7 +24,7 @@ const EditOrganizationForm = ({
   const { useOrganizations } = useOrganizationApi();
 
   const [name, setName] = useState(organization.name);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { errors, validate } = useRequiredFields<UpdateOrganizationRequest>();
 
   const { data } = useOrganizations({ perPage: 1000 });
@@ -46,8 +46,9 @@ const EditOrganizationForm = ({
         ["name"]
       );
       if (!isValid) return;
-
+      setIsSubmitting(true);
       await onSubmit(organization.id, { name });
+      setIsSubmitting(false);
     },
     [name, onSubmit, validate, organization.id]
   );
@@ -75,7 +76,9 @@ const EditOrganizationForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : "Save"}
+        </Button>
       </div>
     </form>
   );

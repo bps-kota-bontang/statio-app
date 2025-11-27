@@ -25,7 +25,7 @@ const EditIndicatorForm = ({
   const [unit, setUnit] = useState(indicator.unit || "");
 
   const { errors, validate } = useRequiredFields<UpdateIndicatorRequest>();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data } = useIndicators({ perPage: 1000 });
 
   const existingNames = useMemo(() => {
@@ -58,8 +58,9 @@ const EditIndicatorForm = ({
         ["name", "measure"]
       );
       if (!isValid) return;
-
+      setIsSubmitting(true);
       await onSubmit(indicator.id, { name, measure, unit });
+      setIsSubmitting(false);
     },
     [name, measure, unit, onSubmit, validate, indicator.id]
   );
@@ -122,7 +123,9 @@ const EditIndicatorForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : "Save"}
+        </Button>
       </div>
     </form>
   );

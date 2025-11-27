@@ -24,7 +24,7 @@ const EditTableLabelsForm = ({
   const [labelInput, setLabelInput] = useState("");
   const [labels, setLabels] = useState<string[]>(table.labels || []);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data } = useTables({ perPage: 1000 });
 
   const existingValues = useMemo(
@@ -92,7 +92,9 @@ const EditTableLabelsForm = ({
 
       const cleaned = labels.map((v) => v.trim()).filter(Boolean);
 
+      setIsSubmitting(true);
       const success = await onSubmit(table.id, { labels: cleaned });
+      setIsSubmitting(false);
       if (success) setEditingIndex(null);
     },
     [labels, onSubmit, table.id]
@@ -192,7 +194,9 @@ const EditTableLabelsForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Updating..." : "Update"}
+        </Button>
       </div>
     </form>
   );

@@ -30,7 +30,7 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
   const { data: dimensions } = useDimensions({ perPage: 1000 });
   const { data: organizations } = useOrganizations();
   const { errors, validate } = useRequiredFields<UpdateTableRequest>();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [indicatorId, setIndicatorId] = useState<string>("");
   const [organizationId, setOrganizationId] = useState<string>("");
@@ -61,13 +61,14 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
         ["name", "indicator_id", "organization_id"]
       );
       if (!isValid) return;
-
+      setIsSubmitting(true);
       await onSubmit(tableID, {
         name,
         indicator_id: indicatorId,
         dimension_ids: dimensionIds,
         organization_id: organizationId,
       });
+      setIsSubmitting(false);
     },
     [
       dimensionIds,
@@ -173,7 +174,9 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Updating..." : "Update"}
+        </Button>
       </div>
     </form>
   );

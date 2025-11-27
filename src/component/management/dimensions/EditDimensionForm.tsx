@@ -35,7 +35,7 @@ const EditDimensionForm = ({
   );
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { errors, validate } = useRequiredFields<UpdateDimensionRequest>();
 
   const { data } = useDimensions({ perPage: 1000 });
@@ -130,10 +130,12 @@ const EditDimensionForm = ({
         }
       );
 
+      setIsSubmitting(true);
       const success = await onSubmit(dimension.id, {
         name: trimmedName,
         values: payloadValues,
       });
+      setIsSubmitting(false);
 
       if (success) setEditingIndex(null);
     },
@@ -254,7 +256,9 @@ const EditDimensionForm = ({
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : "Save"}
+        </Button>
       </div>
     </form>
   );
