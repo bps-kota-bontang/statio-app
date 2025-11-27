@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { AuthContext } from "@/context/auth/AuthContext";
-import type { AuthContextType } from "@/context/auth/useAuth";
+import type { AuthContextType } from "@/hooks/useAuth";
 import { API_BASE_URL } from "@/config/api";
 import Loading from "@/component/ui/Loading";
 import type { User } from "@/type/user";

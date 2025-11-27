@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/auth/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Outlet, useOutletContext } from "react-router";
 import Error from "@/component/ui/Error";
 import type { StatioContextType } from "@/component/layout/StatioLayout";

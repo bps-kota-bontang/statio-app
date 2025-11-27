@@ -16,10 +16,11 @@ import {
 } from "lucide-react";
 import { useOrganizationApi } from "@/service/organization";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
+import { useConfirm } from "@/hooks/useConfirm";
 
 const TableAnalysis = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
-
+  const { ask, ConfirmDialog } = useConfirm();
   useEffect(() => {
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Analysis" }]);
   }, [setBreadcrumbs]);
@@ -28,54 +29,37 @@ const TableAnalysis = () => {
     useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
-
   const table = useDataTable<TableList>();
   const { data, isLoading, mutate } = useTables(table);
 
   const handleAnalyzeTable = useCallback(
     async (tableID: string) => {
-      try {
-        await analyzeTable(tableID);
-        mutate();
-      } catch (error) {
-        console.error("Error analyzing table:", error);
-      }
+      await analyzeTable(tableID);
+      mutate();
     },
     [analyzeTable, mutate]
   );
 
   const handleCommitTable = useCallback(
     async (tableID: string) => {
-      try {
-        await commitTable(tableID);
-        mutate();
-      } catch (error) {
-        console.error("Error committing table:", error);
-      }
+      await commitTable(tableID);
+      mutate();
     },
     [commitTable, mutate]
   );
 
   const handleAnalyzeTables = useCallback(
     async (tableIDs: string[]) => {
-      try {
-        await analyzeTables(tableIDs);
-        mutate();
-      } catch (error) {
-        console.error("Error analyzing tables:", error);
-      }
+      await analyzeTables(tableIDs);
+      mutate();
     },
     [analyzeTables, mutate]
   );
 
   const handleCommitTables = useCallback(
     async (tableIDs: string[]) => {
-      try {
-        await commitTables(tableIDs);
-        mutate();
-      } catch (error) {
-        console.error("Error committing tables:", error);
-      }
+      await commitTables(tableIDs);
+      mutate();
     },
     [commitTables, mutate]
   );
@@ -355,18 +339,26 @@ const TableAnalysis = () => {
             </Link>
             <Button
               size="sm"
-              onClick={() => {
-                handleAnalyzeTable(row.id);
-              }}
+              onClick={() =>
+                ask({
+                  title: "Analyze Table?",
+                  message: "Are you sure want to analyze this table?",
+                  onConfirm: () => handleAnalyzeTable(row.id),
+                })
+              }
             >
               Analyze
             </Button>
             {row.status == "finalized" && (
               <Button
                 size="sm"
-                onClick={() => {
-                  handleCommitTable(row.id);
-                }}
+                onClick={() =>
+                  ask({
+                    title: "Commit Table?",
+                    message: "Are you sure want to commit this table?",
+                    onConfirm: () => handleCommitTable(row.id),
+                  })
+                }
               >
                 Commit
               </Button>
@@ -375,7 +367,7 @@ const TableAnalysis = () => {
         ),
       },
     ],
-    [handleAnalyzeTable, handleCommitTable, organizations?.data]
+    [ask, handleAnalyzeTable, handleCommitTable, organizations?.data]
   );
 
   return (
@@ -390,7 +382,14 @@ const TableAnalysis = () => {
                 <Button
                   size="sm"
                   onClick={() =>
-                    handleAnalyzeTables(table.selectedIDs.map((t) => String(t)))
+                    ask({
+                      title: "Analyze Selected Tables?",
+                      message: `Are you sure want to analyze ${table.selectedIDs.length} selected tables?`,
+                      onConfirm: () =>
+                        handleAnalyzeTables(
+                          table.selectedIDs.map((t) => String(t))
+                        ),
+                    })
                   }
                 >
                   Bulk Analyze
@@ -398,7 +397,14 @@ const TableAnalysis = () => {
                 <Button
                   size="sm"
                   onClick={() =>
-                    handleCommitTables(table.selectedIDs.map((t) => String(t)))
+                    ask({
+                      title: "Commit Selected Tables?",
+                      message: `Are you sure want to commit ${table.selectedIDs.length} selected tables?`,
+                      onConfirm: () =>
+                        handleCommitTables(
+                          table.selectedIDs.map((t) => String(t))
+                        ),
+                    })
                   }
                 >
                   Bulk Commit
@@ -413,6 +419,7 @@ const TableAnalysis = () => {
         isLoading={isLoading}
         {...table}
       />
+      <ConfirmDialog />
     </div>
   );
 };

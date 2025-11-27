@@ -1,6 +1,6 @@
 import SidebarItem from "@/component/sidebar/SidebarItem";
 import { MENU_ITEMS } from "@/constant/menu";
-import { useAuth } from "@/context/auth/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { PanelRight, LogOut } from "lucide-react";
 import { useState } from "react";
 

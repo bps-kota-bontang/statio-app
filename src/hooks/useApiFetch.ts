@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/auth/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useCallback } from "react";
 
 export const useApiFetch = () => {

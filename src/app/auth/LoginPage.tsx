@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { useAuth } from "@/context/auth/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import Input from "@/component/ui/Input";
 import { login, loginSso } from "@/service/auth";
 import { API_BASE_URL } from "@/config/api";
