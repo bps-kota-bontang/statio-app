@@ -73,40 +73,35 @@ const TableDetailReviewPage = () => {
   return (
     <div>
       {/* Header Section */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         {/* Left — Name editable */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <h3 className="text-xl font-semibold">{data.data.name}</h3>
         </div>
 
         {/* Right — Status & Action Button */}
-        <div>
-          {/* Untuk user: masa input berakhir -> badge */}
+        <div className="flex flex-col gap-3 w-full sm:w-auto">
+          {/* Masa Input Berakhir */}
           {data.data.status === "draft" && data.data.is_locked && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-600 border border-gray-300 font-medium text-sm shadow-sm">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-600 border border-gray-300 font-medium text-sm shadow-sm w-full sm:w-auto">
               <Lock size={16} /> Masa Input Berakhir
             </div>
           )}
 
-          {/* User: Submit untuk Review */}
+          {/* Submit untuk Review */}
           {data.data.status === "draft" && !data.data.is_locked && (
             <button
               onClick={async () => {
                 setIsSubmitting(true);
                 try {
-                  await submitTable(id); // API baru
+                  await submitTable(id);
                   await mutate();
                 } finally {
                   setIsSubmitting(false);
                 }
               }}
               disabled={isSubmitting}
-              className="
-        flex items-center gap-2 px-4 py-2 rounded-xl
-        border border-blue-400 text-blue-700 bg-blue-50
-        hover:bg-blue-100 font-medium text-sm transition shadow-sm
-        disabled:opacity-50
-      "
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-blue-400 text-blue-700 bg-blue-50 hover:bg-blue-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
             >
               {isSubmitting ? (
                 <span className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
@@ -117,27 +112,22 @@ const TableDetailReviewPage = () => {
             </button>
           )}
 
-          {/* Supervisor Actions (status: submitted) */}
+          {/* Supervisor Actions */}
           {data.data.status === "submitted" && (
-            <div className="flex items-center gap-3">
-              {/* Kembalikan ke Draft */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              {/* Kembalikan */}
               <button
                 onClick={async () => {
                   setIsReverting(true);
                   try {
-                    await revertTable(id); // API revert
+                    await revertTable(id);
                     await mutate();
                   } finally {
                     setIsReverting(false);
                   }
                 }}
                 disabled={isReverting}
-                className="
-        flex items-center gap-2 px-4 py-2 rounded-xl
-        border border-red-400 text-red-700 bg-red-50
-        hover:bg-red-100 font-medium text-sm transition shadow-sm
-        disabled:opacity-50
-      "
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-400 text-red-700 bg-red-50 hover:bg-red-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
               >
                 {isReverting ? (
                   <span className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
@@ -159,12 +149,7 @@ const TableDetailReviewPage = () => {
                   }
                 }}
                 disabled={isFinalizing}
-                className="
-        flex items-center gap-2 px-4 py-2 rounded-xl
-        border border-yellow-400 text-yellow-700 bg-yellow-50
-        hover:bg-yellow-100 font-medium text-sm transition shadow-sm
-        disabled:opacity-50
-      "
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
               >
                 {isFinalizing ? (
                   <span className="animate-spin h-4 w-4 border-2 border-yellow-500 border-t-transparent rounded-full" />
@@ -178,7 +163,7 @@ const TableDetailReviewPage = () => {
 
           {/* Final */}
           {data.data.status === "finalized" && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 text-green-700 border border-green-400 font-medium text-sm shadow-sm">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 text-green-700 border border-green-400 font-medium text-sm shadow-sm w-full sm:w-auto">
               <Lock size={16} /> Sudah Difinalisasi
             </div>
           )}

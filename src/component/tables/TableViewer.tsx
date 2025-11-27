@@ -131,31 +131,40 @@ const TableViewer = ({
   return (
     <div className="space-y-4 relative">
       {/* 🟣 Toolbar */}
-      <div className="flex items-center gap-4 p-3 rounded-2xl border border-white/30 bg-white/20 backdrop-blur-xl shadow-sm">
+      <div className="flex flex-wrap items-center gap-4 p-3 rounded-2xl border border-white/30 bg-white/20 backdrop-blur-xl shadow-sm max-md:flex-col max-md:items-stretch">
+        {/* 🔁 Swap */}
         <Button
           variant="ghost"
           onClick={() => {
             setSwap((p) => !p);
             onRevalidate("swap");
           }}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 max-md:w-full"
         >
           <Shuffle className="w-4 h-4" />
           Tukar Baris / Kolom
         </Button>
 
-        <Button variant="ghost" className="flex items-center gap-1">
+        {/* ➕ Add */}
+        <Button
+          variant="ghost"
+          className="flex items-center gap-1 max-md:w-full"
+        >
           <Plus className="w-4 h-4" />
           Tambah Baris / Kolom
         </Button>
 
-        <Button variant="ghost" className="flex items-center gap-1">
+        {/* 🗑 Delete */}
+        <Button
+          variant="ghost"
+          className="flex items-center gap-1 max-md:w-full"
+        >
           <Trash className="w-4 h-4" />
           Hapus Baris / Kolom
         </Button>
 
-        {/* 🌐 Locale Selector */}
-        <div className="flex items-center gap-1 ml-auto">
+        {/* 🌐 Locale */}
+        <div className="flex items-center gap-2 ml-auto max-md:ml-0 max-md:w-full max-md:flex justify-center">
           <Globe className="w-4 h-4 text-gray-600" />
 
           <select
@@ -174,14 +183,13 @@ const TableViewer = ({
               setShowLocaleHelp((v) => !v);
             }}
             className="text-gray-500 hover:text-gray-800 px-1"
-            aria-label="Tentang Locale"
           >
             ?
           </button>
         </div>
 
-        {/* 💾 Status + Auto Save */}
-        <div className="flex items-center gap-3">
+        {/* 💾 Status + AutoSave */}
+        <div className="flex items-center gap-3 max-md:w-full max-md:justify-between">
           <div className="text-xs font-medium">
             {status === "saving" && (
               <span className="px-3 rounded-full bg-white/40 text-gray-700 animate-pulse">
@@ -199,6 +207,7 @@ const TableViewer = ({
               </span>
             )}
           </div>
+
           <Switch
             disabled
             label="Auto Simpan"
