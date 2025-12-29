@@ -20,6 +20,7 @@ interface InputProps {
   disabled?: boolean;
   required?: boolean;
   type?: string;
+  [key: string]: unknown;
 }
 
 const Input = ({
@@ -34,6 +35,7 @@ const Input = ({
   disabled,
   required,
   type = "text",
+  ...props
 }: InputProps) => {
   const [filtered, setFiltered] = useState<string[]>([]);
   const [show, setShow] = useState(false);
@@ -84,6 +86,7 @@ const Input = ({
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <input
+        {...props}
         type={type}
         value={value}
         required={required}

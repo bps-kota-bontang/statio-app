@@ -1,6 +1,6 @@
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  variant?: "primary" | "secondary" | "ghost" | "glass";
+  variant?: "primary" | "secondary" | "ghost" | "glass" | "danger";
   size?: "xs" | "sm" | "md" | "lg";
 }
 
@@ -21,6 +21,7 @@ const Button = ({
     glass:
       // 🌫️ Liquid Glass Apple Style
       "bg-white/30 text-gray-900 border border-white/40 backdrop-blur-md hover:bg-white/40 shadow-[0_2px_8px_rgba(0,0,0,0.05)]",
+    danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
   };
 
   const sizeClasses = {

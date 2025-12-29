@@ -18,6 +18,7 @@ import ManagementLayout from "@/component/layout/ManagementLayout";
 import AnalysisLayout from "@/component/layout/AnalysisLayout";
 import TableAnalysis from "@/app/analysis/TableAnalysisPage";
 import TableDetailReviewPage from "@/app/analysis/TableDetailReviewPage";
+import UsersPage from "@/app/users/UsersPage";
 
 const root = document.getElementById("root");
 
@@ -47,6 +48,7 @@ createRoot(root!).render(
             <Route path="dimensions" element={<DimensionPage />} />
             <Route path="tables" element={<TablePage />} />
           </Route>
+          <Route path="users" element={<UsersPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
       </Routes>
