@@ -124,7 +124,6 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
           onChange={setPassword}
           type="password"
           placeholder="Masukkan password"
-          minLength={8}
         />
         <p className="text-xs text-gray-500 mt-1">
           Masukkan password pengguna.

@@ -123,7 +123,6 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
           onChange={(val) => setPassword(val)}
           type="password"
           placeholder="Masukkan password baru"
-          minLength={8}
         />
         <p className="text-xs text-gray-500 mt-1">
           Masukkan password baru jika ingin mengubahnya.
