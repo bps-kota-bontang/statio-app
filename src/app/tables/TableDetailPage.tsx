@@ -9,9 +9,11 @@ import { Pencil, Check, X, Lock, RotateCcw, Save } from "lucide-react";
 import Input from "@/component/ui/Input";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import Button from "@/component/ui/Button";
+import { useAuth } from "@/hooks/useAuth";
 
 const TableDetailPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+  const { user } = useAuth();
 
   const {
     useTable,
@@ -226,26 +228,28 @@ const TableDetailPage = () => {
               </button>
 
               {/* Finalisasi */}
-              <button
-                onClick={async () => {
-                  setIsFinalizing(true);
-                  try {
-                    await finalizeTable(id);
-                    await mutate();
-                  } finally {
-                    setIsFinalizing(false);
-                  }
-                }}
-                disabled={isFinalizing}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
-              >
-                {isFinalizing ? (
-                  <span className="animate-spin h-4 w-4 border-2 border-yellow-500 border-t-transparent rounded-full" />
-                ) : (
-                  <Lock size={16} />
-                )}
-                Finalisasi
-              </button>
+              {user?.roles?.includes("admin") && (
+                <button
+                  onClick={async () => {
+                    setIsFinalizing(true);
+                    try {
+                      await finalizeTable(id);
+                      await mutate();
+                    } finally {
+                      setIsFinalizing(false);
+                    }
+                  }}
+                  disabled={isFinalizing}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
+                >
+                  {isFinalizing ? (
+                    <span className="animate-spin h-4 w-4 border-2 border-yellow-500 border-t-transparent rounded-full" />
+                  ) : (
+                    <Lock size={16} />
+                  )}
+                  Finalisasi
+                </button>
+              )}
             </div>
           )}
 

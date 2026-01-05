@@ -7,9 +7,11 @@ import Loading from "@/component/ui/Loading";
 import { Check, Lock, RotateCcw } from "lucide-react";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import TableReviewer from "@/component/analysis/TableReviewer";
+import { useAuth } from "@/hooks/useAuth";
 
 const TableDetailReviewPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+  const { user } = useAuth();
 
   const {
     useTable,
@@ -87,7 +89,6 @@ const TableDetailReviewPage = () => {
               <Lock size={16} /> Masa Input Berakhir
             </div>
           )}
-
           {/* Submit untuk Review */}
           {data.data.status === "draft" && !data.data.is_locked && (
             <button
@@ -112,7 +113,6 @@ const TableDetailReviewPage = () => {
             </button>
           )}
 
-          {/* Supervisor Actions */}
           {data.data.status === "submitted" && (
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               {/* Kembalikan */}
@@ -136,31 +136,31 @@ const TableDetailReviewPage = () => {
                 )}
                 Kembalikan
               </button>
-
               {/* Finalisasi */}
-              <button
-                onClick={async () => {
-                  setIsFinalizing(true);
-                  try {
-                    await finalizeTable(id);
-                    await mutate();
-                  } finally {
-                    setIsFinalizing(false);
-                  }
-                }}
-                disabled={isFinalizing}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
-              >
-                {isFinalizing ? (
-                  <span className="animate-spin h-4 w-4 border-2 border-yellow-500 border-t-transparent rounded-full" />
-                ) : (
-                  <Lock size={16} />
-                )}
-                Finalisasi
-              </button>
+              {user?.roles?.includes("admin") && (
+                <button
+                  onClick={async () => {
+                    setIsFinalizing(true);
+                    try {
+                      await finalizeTable(id);
+                      await mutate();
+                    } finally {
+                      setIsFinalizing(false);
+                    }
+                  }}
+                  disabled={isFinalizing}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
+                >
+                  {isFinalizing ? (
+                    <span className="animate-spin h-4 w-4 border-2 border-yellow-500 border-t-transparent rounded-full" />
+                  ) : (
+                    <Lock size={16} />
+                  )}
+                  Finalisasi
+                </button>
+              )}
             </div>
           )}
-
           {/* Final */}
           {data.data.status === "finalized" && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 text-green-700 border border-green-400 font-medium text-sm shadow-sm w-full sm:w-auto">
