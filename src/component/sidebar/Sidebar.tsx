@@ -1,5 +1,6 @@
 import SidebarItem from "@/component/sidebar/SidebarItem";
 import { MENU_ITEMS } from "@/constant/menu";
+import { COPYRIGHT_YEAR } from "@/constant/dates";
 import { useAuth } from "@/hooks/useAuth";
 import { PanelRight, LogOut } from "lucide-react";
 import { useState } from "react";
@@ -91,7 +92,7 @@ const Sidebar = ({
 
         {!collapsed && (
           <p className="text-xs text-gray-400 text-center mt-2">
-            © 2025 <span className="font-semibold text-gray-700">Statio</span>
+            © {COPYRIGHT_YEAR} <span className="font-semibold text-gray-700">Statio</span>
           </p>
         )}
       </div>
