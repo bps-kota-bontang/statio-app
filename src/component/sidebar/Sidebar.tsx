@@ -4,12 +4,30 @@ import { useAuth } from "@/hooks/useAuth";
 import { PanelRight, LogOut } from "lucide-react";
 import { useState } from "react";
 
-const Sidebar = () => {
+interface SidebarProps {
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
+}
+
+const Sidebar = ({
+  collapsed: externalCollapsed,
+  onToggleCollapsed,
+}: SidebarProps) => {
   const { logout, user } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+
+  const collapsed = externalCollapsed ?? internalCollapsed;
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleToggleCollapsed = () => {
+    if (onToggleCollapsed) {
+      onToggleCollapsed();
+    } else {
+      setInternalCollapsed(!internalCollapsed);
+    }
   };
 
   return (
@@ -30,8 +48,8 @@ const Sidebar = () => {
           </h1>
         )}
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+          onClick={handleToggleCollapsed}
+          className="p-2 rounded-lg hover:bg-gray-200 transition-colors hidden md:block"
         >
           <PanelRight className="w-5 h-5 text-gray-600" />
         </button>

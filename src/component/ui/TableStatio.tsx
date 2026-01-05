@@ -266,7 +266,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
           manualColumnResize={false}
           manualRowResize={false}
           manualRowMove={false}
-          className="htCenter"
+          className="htCenter z-0"
           licenseKey="non-commercial-and-evaluation"
           afterChange={handleAfterChange}
         />
