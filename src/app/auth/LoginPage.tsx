@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import Input from "@/component/ui/Input";
-import { login, loginSso } from "@/service/auth";
+import { login, loginInvite, loginSso } from "@/service/auth";
 import { API_BASE_URL } from "@/config/api";
 
 const LoginPage = () => {
@@ -12,6 +12,7 @@ const LoginPage = () => {
 
   const paramsToken = searchParams.get("token");
   const paramsState = searchParams.get("state");
+  const paramsInviteToken = searchParams.get("invite_token");
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -37,6 +38,27 @@ const LoginPage = () => {
 
     processSso();
   }, [paramsToken, paramsState, setToken, navigate]);
+
+  useEffect(() => {
+    const processInvite = async () => {
+      if (!paramsInviteToken) return;
+
+      try {
+        setFormLoading(true);
+        const data = await loginInvite({
+          invite_token: paramsInviteToken,
+        });
+        setToken(data.data.access_token);
+        navigate("/", { replace: true });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unexpected error");
+      } finally {
+        setFormLoading(false);
+      }
+    };
+
+    processInvite();
+  }, [paramsInviteToken, setToken, navigate]);
 
   // ✅ Sudah login → redirect
   useEffect(() => {

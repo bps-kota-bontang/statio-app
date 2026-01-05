@@ -11,3 +11,7 @@ export type LoginSsoRequest = {
   token: string;
   state: string;
 };
+
+export type LoginInviteRequest = {
+  invite_token: string;
+};
