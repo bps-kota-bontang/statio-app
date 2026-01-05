@@ -61,6 +61,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
       setIsSubmitting(true);
       await onSubmit(userID, {
         username,
+        email,
         password,
         roles,
         organization_id: organizationId,
