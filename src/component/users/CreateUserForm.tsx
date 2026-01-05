@@ -15,6 +15,7 @@ interface CreateUserFormProps {
 
 const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
   const { useOrganizations } = useOrganizationApi();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [roles, setRoles] = useState<string[]>([]);
@@ -31,14 +32,15 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
       if (!onSubmit) return;
 
       const isValid = validate(
-        { email, password, roles, organization_id: organizationId },
-        ["email", "password", "roles", "organization_id"]
+        { username, email, password, roles, organization_id: organizationId },
+        ["username", "email", "password", "roles", "organization_id"]
       );
 
       if (!isValid) return;
 
       setIsSubmitting(true);
       const success = await onSubmit({
+        username,
         email,
         password,
         roles,
@@ -46,17 +48,34 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
       });
       setIsSubmitting(false);
       if (success) {
+        setUsername("");
         setEmail("");
         setPassword("");
         setOrganizationId("");
         setRoles([]);
       }
     },
-    [onSubmit, validate, email, password, roles, organizationId]
+    [onSubmit, validate, username, email, password, roles, organizationId]
   );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 relative">
+      {/* Username */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Username</label>
+        <Input
+          value={username}
+          onChange={setUsername}
+          type="text"
+          placeholder="Contoh: user123"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Masukkan username pengguna.
+        </p>
+        {errors.username && (
+          <p className="text-xs text-red-500">{errors.username}</p>
+        )}
+      </div>
       {/* Email */}
       <div className="flex flex-col">
         <label className="text-sm font-medium mb-1">Email</label>

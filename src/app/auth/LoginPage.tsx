@@ -13,7 +13,7 @@ const LoginPage = () => {
   const paramsToken = searchParams.get("token");
   const paramsState = searchParams.get("state");
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +51,7 @@ const LoginPage = () => {
       setError(null);
 
       try {
-        const data = await login({ email, password });
+        const data = await login({ identifier, password });
         setToken(data.data.access_token);
         navigate("/", { replace: true });
       } catch (err) {
@@ -60,7 +60,7 @@ const LoginPage = () => {
         setFormLoading(false);
       }
     },
-    [email, password, setToken, navigate]
+    [identifier, password, setToken, navigate]
   );
 
   // ✅ Redirect ke endpoint SSO backend
@@ -82,13 +82,13 @@ const LoginPage = () => {
 
           <div className="mb-4">
             <label className="block text-sm font-semibold mb-1 text-gray-700">
-              Email
+              Email or Username
             </label>
             <Input
-              value={email}
-              onChange={setEmail}
-              type="email"
-              placeholder="Enter your email"
+              value={identifier}
+              onChange={setIdentifier}
+              type="text"
+              placeholder="Enter your email or username"
             />
           </div>
 

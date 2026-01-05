@@ -26,6 +26,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
   const { data: organizations } = useOrganizations();
   const { errors, validate } = useRequiredFields<UpdateUserRequest>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [roles, setRoles] = useState<string[]>([]);
@@ -34,6 +35,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
   // ✅ Update form values when user data is loaded
   useEffect(() => {
     if (data?.data) {
+      setUsername(data.data.username ?? "");
       setEmail(data.data.email ?? "");
       setRoles(data.data.roles?.map((role) => role) ?? []);
       setOrganizationId(data.data.organization_id ?? "");
@@ -47,23 +49,33 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
 
       const isValid = validate(
         {
+          username,
           email,
           roles,
           organization_id: organizationId,
         },
-        ["email", "roles", "organization_id"]
+        ["username", "email", "roles", "organization_id"]
       );
       if (!isValid) return;
       setIsSubmitting(true);
       await onSubmit(userID, {
-        email,
+        username,
         password,
         roles,
         organization_id: organizationId,
       });
       setIsSubmitting(false);
     },
-    [onSubmit, validate, email, password, roles, organizationId, userID]
+    [
+      onSubmit,
+      validate,
+      username,
+      email,
+      roles,
+      organizationId,
+      userID,
+      password,
+    ]
   );
 
   if (isLoading) return <Loading />;
@@ -71,12 +83,29 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 relative">
+      {/* Username */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Username</label>
+        <Input
+          value={username}
+          onChange={setUsername}
+          placeholder="Contoh: user123"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Masukkan username pengguna.
+        </p>
+        {errors.username && (
+          <p className="text-xs text-red-500">{errors.username}</p>
+        )}
+      </div>
+
       {/* Email */}
       <div className="flex flex-col">
         <label className="text-sm font-medium mb-1">Email</label>
         <Input
           value={email}
           onChange={setEmail}
+          type="email"
           placeholder="Contoh: user@example.com"
         />
         <p className="text-xs text-gray-500 mt-1">Masukkan email pengguna.</p>

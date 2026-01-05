@@ -2,6 +2,7 @@ import type { Organization } from "./organization";
 
 export type User = {
   id: string;
+  username: string;
   email: string;
   roles: string[]; // e.g., ['admin', 'operator']
   organization_id: string;
@@ -9,6 +10,7 @@ export type User = {
 };
 
 export type CreateUserRequest = {
+  username: string;
   email: string;
   password: string;
   roles: string[];
@@ -16,6 +18,7 @@ export type CreateUserRequest = {
 };
 
 export type UpdateUserRequest = {
+  username?: string;
   email?: string;
   password?: string;
   roles?: string[];

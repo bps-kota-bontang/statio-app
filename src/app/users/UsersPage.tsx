@@ -103,6 +103,11 @@ const UsersPage = () => {
         render: (_, no) => no, // custom render nomor urut
       },
       {
+        key: "username",
+        label: "Username",
+        sortable: true,
+      },
+      {
         key: "email",
         label: "Email",
         sortable: true,
