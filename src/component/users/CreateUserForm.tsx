@@ -20,6 +20,7 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
   const [password, setPassword] = useState("");
   const [roles, setRoles] = useState<string[]>([]);
   const [organizationId, setOrganizationId] = useState<string>("");
+  const [inviteToken, setInviteToken] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: organizations } = useOrganizations();
@@ -32,8 +33,22 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
       if (!onSubmit) return;
 
       const isValid = validate(
-        { username, email, password, roles, organization_id: organizationId },
-        ["username", "email", "password", "roles", "organization_id"]
+        {
+          username,
+          email,
+          password,
+          roles,
+          organization_id: organizationId,
+          invite_token: inviteToken,
+        },
+        [
+          "username",
+          "email",
+          "password",
+          "roles",
+          "organization_id",
+          "invite_token",
+        ]
       );
 
       if (!isValid) return;
@@ -45,6 +60,7 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
         password,
         roles,
         organization_id: organizationId,
+        invite_token: inviteToken,
       });
       setIsSubmitting(false);
       if (success) {
@@ -52,10 +68,20 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
         setEmail("");
         setPassword("");
         setOrganizationId("");
+        setInviteToken("");
         setRoles([]);
       }
     },
-    [onSubmit, validate, username, email, password, roles, organizationId]
+    [
+      onSubmit,
+      validate,
+      username,
+      email,
+      password,
+      roles,
+      organizationId,
+      inviteToken,
+    ]
   );
 
   return (
@@ -144,6 +170,36 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
         <p className="text-xs text-gray-500 mt-1">Pilih organisasi pengguna.</p>
         {errors.organization_id && (
           <p className="text-xs text-red-500">{errors.organization_id}</p>
+        )}
+      </div>
+
+      {/* Invite Token */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Invite Token</label>
+        <div className="flex gap-2 items-center justify-center">
+          <Input
+            className="flex-1"
+            value={inviteToken}
+            onChange={setInviteToken}
+            placeholder="Masukkan invite token"
+            type="password"
+          />
+          <Button
+            type="button"
+            onClick={() => {
+              const token = crypto.randomUUID();
+              setInviteToken(token);
+            }}
+            variant="secondary"
+          >
+            Generate
+          </Button>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Masukkan invite token jika ada.
+        </p>
+        {errors.invite_token && (
+          <p className="text-xs text-red-500">{errors.invite_token}</p>
         )}
       </div>
 

@@ -4,7 +4,12 @@ import {
   createPaginatedResourceHook,
   type FilterValue,
 } from "@/hooks/usePaginatedResource";
-import type { CreateUserRequest, User, UpdateUserRequest } from "@/type/user";
+import type {
+  CreateUserRequest,
+  User,
+  UpdateUserRequest,
+  UserInviteLinkResponse,
+} from "@/type/user";
 import type { ApiResponse } from "@/type/response";
 import useSWR from "swr";
 
@@ -56,11 +61,20 @@ export const useUserApi = () => {
     });
   };
 
+  const getUserInviteLink = (
+    id: string
+  ): Promise<ApiResponse<UserInviteLinkResponse>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/users/${id}/invite-link`, {
+      method: "GET",
+    });
+  };
+
   return {
     useUsers,
     useUser,
     createUser,
     updateUser,
     deleteUser,
+    getUserInviteLink,
   };
 };

@@ -23,7 +23,8 @@ const UsersPage = () => {
 
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
-  const { useUsers, createUser, updateUser, deleteUser } = useUserApi();
+  const { useUsers, createUser, updateUser, deleteUser, getUserInviteLink } =
+    useUserApi();
 
   const table = useDataTable<User>();
 
@@ -81,6 +82,20 @@ const UsersPage = () => {
       return false;
     }
   };
+
+  const handleCopyInviteLink = useCallback(
+    async (id: string) => {
+      try {
+        const response = await getUserInviteLink(id);
+        const inviteLink = response.data.invite_link;
+
+        return inviteLink;
+      } catch (error) {
+        console.error("Error getting invite link:", error);
+      }
+    },
+    [getUserInviteLink]
+  );
 
   const handleEditUser = async (id: string, data: UpdateUserRequest) => {
     try {
@@ -141,6 +156,22 @@ const UsersPage = () => {
         render: (user) => user.organization?.name || "-",
       },
       {
+        key: "has_invite_link",
+        label: "Invite Link",
+        sortable: true,
+        render: (row) => {
+          return row.has_invite_link ? (
+            <Badge
+              copyable
+              onCopy={() => handleCopyInviteLink(row.id)}
+              label="Invite Link"
+            />
+          ) : (
+            <span className="text-sm text-gray-500">No Link</span>
+          );
+        },
+      },
+      {
         key: "actions",
         label: "Actions",
         sortable: false,
@@ -160,7 +191,7 @@ const UsersPage = () => {
         ),
       },
     ],
-    [openDelete, openEdit, organizations?.data]
+    [handleCopyInviteLink, openDelete, openEdit, organizations?.data]
   );
 
   return (

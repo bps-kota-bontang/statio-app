@@ -7,6 +7,7 @@ export type User = {
   roles: string[]; // e.g., ['admin', 'operator']
   organization_id: string;
   organization?: Organization;
+  has_invite_link?: boolean;
 };
 
 export type CreateUserRequest = {
@@ -15,6 +16,7 @@ export type CreateUserRequest = {
   password: string;
   roles: string[];
   organization_id: string;
+  invite_token?: string;
 };
 
 export type UpdateUserRequest = {
@@ -23,4 +25,9 @@ export type UpdateUserRequest = {
   password?: string;
   roles?: string[];
   organization_id?: string;
+  invite_token?: string;
+};
+
+export type UserInviteLinkResponse = {
+  invite_link: string;
 };

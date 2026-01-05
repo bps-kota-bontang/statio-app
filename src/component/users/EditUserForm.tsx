@@ -30,6 +30,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [roles, setRoles] = useState<string[]>([]);
+  const [inviteToken, setInviteToken] = useState<string | undefined>(undefined);
   const [organizationId, setOrganizationId] = useState<string>("");
 
   // ✅ Update form values when user data is loaded
@@ -63,6 +64,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
         password,
         roles,
         organization_id: organizationId,
+        invite_token: inviteToken,
       });
       setIsSubmitting(false);
     },
@@ -75,6 +77,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
       organizationId,
       userID,
       password,
+      inviteToken,
     ]
   );
 
@@ -167,6 +170,36 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
         </p>
         {errors.organization_id && (
           <p className="text-xs text-red-500">{errors.organization_id}</p>
+        )}
+      </div>
+
+      {/* Invite Token */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Invite Token</label>
+        <div className="flex gap-2 items-center justify-center">
+          <Input
+            className="flex-1"
+            value={inviteToken ?? ""}
+            onChange={(val) => setInviteToken(val)}
+            placeholder="Masukkan invite token"
+            type="password"
+          />
+          <Button
+            type="button"
+            onClick={() => {
+              const token = crypto.randomUUID();
+              setInviteToken(token);
+            }}
+            variant="secondary"
+          >
+            Generate
+          </Button>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Masukkan invite token jika ada.
+        </p>
+        {errors.invite_token && (
+          <p className="text-xs text-red-500">{errors.invite_token}</p>
         )}
       </div>
 
