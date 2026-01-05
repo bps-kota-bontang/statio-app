@@ -16,6 +16,7 @@ const Badge = ({
   onClick,
   onCopy,
 }: BadgeProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (text: string) => {
@@ -37,12 +38,14 @@ const Badge = ({
     if (!copyable) return;
 
     if (onCopy) {
+      setIsLoading(true);
       const textToCopy = await onCopy();
       if (textToCopy) {
         await handleCopy(textToCopy);
       } else {
         alert("Failed to copy.");
       }
+      setIsLoading(false);
       return;
     }
 
@@ -57,8 +60,7 @@ const Badge = ({
       } ${className}`}
       title={copyable ? "Click to copy" : undefined}
     >
-      <span>{label}</span>
-
+      <span>{isLoading ? "Loading..." : label}</span>
       {/* Badge popup untuk copy */}
       {copyable && (
         <span
