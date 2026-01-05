@@ -19,6 +19,7 @@ const StatioLayout = () => {
   }, []);
 
   const handleToggleSidebar = () => {
+    setCollapsed(false);
     setSidebarOpen(!sidebarOpen);
   };
 

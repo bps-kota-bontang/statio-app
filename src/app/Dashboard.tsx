@@ -229,7 +229,7 @@ const Dashboard = () => {
           {/* Organizations Need Attention */}
           <div className="bg-linear-to-br from-red-50 to-orange-50 p-6 rounded-lg shadow-md border-2 border-red-200">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-1">
                 <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
                   <AlertTriangle className="h-5 w-5 text-white" />
                 </div>
@@ -260,18 +260,16 @@ const Dashboard = () => {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="font-bold text-gray-900">{org.name}</h3>
-                        <span
-                          className={`px-2 py-0.5 text-xs font-bold rounded-full ${
-                            org.status === "Kritis"
-                              ? "bg-red-500 text-white"
-                              : "bg-orange-500 text-white"
-                          }`}
-                        >
-                          {org.status}
-                        </span>
-                      </div>
+                      <h3 className="font-bold text-gray-900">{org.name}</h3>
+                      <span
+                        className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                          org.status === "Kritis"
+                            ? "bg-red-500 text-white"
+                            : "bg-orange-500 text-white"
+                        }`}
+                      >
+                        {org.status}
+                      </span>
                       <p className="text-sm text-gray-600">
                         {org.tables} tabel ditugaskan
                       </p>
@@ -328,8 +326,8 @@ const Dashboard = () => {
 
               return (
                 <div key={org.name} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-medium text-gray-700 flex-1">
                       {org.name}
                     </span>
                     <div className="flex items-center space-x-3">
