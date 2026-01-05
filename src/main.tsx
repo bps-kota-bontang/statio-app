@@ -16,6 +16,7 @@ import { ProtectedRoute } from "@/component/auth/ProtectedRoute";
 import LoginPage from "@/app/auth/LoginPage";
 import ManagementLayout from "@/component/layout/ManagementLayout";
 import AnalysisLayout from "@/component/layout/AnalysisLayout";
+import UserLayout from "@/component/layout/UserLayout";
 import TableAnalysis from "@/app/analysis/TableAnalysisPage";
 import TableDetailReviewPage from "@/app/analysis/TableDetailReviewPage";
 import UsersPage from "@/app/users/UsersPage";
@@ -48,7 +49,9 @@ createRoot(root!).render(
             <Route path="dimensions" element={<DimensionPage />} />
             <Route path="tables" element={<TablePage />} />
           </Route>
-          <Route path="users" element={<UsersPage />} />
+          <Route path="users" element={<UserLayout />}>
+            <Route index element={<UsersPage />} />
+          </Route>
         </Route>
         <Route path="/login" element={<LoginPage />} />
       </Routes>
