@@ -109,9 +109,10 @@ const EditDimensionForm = ({
         return;
       }
 
-      const isValid = validate({ name: trimmedName, values: cleanedValues }, [
-        "name",
-      ]);
+      const { isValid } = validate(
+        { name: trimmedName, values: cleanedValues },
+        ["name"]
+      );
       if (!isValid) return;
 
       // Bangun payload yang mengikuti aturan:

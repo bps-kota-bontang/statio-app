@@ -59,7 +59,7 @@ const CreateDimensionForm = ({
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate({ name, values }, ["name"], ["values"]);
+      const { isValid } = validate({ name, values }, ["name"], ["values"]);
       if (!isValid) return;
       setIsSubmitting(true);
       const success = await onSubmit({ name, values });

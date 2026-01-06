@@ -29,7 +29,7 @@ const AssignOrganizationForm = ({
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate({ organization_id: organizationId }, [
+      const { isValid } = validate({ organization_id: organizationId }, [
         "organization_id",
       ]);
 

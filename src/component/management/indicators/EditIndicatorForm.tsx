@@ -49,7 +49,7 @@ const EditIndicatorForm = ({
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate(
+      const { isValid } = validate(
         {
           name,
           measure,

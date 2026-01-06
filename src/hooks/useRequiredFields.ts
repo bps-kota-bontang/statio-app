@@ -14,6 +14,18 @@ export function useRequiredFields<T extends Record<string, unknown>>() {
       arrayFields: (keyof T)[] = [] // ← tambahan: validasi minimal 1 item
     ) => {
       const newErrors: Errors<T> = {};
+      const cleanedData: Partial<T> = {};
+
+      // Clean and validate all fields
+      Object.keys(values).forEach((key) => {
+        const field = key as keyof T;
+        const value = values[field];
+
+        // Skip null or empty string values
+        if (value != null && String(value).trim() !== "") {
+          cleanedData[field] = value;
+        }
+      });
 
       // Validasi field wajib biasa
       requiredFields.forEach((field) => {
@@ -32,7 +44,13 @@ export function useRequiredFields<T extends Record<string, unknown>>() {
       });
 
       setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
+      const isValid = Object.keys(newErrors).length === 0;
+
+      return {
+        isValid: isValid,
+        data: cleanedData as T,
+        errors: newErrors,
+      };
     },
     []
   );

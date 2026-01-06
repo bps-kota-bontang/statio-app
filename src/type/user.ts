@@ -13,9 +13,9 @@ export type User = {
 export type CreateUserRequest = {
   username: string;
   email: string;
-  password: string;
+  password?: string;
   roles: string[];
-  organization_id: string;
+  organization_id?: string;
   invite_token?: string;
 };
 

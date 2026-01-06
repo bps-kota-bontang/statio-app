@@ -32,36 +32,19 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate(
+      const { isValid, data } = validate(
         {
           username,
           email,
-          password,
           roles,
-          organization_id: organizationId,
-          invite_token: inviteToken,
         },
-        [
-          "username",
-          "email",
-          "password",
-          "roles",
-          "organization_id",
-          "invite_token",
-        ]
+        ["username", "email", "roles"]
       );
 
       if (!isValid) return;
 
       setIsSubmitting(true);
-      const success = await onSubmit({
-        username,
-        email,
-        password,
-        roles,
-        organization_id: organizationId,
-        invite_token: inviteToken,
-      });
+      const success = await onSubmit(data);
       setIsSubmitting(false);
       if (success) {
         setUsername("");
@@ -72,16 +55,7 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
         setRoles([]);
       }
     },
-    [
-      onSubmit,
-      validate,
-      username,
-      email,
-      password,
-      roles,
-      organizationId,
-      inviteToken,
-    ]
+    [onSubmit, validate, username, email, roles]
   );
 
   return (

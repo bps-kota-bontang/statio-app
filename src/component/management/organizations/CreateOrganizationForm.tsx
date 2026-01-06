@@ -36,7 +36,7 @@ const CreateOrganizationForm = ({
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate({ name }, ["name"]);
+      const { isValid } = validate({ name }, ["name"]);
       if (!isValid) return;
 
       setIsSubmitting(true);

@@ -48,7 +48,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate(
+      const { isValid } = validate(
         {
           username,
           email,

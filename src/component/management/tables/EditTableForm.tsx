@@ -51,7 +51,7 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate(
+      const { isValid } = validate(
         {
           name,
           indicator_id: indicatorId,

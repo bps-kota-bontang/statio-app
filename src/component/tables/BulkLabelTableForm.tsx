@@ -34,7 +34,7 @@ const BulkLabelTableForm = ({
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate({ labels: labels }, ["labels"]);
+      const { isValid } = validate({ labels: labels }, ["labels"]);
 
       if (!isValid) return;
       setIsSubmitting(true);

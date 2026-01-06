@@ -49,7 +49,7 @@ const CreateIndicatorForm = ({
       e.preventDefault();
       if (!onSubmit) return;
 
-      const isValid = validate({ name, measure, unit }, ["name", "measure"]);
+      const { isValid } = validate({ name, measure, unit }, ["name", "measure"]);
       if (!isValid) return;
       setIsSubmitting(true);
       const success = await onSubmit({ name, measure, unit: unit || null });
