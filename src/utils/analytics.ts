@@ -38,8 +38,8 @@ export const initGA = (): void => {
 
     // Initialize dataLayer
     window.dataLayer = window.dataLayer || [];
-    window.gtag = function (...args: unknown[]) {
-      window.dataLayer?.push(args);
+    window.gtag = function () {
+      window.dataLayer?.push(arguments);
     };
 
     // Configure GA
