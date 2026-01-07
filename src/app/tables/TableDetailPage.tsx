@@ -10,7 +10,12 @@ import Input from "@/component/ui/Input";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import Button from "@/component/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
-import { trackTableSubmit, trackTableView } from "@/utils/analytics";
+import {
+  trackTableFinalize,
+  trackTableRevert,
+  trackTableSubmit,
+  trackTableView,
+} from "@/utils/analytics";
 
 const TableDetailPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -41,7 +46,9 @@ const TableDetailPage = () => {
   );
 
   useEffect(() => {
-    const pageTitle = data?.data.name ? `${data.data.name} | Statio` : "Table Detail | Statio";
+    const pageTitle = data?.data.name
+      ? `${data.data.name} | Statio`
+      : "Table Detail | Statio";
     document.title = pageTitle;
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
@@ -221,6 +228,7 @@ const TableDetailPage = () => {
                   setIsReverting(true);
                   try {
                     await revertTable(id);
+                    trackTableRevert(id, data.data.name);
                     await mutate();
                   } finally {
                     setIsReverting(false);
@@ -244,6 +252,7 @@ const TableDetailPage = () => {
                     setIsFinalizing(true);
                     try {
                       await finalizeTable(id);
+                      trackTableFinalize(id, data.data.name);
                       await mutate();
                     } finally {
                       setIsFinalizing(false);

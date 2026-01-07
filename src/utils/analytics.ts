@@ -6,8 +6,8 @@
 declare global {
   interface Window {
     GA_MEASUREMENT_ID?: string;
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
@@ -38,8 +38,8 @@ export const initGA = (): void => {
 
     // Initialize dataLayer
     window.dataLayer = window.dataLayer || [];
-    window.gtag = function () {
-      window.dataLayer?.push(arguments);
+    window.gtag = function (...args: unknown[]) {
+      window.dataLayer?.push(args);
     };
 
     // Configure GA
@@ -80,7 +80,7 @@ export const trackPageView = (path: string): void => {
  */
 export const trackEvent = (
   eventName: string,
-  eventParams?: Record<string, any>
+  eventParams?: Record<string, unknown>
 ): void => {
   if (!window.gtag) return;
 
@@ -132,12 +132,39 @@ export const trackExport = (exportType: string, tableId?: string): void => {
 };
 
 /**
- * Track table submission error
+ * Track table submission
  * @param tableId - Table ID
- * @param errorMessage - Error message
+ * @param errorMessage - Table name
  */
 export const trackTableSubmit = (tableId: string, tableName?: string): void => {
   trackEvent("table_submit", {
+    table_id: tableId,
+    table_name: tableName,
+  });
+};
+
+/**
+ * Track table revert
+ * @param tableId - Table ID
+ * @param tableName - Table name
+ */
+export const trackTableRevert = (tableId: string, tableName?: string): void => {
+  trackEvent("table_revert", {
+    table_id: tableId,
+    table_name: tableName,
+  });
+};
+
+/**
+ * Track table finalize
+ * @param tableId - Table ID
+ * @param tableName - Table name
+ */
+export const trackTableFinalize = (
+  tableId: string,
+  tableName?: string
+): void => {
+  trackEvent("table_finalize", {
     table_id: tableId,
     table_name: tableName,
   });
@@ -178,7 +205,9 @@ export const setUserId = (userId: string): void => {
  * Set user properties
  * @param properties - User properties
  */
-export const setUserProperties = (properties: Record<string, any>): void => {
+export const setUserProperties = (
+  properties: Record<string, unknown>
+): void => {
   if (!window.gtag) return;
 
   try {
