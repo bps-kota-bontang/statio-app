@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Input from "@/component/ui/Input";
 import { login, loginInvite, loginSso } from "@/service/auth";
 import { API_BASE_URL } from "@/config/api";
+import { Loader2 } from "lucide-react";
 
 const LoginPage = () => {
   const { token, setToken } = useAuth();
@@ -91,63 +92,78 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden md:flex w-1/2 bg-blue-600 items-center justify-center" />
-      <div className="flex w-full md:w-1/2 items-center justify-center bg-gray-50">
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-10 rounded-lg shadow-lg w-full max-w-md"
-        >
-          <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
-            Welcome Back
-          </h2>
-
-          <div className="mb-4">
-            <label className="block text-sm font-semibold mb-1 text-gray-700">
-              Email or Username
-            </label>
-            <Input
-              value={identifier}
-              onChange={setIdentifier}
-              type="text"
-              placeholder="Enter your email or username"
-            />
+    <>
+      {/* Loading Modal Overlay */}
+      {formLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl p-8 flex flex-col items-center gap-4">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+            <p className="text-lg font-semibold text-gray-800">Logging in...</p>
+            <p className="text-sm text-gray-600">
+              Please wait while we authenticate your credentials
+            </p>
           </div>
+        </div>
+      )}
 
-          <div className="mb-4">
-            <label className="block text-sm font-semibold mb-1 text-gray-700">
-              Password
-            </label>
-            <Input
-              value={password}
-              onChange={setPassword}
-              type="password"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          {error && (
-            <p className="text-red-500 text-sm mb-4 animate-pulse">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={formLoading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-4"
+      <div className="min-h-screen flex">
+        <div className="hidden md:flex w-1/2 bg-blue-600 items-center justify-center" />
+        <div className="flex w-full md:w-1/2 items-center justify-center bg-gray-50">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white p-10 rounded-lg shadow-lg w-full max-w-md"
           >
-            {formLoading ? "Logging in..." : "Login"}
-          </button>
-          <button
-            type="button"
-            onClick={handleSSOLogin}
-            className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-100 transition"
-          >
-            <img src="/bps.svg" alt="SSO BPS" className="w-5 h-5" /> Login with
-            SSO BPS{" "}
-          </button>
-        </form>
+            <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+              Welcome Back
+            </h2>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-1 text-gray-700">
+                Email or Username
+              </label>
+              <Input
+                value={identifier}
+                onChange={setIdentifier}
+                type="text"
+                placeholder="Enter your email or username"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-1 text-gray-700">
+                Password
+              </label>
+              <Input
+                value={password}
+                onChange={setPassword}
+                type="password"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            {error && (
+              <p className="text-red-500 text-sm mb-4 animate-pulse">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={formLoading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-4"
+            >
+              {formLoading ? "Logging in..." : "Login"}
+            </button>
+            <button
+              type="button"
+              onClick={handleSSOLogin}
+              className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-100 transition"
+            >
+              <img src="/bps.svg" alt="SSO BPS" className="w-5 h-5" /> Login
+              with SSO BPS{" "}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

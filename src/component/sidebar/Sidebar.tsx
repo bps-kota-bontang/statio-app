@@ -4,6 +4,7 @@ import { COPYRIGHT_YEAR } from "@/constant/dates";
 import { useAuth } from "@/hooks/useAuth";
 import { PanelRight, LogOut } from "lucide-react";
 import { useState } from "react";
+import { BUILD_HASH } from "@/config/api";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -91,9 +92,14 @@ const Sidebar = ({
         </button>
 
         {!collapsed && (
-          <p className="text-xs text-gray-400 text-center mt-2">
-            © {COPYRIGHT_YEAR} <span className="font-semibold text-gray-700">Statio</span>
-          </p>
+          <div className="mt-2 space-y-1">
+            <p className="text-xs text-gray-400 text-center">
+              © {COPYRIGHT_YEAR}{" "}
+              <span className="font-semibold text-gray-700">Statio</span> by BPS
+              Kota Bontang
+            </p>
+            <p className="text-xs text-gray-400 text-center">Version: 1.0.0 (Build: {BUILD_HASH})</p>
+          </div>
         )}
       </div>
     </aside>
