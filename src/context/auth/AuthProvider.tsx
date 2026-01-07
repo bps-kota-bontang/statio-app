@@ -10,6 +10,11 @@ import type { AuthContextType } from "@/hooks/useAuth";
 import { API_BASE_URL } from "@/config/api";
 import Loading from "@/component/ui/Loading";
 import type { User } from "@/type/user";
+import {
+  trackLogout,
+  setUserId,
+  setUserProperties,
+} from "@/utils/analytics";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
@@ -29,6 +34,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
+
+      // Track logout
+      trackLogout();
+
       setToken(null);
       setUser(null);
     } catch (error) {
@@ -69,6 +78,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const result = await res.json();
       setUser(result.data);
+
+      // Track user in GA
+      if (result.data?.id) {
+        setUserId(String(result.data.id));
+        setUserProperties({
+          role: result.data.role,
+          organization: result.data.organization?.name,
+        });
+      }
     } catch (err) {
       console.error("Fetch user failed:", err);
       setUser(null);

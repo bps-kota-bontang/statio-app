@@ -2,6 +2,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import "@/style/index.css";
+import { initGA } from "@/utils/analytics";
+import { PageTracker } from "@/component/analytics/PageTracker";
 
 import StatioLayout from "@/component/layout/StatioLayout";
 import Dashboard from "@/app/Dashboard";
@@ -21,11 +23,14 @@ import TableAnalysis from "@/app/analysis/TableAnalysisPage";
 import TableDetailReviewPage from "@/app/analysis/TableDetailReviewPage";
 import UsersPage from "@/app/users/UsersPage";
 
+initGA();
+
 const root = document.getElementById("root");
 
 createRoot(root!).render(
   <AuthProvider>
     <BrowserRouter>
+      <PageTracker />
       <Routes>
         <Route
           element={

@@ -10,6 +10,7 @@ import Input from "@/component/ui/Input";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import Button from "@/component/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
+import { trackTableSubmit, trackTableView } from "@/utils/analytics";
 
 const TableDetailPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -46,6 +47,12 @@ const TableDetailPage = () => {
       { label: data?.data.name },
     ]);
   }, [setBreadcrumbs, data?.data.name]);
+
+  useEffect(() => {
+    if (data?.data.name && id) {
+      trackTableView(id, data.data.name);
+    }
+  }, [data?.data.name, id]);
 
   const { data: insightFacts, mutate: mutateInsightFacts } =
     useTableInsightFacts(id, Math.min(...years), Math.max(...years));
@@ -185,6 +192,7 @@ const TableDetailPage = () => {
                 setIsSubmitting(true);
                 try {
                   await submitTable(id);
+                  trackTableSubmit(id, data.data.name);
                   await mutate();
                 } finally {
                   setIsSubmitting(false);

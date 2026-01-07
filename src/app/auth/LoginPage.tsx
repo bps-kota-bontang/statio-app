@@ -5,6 +5,7 @@ import Input from "@/component/ui/Input";
 import { login, loginInvite, loginSso } from "@/service/auth";
 import { API_BASE_URL } from "@/config/api";
 import { Loader2 } from "lucide-react";
+import { trackLogin } from "@/utils/analytics";
 
 const LoginPage = () => {
   const { token, setToken } = useAuth();
@@ -29,6 +30,7 @@ const LoginPage = () => {
         setFormLoading(true);
         const data = await loginSso({ token: paramsToken, state: paramsState });
         setToken(data.data.access_token);
+        trackLogin("sso");
         navigate("/", { replace: true });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unexpected error");
@@ -50,6 +52,7 @@ const LoginPage = () => {
           invite_token: paramsInviteToken,
         });
         setToken(data.data.access_token);
+        trackLogin("invite_token");
         navigate("/", { replace: true });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unexpected error");
@@ -76,6 +79,7 @@ const LoginPage = () => {
       try {
         const data = await login({ identifier, password });
         setToken(data.data.access_token);
+        trackLogin("credentials");
         navigate("/", { replace: true });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unexpected error");
