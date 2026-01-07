@@ -20,6 +20,7 @@ const Dashboard = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    document.title = "Dashboard | Statio";
     setBreadcrumbs([{ label: "Dashboard" }]);
   }, [setBreadcrumbs]);
 

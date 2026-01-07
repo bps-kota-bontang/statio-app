@@ -22,6 +22,7 @@ const TableAnalysis = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
   const { ask, ConfirmDialog } = useConfirm();
   useEffect(() => {
+    document.title = "Analysis | Statio";
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Analysis" }]);
   }, [setBreadcrumbs]);
 

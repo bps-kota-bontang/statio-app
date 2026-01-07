@@ -21,6 +21,11 @@ const LoginPage = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Set document title
+  useEffect(() => {
+    document.title = "Login | Statio";
+  }, []);
+
   // ✅ Auto-login dari callback SSO
   useEffect(() => {
     const processSso = async () => {

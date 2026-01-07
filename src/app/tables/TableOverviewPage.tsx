@@ -24,6 +24,7 @@ const TableOverviewPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
+    document.title = "Tables | Statio";
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Tables" }]);
   }, [setBreadcrumbs]);
 

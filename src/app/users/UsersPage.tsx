@@ -18,6 +18,7 @@ const UsersPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
+    document.title = "Users | Statio";
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Users" }]);
   }, [setBreadcrumbs]);
 

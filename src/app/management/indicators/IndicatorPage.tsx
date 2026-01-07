@@ -21,6 +21,7 @@ const IndicatorPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
+    document.title = "Indicators Management | Statio";
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
       { label: "Management", highlight: false },

@@ -36,6 +36,8 @@ const TableDetailReviewPage = () => {
   );
 
   useEffect(() => {
+    const pageTitle = data?.data.name ? `${data.data.name} - Review | Statio` : "Table Review | Statio";
+    document.title = pageTitle;
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
       { label: "Analysis", href: "/analysis" },

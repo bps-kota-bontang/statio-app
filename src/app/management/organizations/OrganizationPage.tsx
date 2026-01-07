@@ -21,6 +21,7 @@ const OrganizationPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
+    document.title = "Organizations Management | Statio";
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
       { label: "Management", highlight: false },

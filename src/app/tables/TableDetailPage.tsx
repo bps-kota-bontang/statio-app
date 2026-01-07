@@ -41,6 +41,8 @@ const TableDetailPage = () => {
   );
 
   useEffect(() => {
+    const pageTitle = data?.data.name ? `${data.data.name} | Statio` : "Table Detail | Statio";
+    document.title = pageTitle;
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
       { label: "Tables", href: "/tables" },
