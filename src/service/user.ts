@@ -9,6 +9,8 @@ import type {
   User,
   UpdateUserRequest,
   UserInviteLinkResponse,
+  UpdatePasswordRequest,
+  UpdateEmailRequest,
 } from "@/type/user";
 import type { ApiResponse } from "@/type/response";
 import useSWR from "swr";
@@ -69,6 +71,24 @@ export const useUserApi = () => {
     });
   };
 
+  const updateProfile = async (
+    data: UpdateEmailRequest
+  ): Promise<ApiResponse<User>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/users/me/email`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  };
+
+  const changePassword = async (
+    data: UpdatePasswordRequest
+  ): Promise<ApiResponse<null>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/users/me/password`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  };
+
   return {
     useUsers,
     useUser,
@@ -76,5 +96,7 @@ export const useUserApi = () => {
     updateUser,
     deleteUser,
     getUserInviteLink,
+    updateProfile,
+    changePassword,
   };
 };

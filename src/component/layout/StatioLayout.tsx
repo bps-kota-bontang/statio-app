@@ -74,7 +74,7 @@ const StatioLayout = () => {
           </svg>
         </button>
 
-        <div className="bg-white p-4 rounded-lg shadow-md min-h-full">
+        <div className="bg-white p-4 rounded-lg shadow-md">
           <Breadcrumb items={breadcrumbs} />
           <Outlet context={{ breadcrumbs, setBreadcrumbs }} />
         </div>

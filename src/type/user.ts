@@ -32,3 +32,13 @@ export type UpdateUserRequest = {
 export type UserInviteLinkResponse = {
   invite_link: string;
 };
+
+export type UpdateEmailRequest = {
+  email: string;
+};
+
+export type UpdatePasswordRequest = {
+  old_password?: string;
+  new_password: string;
+  confirm_password: string;
+};

@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Settings,
   Table,
+  User,
   Users,
 } from "lucide-react";
 
@@ -52,5 +53,10 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: <Users />,
     href: "/users",
     roles: ["admin"],
+  },
+  {
+    title: "Profile",
+    href: "/profile",
+    icon: <User />,
   },
 ];
