@@ -36,9 +36,12 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
         {
           username,
           email,
+          password,
           roles,
+          organization_id: organizationId,
+          invite_token: inviteToken,
         },
-        ["username", "email", "roles"]
+        ["username", "roles"]
       );
 
       if (!isValid) return;
@@ -55,7 +58,16 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
         setRoles([]);
       }
     },
-    [onSubmit, validate, username, email, roles]
+    [
+      onSubmit,
+      validate,
+      username,
+      email,
+      password,
+      roles,
+      organizationId,
+      inviteToken,
+    ]
   );
 
   return (

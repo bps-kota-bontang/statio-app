@@ -48,25 +48,21 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
       e.preventDefault();
       if (!onSubmit) return;
 
-      const { isValid } = validate(
+      const { isValid, data } = validate(
         {
           username,
           email,
+          password,
           roles,
           organization_id: organizationId,
+          invite_token: inviteToken,
         },
-        ["username", "email", "roles", "organization_id"]
+        ["username", "roles"]
       );
       if (!isValid) return;
+
       setIsSubmitting(true);
-      await onSubmit(userID, {
-        username,
-        email,
-        password,
-        roles,
-        organization_id: organizationId,
-        invite_token: inviteToken,
-      });
+      await onSubmit(userID, data);
       setIsSubmitting(false);
     },
     [
@@ -74,11 +70,11 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
       validate,
       username,
       email,
+      password,
       roles,
       organizationId,
-      userID,
-      password,
       inviteToken,
+      userID,
     ]
   );
 

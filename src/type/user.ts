@@ -3,16 +3,17 @@ import type { Organization } from "./organization";
 export type User = {
   id: string;
   username: string;
-  email: string;
+  email?: string;
   roles: string[]; // e.g., ['admin', 'operator']
   organization_id: string;
   organization?: Organization;
   has_invite_link?: boolean;
+  has_password?: boolean;
 };
 
 export type CreateUserRequest = {
   username: string;
-  email: string;
+  email?: string;
   password?: string;
   roles: string[];
   organization_id?: string;
@@ -20,10 +21,10 @@ export type CreateUserRequest = {
 };
 
 export type UpdateUserRequest = {
-  username?: string;
+  username: string;
   email?: string;
   password?: string;
-  roles?: string[];
+  roles: string[];
   organization_id?: string;
   invite_token?: string;
 };

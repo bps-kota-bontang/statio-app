@@ -21,8 +21,10 @@ export function useRequiredFields<T extends Record<string, unknown>>() {
         const field = key as keyof T;
         const value = values[field];
 
-        // Skip null or empty string values
-        if (value != null && String(value).trim() !== "") {
+        // Convert empty string to null
+        if (value != null && String(value).trim() === "") {
+          cleanedData[field] = null as T[keyof T];
+        } else if (value != null) {
           cleanedData[field] = value;
         }
       });
