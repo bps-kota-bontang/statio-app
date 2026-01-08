@@ -89,7 +89,8 @@ const Dashboard = () => {
             {formatDate(DATES.collectionEnd)}
           </span>
         </p>
-        <div className="mt-3 inline-flex items-center px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+        {/* inline-flex  */}
+        <div className="mt-3 items-center px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg hidden ">
           <Clock className="h-4 w-4 text-orange-600 mr-2" />
           <span className="text-sm text-orange-700">
             <span className="font-semibold">Deadline Perubahan Dimensi:</span>{" "}

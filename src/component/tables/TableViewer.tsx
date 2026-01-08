@@ -146,23 +146,24 @@ const TableViewer = ({
         </Button>
 
         {/* ➕ Add */}
+        {/* flex  */}
         <Button
           variant="ghost"
-          className="flex items-center gap-1 max-md:w-full"
+          className="items-center gap-1 max-md:w-full hidden"
         >
           <Plus className="w-4 h-4" />
           Tambah Baris / Kolom
         </Button>
 
         {/* 🗑 Delete */}
+        {/* flex  */}
         <Button
           variant="ghost"
-          className="flex items-center gap-1 max-md:w-full"
+          className="items-center gap-1 max-md:w-full hidden"
         >
           <Trash className="w-4 h-4" />
           Hapus Baris / Kolom
         </Button>
-
         {/* 🌐 Locale */}
         <div className="flex items-center gap-2 ml-auto max-md:ml-0 max-md:w-full max-md:flex justify-center">
           <Globe className="w-4 h-4 text-gray-600" />
@@ -187,7 +188,6 @@ const TableViewer = ({
             ?
           </button>
         </div>
-
         {/* 💾 Status + AutoSave */}
         <div className="flex items-center gap-3 max-md:w-full max-md:justify-between">
           <div className="text-xs font-medium">
