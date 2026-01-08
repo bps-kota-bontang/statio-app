@@ -243,7 +243,7 @@ const TableOverviewPage = () => {
               <Button size="sm">View</Button>
             </Link>
             <Button size="sm" onClick={() => openEdit(row)}>
-              Edit
+              Label
             </Button>
           </div>
         ),
