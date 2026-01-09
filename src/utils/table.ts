@@ -199,13 +199,17 @@ export const buildDataWithTotals = (
   if (!onlyOneCol) {
     if (dimensionCount > 0) {
       // Tambahkan TOTAL_KEY tiap row jika lebih dari 1 kolom
-      newData = newData.map((row) => ({
-        ...row,
-        [TOTAL_KEY]: colKeys.reduce(
+      newData = newData.map((row) => {
+        const total = colKeys.reduce(
           (sum, key) => sum + (Number(row[key]) || 0),
           0
-        ),
-      }));
+        );
+
+        return {
+          ...row,
+          [TOTAL_KEY]: Math.round(total * 100) / 100,
+        };
+      });
     }
   }
 
@@ -215,16 +219,21 @@ export const buildDataWithTotals = (
     // Hitung total tiap kolom
     const colTotals: Record<string, number> = {};
     colKeys.forEach((key) => {
-      colTotals[key] = newData.reduce(
+      const total = newData.reduce(
         (sum, row) => sum + (Number((row as Record<string, number>)[key]) || 0),
         0
       );
+
+      colTotals[key] = Math.round(total * 100) / 100;
     });
 
     if (!onlyOneCol) {
       // Hitung grand total jika lebih dari 1 kolom
       const grandTotal = colKeys.reduce((sum, key) => sum + colTotals[key], 0);
-      newData.push({ ...colTotals, [TOTAL_KEY]: grandTotal });
+      newData.push({
+        ...colTotals,
+        [TOTAL_KEY]: Math.round(grandTotal * 100) / 100,
+      });
     } else {
       // Hanya push total per kolom, tanpa grand total
       if (dimensionCount > 0) newData.push({ ...colTotals });
