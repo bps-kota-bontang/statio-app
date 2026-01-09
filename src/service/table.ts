@@ -195,9 +195,14 @@ export const useTableApi = () => {
     });
   };
 
-  const exportTable = async (id: string, years: string[]): Promise<void> => {
+  const exportTable = async (id: string, years: string[], format: 'xlsx' | 'xls' = 'xlsx'): Promise<void> => {
     const params = new URLSearchParams();
     years.forEach((year) => params.append("years", year));
+    params.append("format", format);
+
+    const acceptHeader = format === 'xls' 
+      ? "application/vnd.ms-excel"
+      : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     const response = await fetch(
       `${API_BASE_URL}/api/v1/tables/${id}/export?${params.toString()}`,
@@ -205,8 +210,7 @@ export const useTableApi = () => {
         method: "GET",
         credentials: "include",
         headers: {
-          Accept:
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          Accept: acceptHeader,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       }
@@ -218,7 +222,7 @@ export const useTableApi = () => {
 
     // Extract filename from Content-Disposition header
     const contentDisposition = response.headers.get("Content-Disposition");
-    let filename = `table_${id}_${new Date().toISOString().split("T")[0]}.xlsx`;
+    let filename = `table_${id}_${new Date().toISOString().split("T")[0]}.${format}`;
 
     console.log("Content-Disposition:", contentDisposition);
 

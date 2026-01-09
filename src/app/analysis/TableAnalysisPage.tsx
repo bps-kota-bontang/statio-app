@@ -101,11 +101,11 @@ const TableAnalysis = () => {
   );
 
   const handleConfirmExport = useCallback(
-    async (years: string[]) => {
+    async (years: string[], format: 'xlsx' | 'xls') => {
       if (!selectedTableForExport || years.length === 0) return;
 
       try {
-        await exportTable(selectedTableForExport, years);
+        await exportTable(selectedTableForExport, years, format);
         setIsExportModalOpen(false);
         setSelectedTableForExport(null);
       } catch (error) {

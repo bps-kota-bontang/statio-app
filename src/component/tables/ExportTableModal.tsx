@@ -7,7 +7,7 @@ interface ExportTableModalProps {
   tableName: string;
   availableYears: number[];
   onClose: () => void;
-  onExport: (years: string[]) => void;
+  onExport: (years: string[], format: 'xlsx' | 'xls') => void;
 }
 
 const ExportTableModal = ({
@@ -18,11 +18,13 @@ const ExportTableModal = ({
   onExport,
 }: ExportTableModalProps) => {
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
+  const [selectedFormat, setSelectedFormat] = useState<'xlsx' | 'xls'>('xlsx');
 
   // Reset selection when modal opens
   useEffect(() => {
     if (isOpen) {
       setSelectedYears([]);
+      setSelectedFormat('xlsx');
     }
   }, [isOpen]);
 
@@ -45,8 +47,8 @@ const ExportTableModal = ({
   }, [availableYears, selectedYears.length]);
 
   const handleExport = useCallback(() => {
-    onExport(selectedYears);
-  }, [selectedYears, onExport]);
+    onExport(selectedYears, selectedFormat);
+  }, [selectedYears, selectedFormat, onExport]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -97,6 +99,37 @@ const ExportTableModal = ({
         {selectedYears.length === 0 && (
           <p className="text-xs text-red-600">Select at least one year</p>
         )}
+
+        {/* Format Selection */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 block mb-1.5">
+            Export Format
+          </label>
+          <div className="flex gap-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="format"
+                value="xlsx"
+                checked={selectedFormat === 'xlsx'}
+                onChange={(e) => setSelectedFormat(e.target.value as 'xlsx' | 'xls')}
+                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm">XLSX (Excel 2007+)</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="format"
+                value="xls"
+                checked={selectedFormat === 'xls'}
+                onChange={(e) => setSelectedFormat(e.target.value as 'xlsx' | 'xls')}
+                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm">XLS (Legacy)</span>
+            </label>
+          </div>
+        </div>
 
         <div className="flex gap-2 justify-end pt-2">
           <Button size="sm" variant="secondary" onClick={onClose}>
