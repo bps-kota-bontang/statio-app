@@ -73,6 +73,9 @@ const TableDetailPage = () => {
     );
   }, [data?.data]);
 
+  const isAdmin = user?.roles.includes("admin");
+  const isLocked = isAdmin ? false : data?.data.is_locked;
+
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(data?.data?.name || "");
   const [isSaving, setIsSaving] = useState(false);
@@ -298,7 +301,7 @@ const TableDetailPage = () => {
 
       <TableViewer
         id={id}
-        isLocked={data.data.is_locked}
+        isLocked={isLocked}
         year={yearParam ? Number(yearParam) : lastYear}
         table={{ ...data.data, dimensions: sortedDimensions }}
         onRevalidate={handleRevalidate}
