@@ -195,16 +195,22 @@ export const useTableApi = () => {
     });
   };
 
-  const exportTable = async (id: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/api/v1/tables/${id}/export`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        Accept:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
+  const exportTable = async (id: string, years: string[]): Promise<void> => {
+    const params = new URLSearchParams();
+    years.forEach((year) => params.append("years", year));
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/tables/${id}/export?${params.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Export failed: ${response.statusText}`);
