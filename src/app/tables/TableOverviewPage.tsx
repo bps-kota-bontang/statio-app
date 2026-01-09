@@ -29,8 +29,13 @@ const TableOverviewPage = () => {
   }, [setBreadcrumbs]);
 
   const { user } = useAuth();
-  const { addLabelsTables, updateTableLabels, useTableLables, useTables } =
-    useTableApi();
+  const {
+    addLabelsTables,
+    updateTableLabels,
+    useTableLables,
+    useTables,
+    exportTable,
+  } = useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
 
@@ -86,6 +91,13 @@ const TableOverviewPage = () => {
     setEditingTable(row);
     setIsEditOpen(true);
   }, []);
+
+  const handleExportTable = useCallback(
+    async (tableId: string) => {
+      await exportTable(tableId);
+    },
+    [exportTable]
+  );
 
   const columns = useMemo<Column<TableList>[]>(
     () => [
@@ -245,11 +257,20 @@ const TableOverviewPage = () => {
             <Button size="sm" onClick={() => openEdit(row)}>
               Label
             </Button>
+            <Button size="sm" onClick={() => handleExportTable(row.id)}>
+              Export
+            </Button>
           </div>
         ),
       },
     ],
-    [existingLabels, openEdit, organizations?.data, user?.roles]
+    [
+      existingLabels,
+      handleExportTable,
+      openEdit,
+      organizations?.data,
+      user?.roles,
+    ]
   );
 
   return (

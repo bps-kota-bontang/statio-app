@@ -19,11 +19,13 @@ import type { ApiResponse } from "@/type/response";
 import useSWR from "swr";
 import type { Fact, FactRequest } from "@/type/fact";
 import { useApiFetch } from "@/hooks/useApiFetch";
+import { useAuth } from "@/hooks/useAuth";
 
 type TableFilters = Record<keyof Table, FilterValue>;
 
 export const useTableApi = () => {
   const apiFetch = useApiFetch();
+  const { token } = useAuth();
 
   const useTable = (id?: string, year?: number | null) => {
     const params = new URLSearchParams();
@@ -193,6 +195,48 @@ export const useTableApi = () => {
     });
   };
 
+  const exportTable = async (id: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/tables/${id}/export`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        Accept:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed: ${response.statusText}`);
+    }
+
+    // Extract filename from Content-Disposition header
+    const contentDisposition = response.headers.get("Content-Disposition");
+    let filename = `table_${id}_${new Date().toISOString().split("T")[0]}.xlsx`;
+
+    console.log("Content-Disposition:", contentDisposition);
+
+    if (contentDisposition && contentDisposition.includes("filename=")) {
+      const parts = contentDisposition.split("filename=");
+      if (parts.length > 1) {
+        filename = parts[1]
+          .split(";")[0]
+          .trim()
+          .replace(/^["']|["']$/g, "");
+      }
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
   const getTableFacts = (id: string, dimensionValueIDs?: string[]) => {
     const params = new URLSearchParams();
     if (dimensionValueIDs && dimensionValueIDs.length > 0) {
@@ -228,5 +272,6 @@ export const useTableApi = () => {
     getTableFacts,
     commitTable,
     commitTables,
+    exportTable,
   };
 };
