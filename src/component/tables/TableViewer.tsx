@@ -9,7 +9,7 @@ import {
   transpose,
 } from "@/utils/table";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Globe, Plus, Shuffle, Trash } from "lucide-react";
+import { Globe, Shuffle } from "lucide-react";
 import type { CellChange } from "handsontable/common";
 import { createPortal } from "react-dom";
 import { useTableApi } from "@/service/table";
@@ -147,23 +147,23 @@ const TableViewer = ({
 
         {/* ➕ Add */}
         {/* flex  */}
-        <Button
+        {/* <Button
           variant="ghost"
           className="items-center gap-1 max-md:w-full hidden"
         >
           <Plus className="w-4 h-4" />
           Tambah Baris / Kolom
-        </Button>
+        </Button> */}
 
         {/* 🗑 Delete */}
         {/* flex  */}
-        <Button
+        {/* <Button
           variant="ghost"
           className="items-center gap-1 max-md:w-full hidden"
         >
           <Trash className="w-4 h-4" />
           Hapus Baris / Kolom
-        </Button>
+        </Button> */}
         {/* 🌐 Locale */}
         <div className="flex items-center gap-2 ml-auto max-md:ml-0 max-md:w-full max-md:flex justify-center">
           <Globe className="w-4 h-4 text-gray-600" />
