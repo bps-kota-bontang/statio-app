@@ -3,85 +3,65 @@
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import { useIndicatorApi } from "@/service/indicator";
+import { useOrganizationApi } from "@/service/organization";
 import type {
-  Indicator,
-  UpdateIndicatorRequest,
-  CreateIndicatorRequest,
-} from "@/type/indicator";
+  Organization,
+  UpdateOrganizationRequest,
+  CreateOrganizationRequest,
+} from "@/type/organization";
 import { useMemo, useCallback, useState, useEffect } from "react";
-import CreateIndicatorForm from "@/component/management/indicators/CreateIndicatorForm";
-import EditIndicatorForm from "@/component/management/indicators/EditIndicatorForm";
+import CreateOrganizationForm from "@/component/collection/organizations/CreateOrganizationForm";
+import EditOrganizationForm from "@/component/collection/organizations/EditOrganizationForm";
 import Button from "@/component/ui/Button";
 import { Plus } from "lucide-react";
-import { useOutletContext } from "react-router";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
+import { useOutletContext } from "react-router";
 
-const IndicatorPage = () => {
+const OrganizationPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
-    document.title = "Indicators Management | Statio";
+    document.title = "Organizations Management | Statio";
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
       { label: "Management", highlight: false },
-      { label: "Indicators" },
+      { label: "Organizations" },
     ]);
   }, [setBreadcrumbs]);
 
-  const {
-    createIndicator,
-    updateIndicator,
-    useIndicatorMeasures,
-    useIndicators,
-    useIndicatorUnits,
-  } = useIndicatorApi();
+  const { useOrganizations, createOrganization, updateOrganization } =
+    useOrganizationApi();
 
-  const table = useDataTable<Indicator>(["measure", "unit"]);
+  const table = useDataTable<Organization>();
 
-  const { data: measures } = useIndicatorMeasures();
-
-  const existingIndicatorMeasures = useMemo(
-    () => measures?.data.map((dim) => dim.measure) || [],
-    [measures]
-  );
-
-  const { data: units } = useIndicatorUnits();
-
-  const existingIndicatorUnits = useMemo(
-    () => units?.data.map((unit) => unit.unit) || [],
-    [units]
-  );
-
-  const { data, isLoading, mutate } = useIndicators(table);
+  const { data, isLoading, mutate } = useOrganizations(table);
 
   // Modal create
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Modal edit
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState<Indicator | null>(
-    null
-  );
+  const [editingOrganization, setEditingOrganization] =
+    useState<Organization | null>(null);
 
-  const handleCreateIndicator = async (data: CreateIndicatorRequest) => {
+  const handleCreateOrganization = async (data: CreateOrganizationRequest) => {
     try {
-      await createIndicator(data);
+      await createOrganization(data);
       setIsCreateOpen(false);
       mutate();
       return true;
     } catch (error) {
-      console.error("Error creating indicator:", error);
+      console.error("Error creating organization:", error);
       return false;
     }
   };
 
-  const handleEditIndicator = async (
+  const handleEditOrganization = async (
     id: string,
-    data: UpdateIndicatorRequest
+    data: UpdateOrganizationRequest
   ) => {
     try {
-      await updateIndicator(id, data);
+      await updateOrganization(id, data);
       handleCloseEditModal();
       mutate();
       return true;
@@ -93,15 +73,15 @@ const IndicatorPage = () => {
 
   const handleCloseEditModal = () => {
     setIsEditOpen(false);
-    setEditingIndicator(null);
+    setEditingOrganization(null);
   };
 
-  const openEdit = useCallback((row: Indicator) => {
-    setEditingIndicator(row);
+  const openEdit = useCallback((row: Organization) => {
+    setEditingOrganization(row);
     setIsEditOpen(true);
   }, []);
 
-  const columns = useMemo<Column<Indicator>[]>(
+  const columns = useMemo<Column<Organization>[]>(
     () => [
       {
         key: "no",
@@ -113,19 +93,6 @@ const IndicatorPage = () => {
         key: "name",
         label: "Name",
         sortable: true,
-      },
-      {
-        key: "measure",
-        label: "Measure",
-        sortable: true,
-        filterOptions: existingIndicatorMeasures,
-      },
-      {
-        key: "unit",
-        label: "Unit",
-        sortable: true,
-        filterOptions: existingIndicatorUnits,
-        render: (row) => row.unit || "-",
       },
       {
         key: "actions",
@@ -140,17 +107,17 @@ const IndicatorPage = () => {
         ),
       },
     ],
-    [existingIndicatorMeasures, existingIndicatorUnits, openEdit]
+    [openEdit]
   );
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-semibold">Indicators</h1>
+      <h1 className="text-xl font-semibold">Organizations</h1>
       <DataTable
         actions={
           <Button onClick={() => setIsCreateOpen(true)} size="sm">
             <Plus className="w-5 h-5 mr-2" />
-            New Indicator
+            New Organization
           </Button>
         }
         data={data?.data ?? []}
@@ -166,8 +133,8 @@ const IndicatorPage = () => {
         onClose={() => setIsCreateOpen(false)}
         closeOutside={false}
       >
-        <CreateIndicatorForm
-          onSubmit={handleCreateIndicator}
+        <CreateOrganizationForm
+          onSubmit={handleCreateOrganization}
           onCancel={() => setIsCreateOpen(false)}
         />
       </Modal>
@@ -178,10 +145,10 @@ const IndicatorPage = () => {
         onClose={handleCloseEditModal}
         closeOutside={false}
       >
-        {editingIndicator && (
-          <EditIndicatorForm
-            indicator={editingIndicator}
-            onSubmit={handleEditIndicator}
+        {editingOrganization && (
+          <EditOrganizationForm
+            organization={editingOrganization}
+            onSubmit={handleEditOrganization}
             onCancel={handleCloseEditModal}
           />
         )}
@@ -190,4 +157,4 @@ const IndicatorPage = () => {
   );
 };
 
-export default IndicatorPage;
+export default OrganizationPage;

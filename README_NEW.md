@@ -5,6 +5,7 @@
 ## 🎯 Tujuan Aplikasi
 
 Menggantikan proses pengisian data menggunakan Google Spreadsheet dengan sistem terintegrasi yang mendukung:
+
 - ✅ Pengisian data oleh operator instansi
 - ✅ Revisi data tahun sebelumnya
 - ✅ Pemeriksaan outlier otomatis
@@ -32,12 +33,12 @@ statio-app/
 │   │   ├── auth/              # Login page
 │   │   ├── tables/            # Table overview & detail
 │   │   ├── analysis/          # Table review & analysis
-│   │   └── management/        # Admin management (org, indicator, dimension)
+│   │   └── collection/        # Admin collection (org, indicator, dimension)
 │   ├── component/             # Reusable components
 │   │   ├── ui/               # UI primitives (Button, Modal, etc)
 │   │   ├── layout/           # Layout components
 │   │   ├── analysis/         # Analysis-specific components
-│   │   ├── management/       # Management forms
+│   │   ├── collection/       # Management forms
 │   │   └── tables/           # Table-specific components
 │   ├── service/              # API services
 │   │   ├── dashboard.ts      # Dashboard API
@@ -61,6 +62,7 @@ statio-app/
 ## 🛠️ Development
 
 ### Prerequisites
+
 - Node.js 18+ atau Bun 1.0+
 - npm atau bun
 
@@ -80,6 +82,7 @@ bun install
 ### Environment Variables
 
 Create `.env` file:
+
 ```bash
 VITE_API_BASE_URL=http://localhost:3000
 ```
@@ -113,6 +116,7 @@ bun run lint
 ## 👥 User Roles
 
 ### Admin BPS
+
 - ✅ Melihat dashboard keseluruhan
 - ✅ Membuat dan assign tabel ke instansi
 - ✅ Review tabel yang disubmit operator
@@ -121,6 +125,7 @@ bun run lint
 - ✅ Kelola organizations, indicators, dimensions
 
 ### Operator Instansi
+
 - ✅ Melihat dashboard instansi sendiri
 - ✅ Mengisi data tabel yang ditugaskan
 - ✅ Merevisi data tahun sebelumnya
@@ -130,12 +135,14 @@ bun run lint
 ## 📊 Dashboard Features
 
 ### Overview Cards
+
 - Total Tabel
 - Selesai (Finalized)
 - Dalam Proses
 - Instansi (admin only)
 
 ### Charts & Visualizations
+
 - **Tren Pengumpulan Tabel per Bulan:** Progress vs target
 - **Status Pengisian Tabel:** Distribution (Draft/Submitted/Finalized)
 - **Keterisian Data per Instansi:** Completion rate per organization
@@ -177,6 +184,7 @@ OPERATOR                    SISTEM                     ADMIN
 Endpoint: `GET /api/v1/dashboard/summary?year=2026&organization_id=xxx`
 
 Response mencakup:
+
 - Overall stats (total tables, completed, in progress)
 - Monthly trend (submitted vs target)
 - Status distribution (draft/submitted/finalized)
@@ -188,6 +196,7 @@ Response mencakup:
 Lihat detail di `DASHBOARD_API.md`
 
 ### Existing APIs
+
 - `/api/v1/tables` - Table management
 - `/api/v1/organizations` - Organization management
 - `/api/v1/indicators` - Indicator management

@@ -1,8 +1,9 @@
 import type { MenuItem } from "@/type/menu";
 import {
+  Cable,
   ChartScatter,
   LayoutDashboard,
-  Settings,
+  PackageOpen,
   Table,
   User,
   Users,
@@ -26,27 +27,33 @@ export const MENU_ITEMS: MenuItem[] = [
     href: "/analysis",
   },
   {
-    title: "Management",
-    icon: <Settings />,
+    title: "Collection",
+    icon: <PackageOpen />,
     roles: ["admin"],
     children: [
       {
         title: "Organizations",
-        href: "/management/organizations",
+        href: "/collection/organizations",
       },
       {
         title: "Indicators",
-        href: "/management/indicators",
+        href: "/collection/indicators",
       },
       {
         title: "Dimensions",
-        href: "/management/dimensions",
+        href: "/collection/dimensions",
       },
       {
         title: "Tables",
-        href: "/management/tables",
+        href: "/collection/tables",
       },
     ],
+  },
+  {
+    title: "Integration",
+    icon: <Cable />,
+    roles: ["admin"],
+    href: "/integration",
   },
   {
     title: "Users",

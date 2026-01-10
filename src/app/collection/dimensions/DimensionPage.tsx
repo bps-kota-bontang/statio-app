@@ -1,69 +1,67 @@
 "use client";
 
+import Badge from "@/component/ui/Badge";
+import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
 import { useDataTable } from "@/hooks/useDataTable";
-import { useOrganizationApi } from "@/service/organization";
 import type {
-  Organization,
-  UpdateOrganizationRequest,
-  CreateOrganizationRequest,
-} from "@/type/organization";
+  CreateDimensionRequest,
+  Dimension,
+  UpdateDimensionRequest,
+} from "@/type/dimension";
 import { useMemo, useCallback, useState, useEffect } from "react";
-import CreateOrganizationForm from "@/component/management/organizations/CreateOrganizationForm";
-import EditOrganizationForm from "@/component/management/organizations/EditOrganizationForm";
-import Button from "@/component/ui/Button";
+import CreateDimensionForm from "@/component/collection/dimensions/CreateDimensionForm";
+import EditDimensionForm from "@/component/collection/dimensions/EditDimensionForm";
 import { Plus } from "lucide-react";
-import type { StatioContextType } from "@/component/layout/StatioLayout";
+import { useDimensionApi } from "@/service/dimension";
 import { useOutletContext } from "react-router";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
 
-const OrganizationPage = () => {
+export default function DimensionExample() {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
-    document.title = "Organizations Management | Statio";
+    document.title = "Dimensions Management | Statio";
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
       { label: "Management", highlight: false },
-      { label: "Organizations" },
+      { label: "Dimensions" },
     ]);
   }, [setBreadcrumbs]);
 
-  const { useOrganizations, createOrganization, updateOrganization } =
-    useOrganizationApi();
-
-  const table = useDataTable<Organization>();
-
-  const { data, isLoading, mutate } = useOrganizations(table);
-
+  const table = useDataTable<Dimension>();
+  const { useDimensions, createDimension, updateDimension } = useDimensionApi();
+  const { data, isLoading, mutate } = useDimensions(table);
   // Modal create
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Modal edit
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingOrganization, setEditingOrganization] =
-    useState<Organization | null>(null);
+  const [editingDimension, setEditingDimension] = useState<Dimension | null>(
+    null
+  );
 
-  const handleCreateOrganization = async (data: CreateOrganizationRequest) => {
+  const handleCreateDimension = async (data: CreateDimensionRequest) => {
     try {
-      await createOrganization(data);
+      await createDimension(data);
       setIsCreateOpen(false);
-      mutate();
-      return true;
+      mutate(); // refresh data
+      return true; // beri tahu form bahwa submit sukses
     } catch (error) {
-      console.error("Error creating organization:", error);
-      return false;
+      console.error("Error creating dimension:", error);
+      return false; // beri tahu form bahwa submit gagal
     }
   };
 
-  const handleEditOrganization = async (
+  const handleEditDimension = async (
     id: string,
-    data: UpdateOrganizationRequest
+    data: UpdateDimensionRequest
   ) => {
     try {
-      await updateOrganization(id, data);
+      await updateDimension(id, data);
       handleCloseEditModal();
-      mutate();
+      mutate(); // refresh table
       return true;
     } catch (error) {
       console.error(error);
@@ -71,28 +69,40 @@ const OrganizationPage = () => {
     }
   };
 
-  const handleCloseEditModal = () => {
+  const handleCloseEditModal = useCallback(() => {
     setIsEditOpen(false);
-    setEditingOrganization(null);
-  };
+    setEditingDimension(null);
+  }, []);
 
-  const openEdit = useCallback((row: Organization) => {
-    setEditingOrganization(row);
+  const openEdit = useCallback((row: Dimension) => {
+    setEditingDimension(row);
     setIsEditOpen(true);
   }, []);
 
-  const columns = useMemo<Column<Organization>[]>(
+  const columns = useMemo<Column<Dimension>[]>(
     () => [
       {
         key: "no",
         label: "No",
         sortable: true,
-        render: (_, no) => no, // custom render nomor urut
+        render: (_, no) => no,
       },
       {
         key: "name",
         label: "Name",
         sortable: true,
+      },
+      {
+        key: "values",
+        label: "Values",
+        sortable: false,
+        render: (row) => (
+          <div className="flex flex-wrap gap-2">
+            {row.values.map((value) => (
+              <Badge key={value.id} label={value.name} />
+            ))}
+          </div>
+        ),
       },
       {
         key: "actions",
@@ -112,12 +122,14 @@ const OrganizationPage = () => {
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-semibold">Organizations</h1>
+      <h1 className="text-xl font-semibold">Dimensions</h1>
+
+      {/* Data Table */}
       <DataTable
         actions={
           <Button onClick={() => setIsCreateOpen(true)} size="sm">
             <Plus className="w-5 h-5 mr-2" />
-            New Organization
+            New Dimension
           </Button>
         }
         data={data?.data ?? []}
@@ -133,8 +145,8 @@ const OrganizationPage = () => {
         onClose={() => setIsCreateOpen(false)}
         closeOutside={false}
       >
-        <CreateOrganizationForm
-          onSubmit={handleCreateOrganization}
+        <CreateDimensionForm
+          onSubmit={handleCreateDimension}
           onCancel={() => setIsCreateOpen(false)}
         />
       </Modal>
@@ -145,16 +157,14 @@ const OrganizationPage = () => {
         onClose={handleCloseEditModal}
         closeOutside={false}
       >
-        {editingOrganization && (
-          <EditOrganizationForm
-            organization={editingOrganization}
-            onSubmit={handleEditOrganization}
+        {editingDimension && (
+          <EditDimensionForm
+            dimension={editingDimension}
+            onSubmit={handleEditDimension}
             onCancel={handleCloseEditModal}
           />
         )}
       </Modal>
     </div>
   );
-};
-
-export default OrganizationPage;
+}

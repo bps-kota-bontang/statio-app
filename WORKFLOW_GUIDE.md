@@ -42,10 +42,10 @@ Aplikasi Statio dirancang untuk menggantikan proses pengisian data menggunakan G
 - Kirim kredensial ke masing-masing dinas
 
 **Fitur yang digunakan:**
-- `/management/tables` - Buat dan kelola tabel
-- `/management/organizations` - Kelola dinas & assign tabel
-- `/management/indicators` - Kelola indikator statistik
-- `/management/dimensions` - Kelola dimensi data
+- `/collection/tables` - Buat dan kelola tabel
+- `/collection/organizations` - Kelola dinas & assign tabel
+- `/collection/indicators` - Kelola indikator statistik
+- `/collection/dimensions` - Kelola dimensi data
 
 **Output:**
 - Email ke setiap dinas berisi:
@@ -414,7 +414,7 @@ Aplikasi Statio dirancang untuk menggantikan proses pengisian data menggunakan G
 - `/dashboard` - Overview keseluruhan
 - `/analysis` - Review tabel submitted
 - `/analysis/:tableId` - Detail review per tabel
-- `/management/dimension-requests` - Review permohonan perubahan dimensi
+- `/collection/dimension-requests` - Review permohonan perubahan dimensi
 
 ---
 
