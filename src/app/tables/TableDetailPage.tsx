@@ -74,7 +74,7 @@ const TableDetailPage = () => {
   }, [data?.data]);
 
   const isAdmin = user?.roles.includes("admin");
-  const isLocked = isAdmin ? false : data?.data.is_locked;
+  const isLocked = isAdmin ? data?.data.status == "finalized" : data?.data.is_locked;
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(data?.data?.name || "");

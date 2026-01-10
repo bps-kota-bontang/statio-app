@@ -26,6 +26,7 @@ import UsersPage from "@/app/users/UsersPage";
 import ProfilePage from "@/app/profile/ProfilePage";
 import IntegrationLayout from "@/component/layout/IntegrationLayout";
 import OrganizationLayout from "@/component/layout/OrganizationLayout";
+import IntegrationPage from "@/component/integration/tables/IntegrationPage";
 
 initGA();
 
@@ -59,7 +60,7 @@ createRoot(root!).render(
               <Route path="tables" element={<TablePage />} />
             </Route>
             <Route path="integration" element={<IntegrationLayout />}>
-              <Route path="tables" element={<TablePage />} />
+              <Route path="tables" element={<IntegrationPage />} />
             </Route>
             <Route path="organizations" element={<OrganizationLayout />}>
               <Route index element={<OrganizationPage />} />
