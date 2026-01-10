@@ -22,9 +22,10 @@
   text-align: center !important;
 }
 
-/* Bold styling for Total row and its header */
+/* Bold styling for Total row and its header - scoped to Handsontable only */
 .ht_clone_left tbody tr:last-child th,
-tbody tr:last-child td {
+.handsontable tbody tr:last-child td,
+.ht_master tbody tr:last-child td {
   font-weight: 700 !important;
   background-color: #f3f4f6 !important;
   text-align: center !important;
