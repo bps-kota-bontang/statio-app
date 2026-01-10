@@ -26,6 +26,7 @@ interface TableStatioProps {
   isLocked?: boolean;
   rowHeaders: string[];
   colHeaders: string[];
+  parentRows?: Set<string>;
   dimensionCount: number;
   onChange?: (cells: CellChange[] | null) => void;
   locale?: "id" | "en";
@@ -80,6 +81,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
       isLocked,
       rowHeaders,
       colHeaders,
+      parentRows,
       dimensionCount,
       onChange,
       locale = "id",
@@ -87,12 +89,26 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
     ref
   ) => {
     const hotRef = useRef<HotTableRef>(null);
+
+    // Convert parent row names to indices
+    const parentRowIndices = useMemo(() => {
+      if (!parentRows || parentRows.size === 0) return undefined;
+      const indices = new Set<number>();
+      rowHeaders.forEach((rowName, index) => {
+        if (parentRows.has(rowName)) {
+          indices.add(index);
+        }
+      });
+      return indices.size > 0 ? indices : undefined;
+    }, [parentRows, rowHeaders]);
+
     const [tableData, setTableData] = useState(
       buildDataWithTotals(
         data,
         rowHeaders.length,
         colHeaders.length,
-        dimensionCount
+        dimensionCount,
+        parentRowIndices
       )
     );
 
@@ -152,10 +168,11 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
           data,
           rowHeaders.length,
           colHeaders.length,
-          dimensionCount
+          dimensionCount,
+          parentRowIndices
         )
       );
-    }, [colHeaders.length, data, dimensionCount, rowHeaders]);
+    }, [colHeaders.length, data, dimensionCount, rowHeaders, parentRowIndices]);
 
     const handleAfterChange = (
       changes: CellChange[] | null,
@@ -179,7 +196,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
         newData,
         rowHeaders.length,
         colHeaders.length,
-        dimensionCount
+        dimensionCount,
+        parentRowIndices
       );
 
       setTableData(newBuildData);
@@ -206,6 +224,29 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
       [extraRowHeaders]
     );
 
+    // Custom row header renderer to make parent rows and total row bold
+    const afterGetRowHeader = (row: number, TH: HTMLTableCellElement) => {
+      const isParentRow = parentRowIndices && parentRowIndices.has(row);
+      const isTotalRow = row === extraRowHeaders.length - 1;
+
+      if (isParentRow || isTotalRow) {
+        TH.style.fontWeight = "700";
+        TH.style.backgroundColor = isParentRow ? "#f9fafb" : "#f3f4f6";
+        TH.style.textAlign = "center";
+      }
+    };
+
+    // Custom column header renderer to make Total column bold
+    const afterGetColHeader = (col: number, TH: HTMLTableCellElement) => {
+      const isTotalCol = col === extraColHeaders.length - 1;
+      const colHeader = extraColHeaders[col];
+
+      if (isTotalCol || colHeader === TOTAL_KEY) {
+        TH.style.fontWeight = "700";
+        TH.style.textAlign = "center";
+      }
+    };
+
     return (
       <div className="my-4">
         <HotTable
@@ -216,6 +257,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
           themeName="ht-theme-main"
           colHeaders={extraColHeaders}
           rowHeaders={extraRowHeaders}
+          afterGetRowHeader={afterGetRowHeader}
+          afterGetColHeader={afterGetColHeader}
           maxCols={extraColHeaders.length} // prevent to add new columns
           maxRows={extraRowHeaders.length} // prevent to add new rows
           fixedColumnsLeft={0}
@@ -239,22 +282,32 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
             const onlyOneCol = colHeaders.length === 1;
             const onlyOneRow = rowHeaders.length === 1;
 
+            // Check if current row is a parent row
+            const isParentRow = parentRowIndices && parentRowIndices.has(row);
+            const isTotalRow = row === lastRow;
+            const isTotalCol = col === lastCol;
+
             // Kasus khusus: hanya 1 kolom
             if (onlyOneCol && row === lastRow)
-              return { copyPaste: false, readOnly: true };
+              return { copyPaste: false, readOnly: true, className: "htBold" };
 
             // Kasus khusus: hanya 1 baris
             if (onlyOneRow && col === lastCol)
-              return { copyPaste: false, readOnly: true };
+              return { copyPaste: false, readOnly: true, className: "htBold" };
 
-            // Kasus normal: lebih dari 1 baris & kolom
-            if (
-              !onlyOneCol &&
-              !onlyOneRow &&
-              (row === lastRow || col === lastCol)
-            ) {
-              return { copyPaste: false, readOnly: true };
+            // Total row or total column - make bold
+            if (!onlyOneCol && !onlyOneRow && (isTotalRow || isTotalCol)) {
+              return { copyPaste: false, readOnly: true, className: "htBold" };
             }
+
+            // Parent rows should be bold and readonly
+            if (isParentRow) {
+              return {
+                readOnly: true,
+                className: "htBold parent-row",
+              };
+            }
+
             return { readOnly: isLocked };
           }}
           wordWrap={true}

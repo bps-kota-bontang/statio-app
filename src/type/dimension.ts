@@ -1,7 +1,13 @@
+export type ParentDimensionValue = {
+  id: string;
+  name: string;
+};
+
 export type DimensionValue = {
   id: string;
   name: string;
   order: number;
+  parent?: ParentDimensionValue | null;
 };
 
 export type Dimension = {

@@ -48,8 +48,8 @@ const TableViewer = ({
 
   const dims = useMemo(() => table?.dimensions ?? [], [table]);
 
-  const { data, colHeaders, rowHeaders } = useMemo(() => {
-    if (!table) return { data: [], colHeaders: [], rowHeaders: [] };
+  const { data, colHeaders, rowHeaders, parentRows } = useMemo(() => {
+    if (!table) return { data: [], colHeaders: [], rowHeaders: [], parentRows: new Set<string>() };
     const base = tableResponseToRowObjects(table, years);
     if (!swap) return base;
 
@@ -70,6 +70,7 @@ const TableViewer = ({
       ),
       rowHeaders: base.colHeaders,
       colHeaders: base.rowHeaders,
+      parentRows: new Set<string>(), // No parent rows when swapped
     };
 
     return baseTransposed;
@@ -224,6 +225,7 @@ const TableViewer = ({
         data={data}
         colHeaders={colHeaders}
         rowHeaders={rowHeaders}
+        parentRows={parentRows}
         dimensionCount={dims.length}
         locale={locale}
         onChange={(changes) => {

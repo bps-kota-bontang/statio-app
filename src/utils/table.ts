@@ -21,18 +21,61 @@ export function transpose<T>(matrix: T[][]): T[][] {
 
 /** * Converts a Table response into row objects suitable for Handsontable.
  * @param table The Table object from the API response.
- * @returns An object containing data, rowHeaders, colHeaders, rowMap, and colMap.
+ * @returns An object containing data, rowHeaders, colHeaders, rowMap, colMap, and parentRows.
  */
 export function tableResponseToRowObjects(table: Table, years?: number[]) {
   const rowDim = table.dimensions[0];
   const colDim = table.dimensions[1];
 
-  const rowHeaders = rowDim
+  // Build initial row headers
+  let rowHeaders = rowDim
     ? rowDim.values.map((v) => v.name)
-    : years?.sort((a, b) => a - b).map((item) => String(item)) ?? []; // tidak ada dimensi, indikator tunggal
+    : years?.sort((a, b) => a - b).map((item) => String(item)) ?? [];
+  
   const colHeaders = colDim
     ? colDim.values.map((v) => v.name)
-    : [table.indicator.name]; // dimensi tunggal, indikator di kolom
+    : [table.indicator.name];
+
+  // Track which rows are parent rows (for excluding from totals)
+  const parentRows = new Set<string>();
+
+  // If table is locked and has parent-child relationships, insert parent rows
+  if (table.is_locked && rowDim) {
+    const parentsMap = new Map<string, { name: string; children: string[] }>();
+    
+    // Group children by parent
+    rowDim.values.forEach((v) => {
+      if (v.parent) {
+        const parentName = v.parent.name;
+        if (!parentsMap.has(parentName)) {
+          parentsMap.set(parentName, { name: parentName, children: [] });
+        }
+        parentsMap.get(parentName)!.children.push(v.name);
+      }
+    });
+
+    // Insert parent rows before first child
+    const newRowHeaders: string[] = [];
+    const insertedParents = new Set<string>();
+    
+    rowHeaders.forEach((rowName) => {
+      // Check if this row has a parent
+      const dimValue = rowDim.values.find((v) => v.name === rowName);
+      const parentName = dimValue?.parent?.name;
+      
+      // If has parent and parent not yet inserted, insert parent row first
+      if (parentName && !insertedParents.has(parentName)) {
+        newRowHeaders.push(parentName);
+        insertedParents.add(parentName);
+        parentRows.add(parentName); // Mark as parent row
+      }
+      
+      // Add the child row
+      newRowHeaders.push(rowName);
+    });
+    
+    rowHeaders = newRowHeaders;
+  }
 
   const rowMap = rowDim
     ? Object.fromEntries(rowDim.values.map((v) => [v.name, v]))
@@ -60,6 +103,7 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
     return row;
   });
 
+  // Fill in fact data
   table.facts?.forEach((f) => {
     let rowIndex: number;
 
@@ -68,10 +112,10 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
       const rowVal = f.dimensions.find((d) => d.id === rowDim?.id)?.value;
       if (!rowVal) return;
       rowIndex = rowHeaders.indexOf(rowVal.name);
-      if (rowIndex === -1) return; // tidak ditemukan, mungkin nilai dimensi tidak ada di rowHeaders
+      if (rowIndex === -1) return;
     } else {
       rowIndex = rowHeaders.indexOf(String(f.year));
-      if (rowIndex === -1) return; // tidak ditemukan, mungkin tahun tidak ada di rowHeaders
+      if (rowIndex === -1) return;
     }
 
     // cari nilai kolom
@@ -87,7 +131,30 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
     data[rowIndex][colKey] = f.value ?? null;
   });
 
-  return { data, rowHeaders, colHeaders, rowMap, colMap };
+  // Calculate parent row aggregates if locked
+  if (table.is_locked && rowDim) {
+    rowDim.values.forEach((v) => {
+      if (v.parent) {
+        const parentName = v.parent.name;
+        const parentIndex = rowHeaders.indexOf(parentName);
+        const childIndex = rowHeaders.indexOf(v.name);
+        
+        if (parentIndex !== -1 && childIndex !== -1) {
+          // Aggregate child values to parent
+          colHeaders.forEach((colKey) => {
+            const childValue = data[childIndex][colKey];
+            if (childValue !== null && typeof childValue === 'number') {
+              const currentParentValue = data[parentIndex][colKey];
+              data[parentIndex][colKey] = 
+                (typeof currentParentValue === 'number' ? currentParentValue : 0) + childValue;
+            }
+          });
+        }
+      }
+    });
+  }
+
+  return { data, rowHeaders, colHeaders, rowMap, colMap, parentRows };
 }
 
 /** * Formats changed cells into a FactRequest payload.
@@ -172,13 +239,15 @@ export const formatCellsToPayload = (
  * @param data The original data as an array of row objects.
  * @param rowCount The number of data rows (excluding total row).
  * @param columnCount The number of data columns (excluding total column).
+ * @param parentRowIndices Set of indices for parent rows to exclude from totals.
  * @returns The new data array with totals included.
  */
 export const buildDataWithTotals = (
   data: RowObject[],
   rowCount: number,
   columnCount: number,
-  dimensionCount: number
+  dimensionCount: number,
+  parentRowIndices?: Set<number>
 ) => {
   if (!data || data.length === 0) return [];
 
@@ -216,11 +285,17 @@ export const buildDataWithTotals = (
   if (!onlyOneRow) {
     // Hanya push baris total jika lebih dari 1 row
 
-    // Hitung total tiap kolom
+    // Hitung total tiap kolom (exclude parent rows to avoid double counting)
     const colTotals: Record<string, number> = {};
     colKeys.forEach((key) => {
       const total = newData.reduce(
-        (sum, row) => sum + (Number((row as Record<string, number>)[key]) || 0),
+        (sum, row, index) => {
+          // Skip parent rows when calculating totals
+          if (parentRowIndices && parentRowIndices.has(index)) {
+            return sum;
+          }
+          return sum + (Number((row as Record<string, number>)[key]) || 0);
+        },
         0
       );
 

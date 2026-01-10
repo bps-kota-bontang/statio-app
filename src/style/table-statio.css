@@ -1,3 +1,31 @@
 .ht-theme-horizon {
   --ht-header-font-weight: 600;
 }
+
+/* Parent row styling - bold and slightly different background */
+.parent-row {
+  font-weight: 700 !important;
+  background-color: #f9fafb !important;
+  text-align: center !important;
+}
+
+/* Handsontable built-in bold class - also center align */
+.htBold {
+  font-weight: 700 !important;
+  text-align: center !important;
+}
+
+/* Bold styling for parent row headers (row names) */
+.ht_clone_left tbody tr th:has(+ td.parent-row) {
+  font-weight: 700 !important;
+  background-color: #f9fafb !important;
+  text-align: center !important;
+}
+
+/* Bold styling for Total row and its header */
+.ht_clone_left tbody tr:last-child th,
+tbody tr:last-child td {
+  font-weight: 700 !important;
+  background-color: #f3f4f6 !important;
+  text-align: center !important;
+}
