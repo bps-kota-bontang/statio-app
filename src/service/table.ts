@@ -247,6 +247,16 @@ export const useTableApi = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const generateParentTable = async (
+    id: string,
+    dimensionIds: string[]
+  ): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/generate`, {
+      method: "POST",
+      body: JSON.stringify({ dimension_ids: dimensionIds }),
+    });
+  };
+
   const getTableFacts = (id: string, dimensionValueIDs?: string[]) => {
     const params = new URLSearchParams();
     if (dimensionValueIDs && dimensionValueIDs.length > 0) {
@@ -283,5 +293,6 @@ export const useTableApi = () => {
     commitTable,
     commitTables,
     exportTable,
+    generateParentTable,
   };
 };

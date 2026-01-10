@@ -1,5 +1,5 @@
 import type { Indicator, IndicatorList } from "@/type/indicator";
-import type { Dimension } from "@/type/dimension";
+import type { Dimension, DimensionList } from "@/type/dimension";
 import type { Fact } from "@/type/fact";
 import type { Organization } from "@/type/organization";
 
@@ -11,7 +11,9 @@ export type Table = {
   labels: string[];
   notes: string | null;
   is_locked: boolean;
+  is_aggregated: boolean;
   status: "draft" | "submitted" | "finalized";
+  has_parent_dimension: boolean;
   organization: Organization | null;
   dimensions: Dimension[];
   facts: Fact[] | null;
@@ -23,8 +25,11 @@ export type TableList = {
   labels?: string[];
   indicator: IndicatorList | null;
   organization: Organization | null;
-  dimensions: string[];
+  dimensions: DimensionList[];
+  is_locked: boolean;
+  is_aggregated: boolean;
   status: "draft" | "submitted" | "finalized";
+  has_parent_dimension: boolean;
   insight_facts_summary?: SummaryInsightFactsResponse | null;
 };
 

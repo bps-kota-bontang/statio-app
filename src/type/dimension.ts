@@ -10,6 +10,12 @@ export type DimensionValue = {
   parent?: ParentDimensionValue | null;
 };
 
+export type DimensionList = {
+  id: string;
+  name: string;
+  has_parent_dimension: boolean;
+};
+
 export type Dimension = {
   id: string;
   name: string;

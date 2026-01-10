@@ -179,7 +179,7 @@ const TablePage = () => {
           <div className="flex flex-wrap gap-2">
             {row.dimensions.length > 0 ? (
               row.dimensions.map((dimension, index) => (
-                <Badge key={index} label={dimension} />
+                <Badge key={index} label={dimension.name} />
               ))
             ) : (
               <span className="text-sm text-gray-500">No dimensions</span>
