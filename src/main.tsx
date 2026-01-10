@@ -12,12 +12,12 @@ import TableDetailPage from "@/app/tables/TableDetailPage";
 import IndicatorPage from "@/app/collection/indicators/IndicatorPage";
 import DimensionPage from "@/app/collection/dimensions/DimensionPage";
 import TableOverviewPage from "@/app/tables/TableOverviewPage";
-import OrganizationPage from "@/app/collection/organizations/OrganizationPage";
+import OrganizationPage from "@/app/organizations/OrganizationPage";
 import { AuthProvider } from "@/context/auth/AuthProvider";
 import { ProtectedRoute } from "@/component/auth/ProtectedRoute";
 import { ToastProvider } from "@/hooks/use-toast";
 import LoginPage from "@/app/auth/LoginPage";
-import ManagementLayout from "@/component/layout/CollectionLayout";
+import CollectionLayout from "@/component/layout/CollectionLayout";
 import AnalysisLayout from "@/component/layout/AnalysisLayout";
 import UserLayout from "@/component/layout/UserLayout";
 import TableAnalysis from "@/app/analysis/TableAnalysisPage";
@@ -25,6 +25,7 @@ import TableDetailReviewPage from "@/app/analysis/TableDetailReviewPage";
 import UsersPage from "@/app/users/UsersPage";
 import ProfilePage from "@/app/profile/ProfilePage";
 import IntegrationLayout from "@/component/layout/IntegrationLayout";
+import OrganizationLayout from "@/component/layout/OrganizationLayout";
 
 initGA();
 
@@ -52,14 +53,16 @@ createRoot(root!).render(
               <Route index element={<TableAnalysis />} />
               <Route path=":id" element={<TableDetailReviewPage />} />
             </Route>
-            <Route path="integration" element={<IntegrationLayout />}>
-              <Route index element={<div>Integration Home</div>} />
-            </Route>
-            <Route path="collection" element={<ManagementLayout />}>
-              <Route path="organizations" element={<OrganizationPage />} />
+            <Route path="collection" element={<CollectionLayout />}>
               <Route path="indicators" element={<IndicatorPage />} />
               <Route path="dimensions" element={<DimensionPage />} />
               <Route path="tables" element={<TablePage />} />
+            </Route>
+            <Route path="integration" element={<IntegrationLayout />}>
+              <Route path="tables" element={<TablePage />} />
+            </Route>
+            <Route path="organizations" element={<OrganizationLayout />}>
+              <Route index element={<OrganizationPage />} />
             </Route>
             <Route path="users" element={<UserLayout />}>
               <Route index element={<UsersPage />} />

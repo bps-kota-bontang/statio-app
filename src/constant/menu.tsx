@@ -1,5 +1,6 @@
 import type { MenuItem } from "@/type/menu";
 import {
+  Building,
   Cable,
   ChartScatter,
   LayoutDashboard,
@@ -32,10 +33,6 @@ export const MENU_ITEMS: MenuItem[] = [
     roles: ["admin"],
     children: [
       {
-        title: "Organizations",
-        href: "/collection/organizations",
-      },
-      {
         title: "Indicators",
         href: "/collection/indicators",
       },
@@ -53,7 +50,18 @@ export const MENU_ITEMS: MenuItem[] = [
     title: "Integration",
     icon: <Cable />,
     roles: ["admin"],
-    href: "/integration",
+    children: [
+      {
+        title: "Tables",
+        href: "/integration/tables",
+      },
+    ],
+  },
+  {
+    title: "Organizations",
+    icon: <Building />,
+    href: "/organizations",
+    roles: ["admin"],
   },
   {
     title: "Users",

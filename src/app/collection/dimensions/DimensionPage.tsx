@@ -22,10 +22,10 @@ export default function DimensionExample() {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
-    document.title = "Dimensions Management | Statio";
+    document.title = "Collection Dimensions | Statio";
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
-      { label: "Management", highlight: false },
+      { label: "Collection", highlight: false },
       { label: "Dimensions" },
     ]);
   }, [setBreadcrumbs]);

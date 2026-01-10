@@ -28,10 +28,10 @@ const TablePage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
 
   useEffect(() => {
-    document.title = "Tables Management | Statio";
+    document.title = "Collection Tables | Statio";
     setBreadcrumbs([
       { label: "Dashboard", href: "/" },
-      { label: "Management", highlight: false },
+      { label: "Collection", highlight: false },
       { label: "Tables" },
     ]);
   }, [setBreadcrumbs]);
