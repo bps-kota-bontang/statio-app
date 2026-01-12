@@ -19,7 +19,8 @@ import numbro from "numbro";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import idID from "numbro/languages/id";
-import { buildDataWithTotals, formattedNumber } from "@/utils/table";
+import { buildDataWithAggregate, formattedNumber } from "@/utils/table";
+import type { Aggregate } from "@/type/aggregate";
 
 interface TableStatioProps {
   data: RowObject[];
@@ -27,7 +28,10 @@ interface TableStatioProps {
   rowHeaders: string[];
   colHeaders: string[];
   parentRows?: Set<string>;
-  dimensionCount: number;
+  aggregate: Aggregate;
+  rowAggregates?: Array<Aggregate>;
+  colAggregates?: Array<Aggregate>;
+  needsColAggregate?: boolean;
   onChange?: (cells: CellChange[] | null) => void;
   locale?: "id" | "en";
 }
@@ -36,6 +40,32 @@ registerAllModules();
 numbro.registerLanguage(idID);
 
 export const TOTAL_KEY = "Total";
+
+/**
+ * Determine aggregate header text based on aggregate types
+ * If all aggregates are the same, return appropriate header (Total/Rata-Rata/Minimum/Maximum)
+ * If aggregates vary, return empty string
+ */
+function getAggregateHeader(aggregates: Array<Aggregate> | undefined): string {
+  if (!aggregates || aggregates.length === 0) return "";
+
+  const nonNullAggregates = aggregates.filter((agg) => agg !== null);
+  if (nonNullAggregates.length === 0) return "";
+
+  // Check if all non-null aggregates are the same
+  const firstAggregate = nonNullAggregates[0];
+  const allSame = nonNullAggregates.every((agg) => agg === firstAggregate);
+
+  if (!allSame) return ""; // Bervariasi, no header
+
+  // Sama semua, gunakan header yang sesuai
+  if (firstAggregate === "sum") return "Total";
+  if (firstAggregate === "avg") return "Rata-Rata";
+  if (firstAggregate === "min") return "Minimum";
+  if (firstAggregate === "max") return "Maximum";
+
+  return "";
+}
 
 /**
  * Hitung rowHeaderWidth secara presisi menggunakan canvas
@@ -82,7 +112,10 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
       rowHeaders,
       colHeaders,
       parentRows,
-      dimensionCount,
+      aggregate,
+      rowAggregates,
+      colAggregates,
+      needsColAggregate = false,
       onChange,
       locale = "id",
     },
@@ -103,12 +136,16 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
     }, [parentRows, rowHeaders]);
 
     const [tableData, setTableData] = useState(
-      buildDataWithTotals(
+      buildDataWithAggregate(
         data,
         rowHeaders.length,
         colHeaders.length,
-        dimensionCount,
-        parentRowIndices
+        aggregate,
+        rowAggregates,
+        parentRowIndices,
+        colHeaders,
+        colAggregates,
+        needsColAggregate
       )
     );
 
@@ -164,15 +201,28 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
     useEffect(() => {
       setTableData(
-        buildDataWithTotals(
+        buildDataWithAggregate(
           data,
           rowHeaders.length,
           colHeaders.length,
-          dimensionCount,
-          parentRowIndices
+          aggregate,
+          rowAggregates,
+          parentRowIndices,
+          colHeaders,
+          colAggregates,
+          needsColAggregate
         )
       );
-    }, [colHeaders.length, data, dimensionCount, rowHeaders, parentRowIndices]);
+    }, [
+      colHeaders,
+      data,
+      aggregate,
+      rowAggregates,
+      rowHeaders,
+      parentRowIndices,
+      colAggregates,
+      needsColAggregate,
+    ]);
 
     const handleAfterChange = (
       changes: CellChange[] | null,
@@ -192,12 +242,16 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
         }
       });
 
-      const newBuildData = buildDataWithTotals(
+      const newBuildData = buildDataWithAggregate(
         newData,
         rowHeaders.length,
         colHeaders.length,
-        dimensionCount,
-        parentRowIndices
+        aggregate,
+        rowAggregates,
+        parentRowIndices,
+        colHeaders,
+        colAggregates,
+        needsColAggregate
       );
 
       setTableData(newBuildData);
@@ -205,19 +259,32 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
       if (onChange) onChange(changes);
     };
 
-    const extraColHeaders = useMemo(() => {
-      if (colHeaders.length !== 1 && dimensionCount > 0) {
-        return [...colHeaders, TOTAL_KEY];
-      }
-      return colHeaders;
-    }, [colHeaders, dimensionCount]);
-
+    // Determine extra row headers for aggregate row
     const extraRowHeaders = useMemo(() => {
-      if (rowHeaders.length !== 1 && dimensionCount > 0) {
-        return [...rowHeaders, TOTAL_KEY];
+      const shouldCreateBottomRow =
+        rowHeaders.length > 1 &&
+        (aggregate ||
+          (rowAggregates && rowAggregates.some((agg) => agg !== null)));
+
+      if (shouldCreateBottomRow) {
+        const aggregateHeader = getAggregateHeader(rowAggregates);
+        return [...rowHeaders, aggregateHeader];
       }
       return rowHeaders;
-    }, [rowHeaders, dimensionCount]);
+    }, [rowHeaders, aggregate, rowAggregates]);
+
+    // Determine extra col headers for aggregate column
+    const extraColHeaders = useMemo(() => {
+      if (
+        needsColAggregate &&
+        colAggregates &&
+        colAggregates.some((agg) => agg !== null)
+      ) {
+        const aggregateHeader = getAggregateHeader(colAggregates);
+        return [...colHeaders, aggregateHeader];
+      }
+      return colHeaders;
+    }, [colHeaders, needsColAggregate, colAggregates]);
 
     const rowHeaderWidth = useMemo(
       () => calculateRowHeaderWidthPrecise(extraRowHeaders, "14px Arial", 40),
@@ -227,24 +294,14 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
     // Custom row header renderer to make parent rows and total row bold
     const afterGetRowHeader = (row: number, TH: HTMLTableCellElement) => {
       const isParentRow = parentRowIndices && parentRowIndices.has(row);
-      const isTotalRow =
-        row === extraRowHeaders.length - 1 && dimensionCount > 0;
+      const hasAggregate =
+        aggregate ||
+        (rowAggregates && rowAggregates.some((agg) => agg !== null));
+      const isTotalRow = row === extraRowHeaders.length - 1 && hasAggregate;
 
       if (isParentRow || isTotalRow) {
         TH.style.fontWeight = "700";
         TH.style.backgroundColor = isParentRow ? "#f9fafb" : "#f3f4f6";
-        TH.style.textAlign = "center";
-      }
-    };
-
-    // Custom column header renderer to make Total column bold
-    const afterGetColHeader = (col: number, TH: HTMLTableCellElement) => {
-      const isTotalCol =
-        col === extraColHeaders.length - 1 && dimensionCount > 0;
-      const colHeader = extraColHeaders[col];
-
-      if (isTotalCol || colHeader === TOTAL_KEY) {
-        TH.style.fontWeight = "700";
         TH.style.textAlign = "center";
       }
     };
@@ -260,7 +317,6 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
           colHeaders={extraColHeaders}
           rowHeaders={extraRowHeaders}
           afterGetRowHeader={afterGetRowHeader}
-          afterGetColHeader={afterGetColHeader}
           maxCols={extraColHeaders.length} // prevent to add new columns
           maxRows={extraRowHeaders.length} // prevent to add new rows
           fixedColumnsLeft={0}
@@ -273,7 +329,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
           contextMenu={false}
           columns={(index) => {
             return {
-              data: extraColHeaders[index],
+              data: index < colHeaders.length ? colHeaders[index] : TOTAL_KEY,
               type: "numeric",
               numericFormat: numericFormat,
             };
@@ -283,36 +339,49 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
             const lastCol = extraColHeaders.length - 1;
             const onlyOneCol = colHeaders.length === 1;
             const onlyOneRow = rowHeaders.length === 1;
+            const hasAggregate =
+              aggregate ||
+              (rowAggregates && rowAggregates.some((agg) => agg !== null));
 
             // Check if current row is a parent row
             const isParentRow = parentRowIndices && parentRowIndices.has(row);
-            const isTotalRow = row === lastRow && dimensionCount > 0;
-            const isTotalCol = col === lastCol && dimensionCount > 0;
+            const isTotalRow = row === lastRow && hasAggregate;
+            const isTotalCol = col === lastCol && needsColAggregate;
 
-            // Kasus khusus: hanya 1 kolom
-            if (onlyOneCol && row === lastRow && dimensionCount > 0)
-              return {
-                copyPaste: false,
-                readOnly: true,
-                className: "htBold total-cell",
-              };
-
-            // Kasus khusus: hanya 1 baris
-            if (onlyOneRow && col === lastCol && dimensionCount > 0)
-              return {
-                copyPaste: false,
-                readOnly: true,
-                className: "htBold total-cell",
-              };
-
-            // Total row or total column - make bold
-            if (!onlyOneCol && !onlyOneRow && (isTotalRow || isTotalCol)) {
+            // Total column - make bold and readonly
+            if (!onlyOneRow && isTotalCol && !isTotalRow) {
               return {
                 copyPaste: false,
                 readOnly: true,
                 className: "htBold total-cell",
               };
             }
+
+            // Total row - make bold and readonly
+            if (!onlyOneCol && !onlyOneRow && isTotalRow && !isTotalCol) {
+              return {
+                copyPaste: false,
+                readOnly: true,
+                className: "htBold total-cell",
+              };
+            }
+
+            // Grand total cell (bottom-right corner)
+            if (isTotalRow && isTotalCol) {
+              return {
+                copyPaste: false,
+                readOnly: true,
+                className: "htBold total-cell",
+              };
+            }
+
+            // Kasus khusus: hanya 1 kolom dengan aggregate row
+            if (onlyOneCol && row === lastRow && hasAggregate)
+              return {
+                copyPaste: false,
+                readOnly: true,
+                className: "htBold total-cell",
+              };
 
             // Parent rows should be bold and readonly
             if (isParentRow) {

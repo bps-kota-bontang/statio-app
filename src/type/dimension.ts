@@ -1,3 +1,5 @@
+import type { Aggregate } from "./aggregate";
+
 export type ParentDimensionValue = {
   id: string;
   name: string;
@@ -7,6 +9,7 @@ export type DimensionValue = {
   id: string;
   name: string;
   order: number;
+  aggregate?: Aggregate;
   parent?: ParentDimensionValue | null;
 };
 
@@ -19,6 +22,8 @@ export type DimensionList = {
 export type Dimension = {
   id: string;
   name: string;
+  order: number;
+  aggregate: boolean;
   values: DimensionValue[];
 };
 

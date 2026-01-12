@@ -20,7 +20,6 @@ export const initGA = (): void => {
 
   // Skip if no measurement ID or in development without explicit ID
   if (!measurementId || measurementId === "") {
-    console.log("Google Analytics: Skipped (no measurement ID)");
     return;
   }
 
@@ -29,29 +28,23 @@ export const initGA = (): void => {
     return;
   }
 
-  try {
-    // Create script tag
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-    document.head.appendChild(script);
+  // Create script tag
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.appendChild(script);
 
-    // Initialize dataLayer
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () {
-      window.dataLayer?.push(arguments);
-    };
+  // Initialize dataLayer
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () {
+    window.dataLayer?.push(arguments);
+  };
 
-    // Configure GA
-    window.gtag("js", new Date());
-    window.gtag("config", measurementId, {
-      send_page_view: false, // We'll manually track page views
-    });
-
-    console.log("Google Analytics: Initialized", measurementId);
-  } catch (error) {
-    console.error("Google Analytics: Initialization failed", error);
-  }
+  // Configure GA
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId, {
+    send_page_view: false, // We'll manually track page views
+  });
 };
 
 /**
@@ -61,16 +54,11 @@ export const initGA = (): void => {
 export const trackPageView = (path: string): void => {
   if (!window.gtag) return;
 
-  try {
-    window.gtag("event", "page_view", {
-      page_path: path,
-      page_title: document.title,
-      page_location: window.location.href,
-    });
-    console.log("GA: Page view tracked", path);
-  } catch (error) {
-    console.error("GA: Page view tracking failed", error);
-  }
+  window.gtag("event", "page_view", {
+    page_path: path,
+    page_title: document.title,
+    page_location: window.location.href,
+  });
 };
 
 /**
@@ -84,12 +72,7 @@ export const trackEvent = (
 ): void => {
   if (!window.gtag) return;
 
-  try {
-    window.gtag("event", eventName, eventParams);
-    console.log("GA: Event tracked", eventName, eventParams);
-  } catch (error) {
-    console.error("GA: Event tracking failed", error);
-  }
+  window.gtag("event", eventName, eventParams);
 };
 
 /**

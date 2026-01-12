@@ -2,6 +2,7 @@ import type { Indicator, IndicatorList } from "@/type/indicator";
 import type { Dimension, DimensionList } from "@/type/dimension";
 import type { Fact } from "@/type/fact";
 import type { Organization } from "@/type/organization";
+import type { Aggregate } from "@/type/aggregate";
 
 export type Table = {
   id: string;
@@ -13,6 +14,7 @@ export type Table = {
   is_locked: boolean;
   is_aggregated: boolean;
   status: "draft" | "submitted" | "finalized";
+  aggregate?: Aggregate;
   has_parent_dimension: boolean;
   organization: Organization | null;
   dimensions: Dimension[];

@@ -120,7 +120,7 @@ const FactChart = ({
   //      Memoized Tooltip Formatter
   // =======================================
   const tooltipFormatter = useCallback(
-    (v: string) => formatThousand(Number(v)),
+    (v: string | undefined) => formatThousand(Number(v ?? 0)),
     []
   );
 

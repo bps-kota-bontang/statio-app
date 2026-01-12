@@ -1,4 +1,5 @@
 import { TOTAL_KEY } from "@/component/ui/TableStatio";
+import type { Aggregate } from "@/type/aggregate";
 import type { Dimension } from "@/type/dimension";
 import type { FactRequest } from "@/type/fact";
 import type {
@@ -9,7 +10,7 @@ import type {
   PivotTable,
 } from "@/type/pivot";
 import type { Table } from "@/type/table";
-import type { CellChange, RowObject } from "handsontable/common";
+import type { CellChange, CellValue, RowObject } from "handsontable/common";
 
 /** * Transposes a 2D array (matrix).
  * @param matrix The 2D array to transpose
@@ -31,7 +32,7 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
   let rowHeaders = rowDim
     ? rowDim.values.map((v) => v.name)
     : years?.sort((a, b) => a - b).map((item) => String(item)) ?? [];
-  
+
   const colHeaders = colDim
     ? colDim.values.map((v) => v.name)
     : [table.indicator.name];
@@ -42,7 +43,7 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
   // If table is locked and has parent-child relationships, insert parent rows
   if (table.is_locked && rowDim) {
     const parentsMap = new Map<string, { name: string; children: string[] }>();
-    
+
     // Group children by parent
     rowDim.values.forEach((v) => {
       if (v.parent) {
@@ -57,23 +58,23 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
     // Insert parent rows before first child
     const newRowHeaders: string[] = [];
     const insertedParents = new Set<string>();
-    
+
     rowHeaders.forEach((rowName) => {
       // Check if this row has a parent
       const dimValue = rowDim.values.find((v) => v.name === rowName);
       const parentName = dimValue?.parent?.name;
-      
+
       // If has parent and parent not yet inserted, insert parent row first
       if (parentName && !insertedParents.has(parentName)) {
         newRowHeaders.push(parentName);
         insertedParents.add(parentName);
         parentRows.add(parentName); // Mark as parent row
       }
-      
+
       // Add the child row
       newRowHeaders.push(rowName);
     });
-    
+
     rowHeaders = newRowHeaders;
   }
 
@@ -138,15 +139,17 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
         const parentName = v.parent.name;
         const parentIndex = rowHeaders.indexOf(parentName);
         const childIndex = rowHeaders.indexOf(v.name);
-        
+
         if (parentIndex !== -1 && childIndex !== -1) {
           // Aggregate child values to parent
           colHeaders.forEach((colKey) => {
             const childValue = data[childIndex][colKey];
-            if (childValue !== null && typeof childValue === 'number') {
+            if (childValue !== null && typeof childValue === "number") {
               const currentParentValue = data[parentIndex][colKey];
-              data[parentIndex][colKey] = 
-                (typeof currentParentValue === 'number' ? currentParentValue : 0) + childValue;
+              data[parentIndex][colKey] =
+                (typeof currentParentValue === "number"
+                  ? currentParentValue
+                  : 0) + childValue;
             }
           });
         }
@@ -154,7 +157,24 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
     });
   }
 
-  return { data, rowHeaders, colHeaders, rowMap, colMap, parentRows };
+  // Get row aggregates from dimension values
+  const rowAggregates: Array<Aggregate> = rowHeaders.map((rowName) => {
+    // Check if this is a parent row (parent rows don't have aggregate)
+    if (parentRows.has(rowName)) return null;
+
+    const dimValue = rowDim?.values.find((v) => v.name === rowName);
+    return dimValue?.aggregate ?? null;
+  });
+
+  return {
+    data,
+    rowHeaders,
+    colHeaders,
+    rowMap,
+    colMap,
+    parentRows,
+    rowAggregates,
+  };
 }
 
 /** * Formats changed cells into a FactRequest payload.
@@ -235,91 +255,191 @@ export const formatCellsToPayload = (
   };
 };
 
-/** * Builds data with total rows and columns.
+/** * Builds data with aggregate rows and columns (sum, avg, or none).
  * @param data The original data as an array of row objects.
- * @param rowCount The number of data rows (excluding total row).
- * @param columnCount The number of data columns (excluding total column).
- * @param parentRowIndices Set of indices for parent rows to exclude from totals.
- * @returns The new data array with totals included.
+ * @param rowCount The number of data rows (excluding aggregate row).
+ * @param columnCount The number of data columns (excluding aggregate column).
+ * @param aggregate The type of aggregation for table-level (for bottom row): "sum", "avg", or null.
+ * @param rowAggregates Array of aggregate types for each row (for right column).
+ * @param parentRowIndices Set of indices for parent rows to exclude from aggregation.
+ * @param colHeaders Array of column header names for mapping aggregates.
+ * @param originalRowHeaders Array of original row headers before swap for mapping aggregates.
+ * @returns The new data array with aggregation included.
  */
-export const buildDataWithTotals = (
+export const buildDataWithAggregate = (
   data: RowObject[],
   rowCount: number,
   columnCount: number,
-  dimensionCount: number,
-  parentRowIndices?: Set<number>
+  aggregate: Aggregate,
+  rowAggregates?: Array<Aggregate>,
+  parentRowIndices?: Set<number>,
+  colHeaders?: string[],
+  colAggregates?: Array<Aggregate>,
+  needsColAggregate?: boolean
 ) => {
   if (!data || data.length === 0) return [];
 
-  const onlyOneCol = columnCount === 1;
   const onlyOneRow = rowCount === 1;
 
-  // Ambil kunci kolom (exclude kolom total jika ada)
+  // Ambil kunci kolom (exclude kolom aggregate jika ada)
   const colKeys = Object.keys(data[0])
     .filter((key) => key !== TOTAL_KEY)
     .slice(0, columnCount);
 
-  // Ambil hanya row data asli (exclude row total lama jika ada)
+  // Ambil hanya row data asli (exclude row aggregate lama jika ada)
   const dataRows = data.slice(0, rowCount); // maksimal rowCount
 
-  // Hitung total tiap row
-  let newData: RowObject[] = [...dataRows]; // copy dulu data asli
+  // Check if we need row or column aggregate
+  const hasRowAggregate =
+    rowAggregates && rowAggregates.some((agg) => agg !== null);
 
-  if (!onlyOneCol) {
-    if (dimensionCount > 0) {
-      // Tambahkan TOTAL_KEY tiap row jika lebih dari 1 kolom
-      newData = newData.map((row) => {
-        const total = colKeys.reduce(
-          (sum, key) => sum + (Number(row[key]) || 0),
-          0
-        );
+  // Start with original data rows
+  let newData: RowObject[] = [...dataRows];
 
-        return {
-          ...row,
-          [TOTAL_KEY]: Math.round(total * 100) / 100,
-        };
+  // Add aggregate column if needed
+  if (
+    needsColAggregate &&
+    colAggregates &&
+    colAggregates.some((agg) => agg !== null)
+  ) {
+    newData = newData.map((row, rowIndex) => {
+      // For parent rows, calculate sum of their children's TOTAL values (will be calculated in second pass)
+      if (parentRowIndices && parentRowIndices.has(rowIndex)) {
+        // Parent rows will be filled after children are calculated
+        return { ...row, [TOTAL_KEY]: null };
+      }
+
+      // Get aggregate type for this row
+      const rowAggregateType = colAggregates[rowIndex] ?? "sum";
+
+      // Calculate aggregate for this row across all columns
+      const rowValues: CellValue[] = colKeys.map(
+        (key) => (row as Record<string, CellValue>)[key]
+      );
+      const nonNullValues = rowValues
+        .filter((val) => val !== null && val !== undefined && val !== "")
+        .map((val) => Number(val));
+
+      let aggregateValue: number;
+      if (rowAggregateType === "sum") {
+        aggregateValue = nonNullValues.reduce((sum, val) => sum + val, 0);
+      } else if (rowAggregateType === "avg") {
+        const sum = nonNullValues.reduce((sum, val) => sum + val, 0);
+        aggregateValue =
+          nonNullValues.length > 0 ? sum / nonNullValues.length : 0;
+      } else if (rowAggregateType === "min") {
+        aggregateValue =
+          nonNullValues.length > 0 ? Math.min(...nonNullValues) : 0;
+      } else if (rowAggregateType === "max") {
+        aggregateValue =
+          nonNullValues.length > 0 ? Math.max(...nonNullValues) : 0;
+      } else {
+        aggregateValue = nonNullValues.reduce((sum, val) => sum + val, 0);
+      }
+
+      return { ...row, [TOTAL_KEY]: Math.round(aggregateValue * 100) / 100 };
+    });
+
+    // Second pass: Calculate parent row totals (sum of their children's values in data columns)
+    if (parentRowIndices && parentRowIndices.size > 0) {
+      newData = newData.map((row, rowIndex) => {
+        if (parentRowIndices.has(rowIndex)) {
+          // Parent row: sum all column values (which already include child totals)
+          const rowValues: CellValue[] = colKeys.map(
+            (key) => (row as Record<string, CellValue>)[key]
+          );
+          const nonNullValues = rowValues
+            .filter((val) => val !== null && val !== undefined && val !== "")
+            .map((val) => Number(val));
+
+          const parentTotal = nonNullValues.reduce((sum, val) => sum + val, 0);
+          return { ...row, [TOTAL_KEY]: Math.round(parentTotal * 100) / 100 };
+        }
+        return row;
       });
     }
   }
 
-  if (!onlyOneRow) {
-    // Hanya push baris total jika lebih dari 1 row
+  // Check if we should create bottom aggregate row
+  const shouldCreateBottomRow = !onlyOneRow && (aggregate || hasRowAggregate);
 
-    // Hitung total tiap kolom (exclude parent rows to avoid double counting)
-    const colTotals: Record<string, number> = {};
+  if (shouldCreateBottomRow) {
+    // Hitung agregasi tiap kolom (exclude parent rows to avoid double counting)
+    const colAggregatesRow: Record<string, number> = {};
     colKeys.forEach((key) => {
-      const total = newData.reduce(
-        (sum, row, index) => {
-          // Skip parent rows when calculating totals
-          if (parentRowIndices && parentRowIndices.has(index)) {
-            return sum;
-          }
-          return sum + (Number((row as Record<string, number>)[key]) || 0);
-        },
-        0
-      );
+      const allValues: CellValue[] = [];
+      newData.forEach((row, index) => {
+        // Skip parent rows when calculating aggregates
+        if (!parentRowIndices || !parentRowIndices.has(index)) {
+          allValues.push((row as Record<string, CellValue>)[key]);
+        }
+      });
 
-      colTotals[key] = Math.round(total * 100) / 100;
+      // Filter null values for both sum and avg
+      const nonNullValues = allValues
+        .filter((val) => val !== null && val !== undefined && val !== "")
+        .map((val) => Number(val));
+
+      // Determine aggregate type for this column
+      let colAggregateType: Aggregate = aggregate;
+      if (rowAggregates && colHeaders) {
+        // Find this column's aggregate from rowAggregates array
+        const colIndex = colHeaders.indexOf(key);
+        if (colIndex >= 0 && colIndex < rowAggregates.length) {
+          colAggregateType = rowAggregates[colIndex];
+        }
+      }
+
+      let aggregateValue: number;
+      if (colAggregateType === "sum") {
+        aggregateValue = nonNullValues.reduce((sum, val) => sum + val, 0);
+      } else if (colAggregateType === "avg") {
+        const sum = nonNullValues.reduce((sum, val) => sum + val, 0);
+        aggregateValue =
+          nonNullValues.length > 0 ? sum / nonNullValues.length : 0;
+      } else if (colAggregateType === "min") {
+        aggregateValue =
+          nonNullValues.length > 0 ? Math.min(...nonNullValues) : 0;
+      } else if (colAggregateType === "max") {
+        aggregateValue =
+          nonNullValues.length > 0 ? Math.max(...nonNullValues) : 0;
+      } else {
+        // Default to sum if no specific aggregate
+        aggregateValue = nonNullValues.reduce((sum, val) => sum + val, 0);
+      }
+
+      colAggregatesRow[key] = Math.round(aggregateValue * 100) / 100;
     });
 
-    if (!onlyOneCol) {
-      if (dimensionCount > 0) {
-        // Hitung grand total jika lebih dari 1 kolom dan dimensionCount > 0
-        const grandTotal = colKeys.reduce((sum, key) => sum + colTotals[key], 0);
-        newData.push({
-          ...colTotals,
-          [TOTAL_KEY]: Math.round(grandTotal * 100) / 100,
-        });
-      }
-    } else {
-      // Hanya push total per kolom, tanpa grand total
-      if (dimensionCount > 0) newData.push({ ...colTotals });
+    // Add TOTAL column to aggregate row if column aggregates exist
+    if (
+      needsColAggregate &&
+      colAggregates &&
+      colAggregates.some((agg) => agg !== null)
+    ) {
+      // Calculate grand total (sum of all TOTAL column values, excluding parent rows)
+      const totalColumnValues: number[] = [];
+      newData.forEach((row, index) => {
+        if (!parentRowIndices || !parentRowIndices.has(index)) {
+          const val = (row as Record<string, CellValue>)[TOTAL_KEY];
+          if (val !== null && val !== undefined && val !== "") {
+            totalColumnValues.push(Number(val));
+          }
+        }
+      });
+      const grandTotal = totalColumnValues.reduce((sum, val) => sum + val, 0);
+      colAggregatesRow[TOTAL_KEY] = Math.round(grandTotal * 100) / 100;
     }
+
+    // Push bottom aggregate row
+    newData.push({ ...colAggregatesRow });
   }
 
-  // Panjang akhir = rowCount + 1
   return newData;
 };
+
+// Backward compatibility: keep the old function name
+export const buildDataWithTotals = buildDataWithAggregate;
 
 export const formattedNumber = (
   value: number | string,

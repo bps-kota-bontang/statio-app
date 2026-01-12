@@ -48,10 +48,28 @@ const TableViewer = ({
 
   const dims = useMemo(() => table?.dimensions ?? [], [table]);
 
-  const { data, colHeaders, rowHeaders, parentRows } = useMemo(() => {
-    if (!table) return { data: [], colHeaders: [], rowHeaders: [], parentRows: new Set<string>() };
+  const computedTable = useMemo(() => {
+    if (!table)
+      return {
+        data: [],
+        colHeaders: [],
+        rowHeaders: [],
+        parentRows: new Set<string>(),
+        rowDimension: null,
+        colDimension: null,
+      };
     const base = tableResponseToRowObjects(table, years);
-    if (!swap) return base;
+
+    // Determine row and column dimensions based on swap
+    const rowDim = !swap ? dims[0] : dims.length === 2 ? dims[1] : null;
+    const colDim = !swap ? (dims.length === 2 ? dims[1] : null) : dims[0];
+
+    if (!swap)
+      return {
+        ...base,
+        rowDimension: rowDim ?? null,
+        colDimension: colDim ?? null,
+      };
 
     const transposedDataValues = transpose(
       base.rowHeaders.map((rowHeader) =>
@@ -64,17 +82,39 @@ const TableViewer = ({
       )
     );
 
+    // When transposed, parent rows become parent columns
+    // We need to track which columns are parent columns
+    const parentColumns = new Set<string>(Array.from(base.parentRows));
+
     const baseTransposed = {
       data: transposedDataValues.map((rowValues) =>
         Object.fromEntries(base.rowHeaders.map((h, i) => [h, rowValues[i]]))
       ),
       rowHeaders: base.colHeaders,
       colHeaders: base.rowHeaders,
-      parentRows: new Set<string>(), // No parent rows when swapped
+      parentRows: new Set<string>(), // No parent rows when swapped (they become parent columns)
+      parentColumns, // Track parent columns
+      rowDimension: rowDim,
+      colDimension: colDim,
     };
 
     return baseTransposed;
-  }, [table, years, swap]);
+  }, [table, years, swap, dims]);
+
+  const {
+    data,
+    rowHeaders,
+    colHeaders,
+    parentRows,
+    rowDimension,
+    colDimension,
+  } = computedTable;
+
+  // Extract parentColumns if exists (from transposed data)
+  const parentColumns =
+    "parentColumns" in computedTable
+      ? (computedTable.parentColumns as Set<string>)
+      : undefined;
 
   // 🔹 Save table data
   const handleSave = useCallback(
@@ -226,7 +266,64 @@ const TableViewer = ({
         colHeaders={colHeaders}
         rowHeaders={rowHeaders}
         parentRows={parentRows}
-        dimensionCount={dims.length}
+        aggregate={
+          dims.length === 1
+            ? !swap // Jika tidak di-swap, aggregate untuk row (bottom)
+              ? table?.aggregate ?? null
+              : null // Jika di-swap, aggregate akan jadi column (right), bukan row
+            : dims.length === 2 && rowDimension?.aggregate === true
+            ? "sum" // Placeholder, will be overridden by rowAggregates
+            : null
+        }
+        rowAggregates={
+          dims.length === 1 && !swap && table?.aggregate
+            ? // Dimension = 1, not swapped: rowAggregates = all columns same aggregate
+              colHeaders.map(() => table.aggregate!)
+            : dims.length === 2 &&
+              rowDimension?.aggregate === true &&
+              colDimension
+            ? // Map column headers to their aggregates from column dimension values
+              (() => {
+                const aggregates = colHeaders.map((colName) => {
+                  const colValue = colDimension.values.find(
+                    (v) => v.name === colName
+                  );
+                  return colValue?.aggregate ?? null;
+                });
+                return aggregates;
+              })()
+            : undefined
+        }
+        colAggregates={
+          dims.length === 1 && swap && table?.aggregate
+            ? // Dimension = 1, swapped: colAggregates = all rows same aggregate
+              rowHeaders.map(() => table.aggregate!)
+            : dims.length === 2 &&
+              colDimension?.aggregate === true &&
+              rowDimension
+            ? // Map row headers to their aggregates from row dimension values
+              (() => {
+                const aggregates = rowHeaders.map((rowName) => {
+                  // Check if this column is a parent column (when transposed)
+                  if (parentColumns && parentColumns.has(rowName)) {
+                    // Parent columns (former parent rows) should aggregate their children
+                    // Use "sum" as default aggregate for parent groupings
+                    return "sum";
+                  }
+
+                  const rowValue = rowDimension.values.find(
+                    (v) => v.name === rowName
+                  );
+                  return rowValue?.aggregate ?? null;
+                });
+                return aggregates;
+              })()
+            : undefined
+        }
+        needsColAggregate={
+          (dims.length === 1 && swap && table?.aggregate !== null) ||
+          (dims.length === 2 && colDimension?.aggregate === true)
+        }
         locale={locale}
         onChange={(changes) => {
           if (autoSave && changes) handleSave(changes);
