@@ -22,10 +22,8 @@
   text-align: center !important;
 }
 
-/* Bold styling for Total row and its header - scoped to Handsontable only */
-.ht_clone_left tbody tr:last-child th,
-.handsontable tbody tr:last-child td,
-.ht_master tbody tr:last-child td {
+/* Bold styling for Total cells with total-cell class */
+.total-cell {
   font-weight: 700 !important;
   background-color: #f3f4f6 !important;
   text-align: center !important;

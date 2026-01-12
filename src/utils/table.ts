@@ -303,12 +303,14 @@ export const buildDataWithTotals = (
     });
 
     if (!onlyOneCol) {
-      // Hitung grand total jika lebih dari 1 kolom
-      const grandTotal = colKeys.reduce((sum, key) => sum + colTotals[key], 0);
-      newData.push({
-        ...colTotals,
-        [TOTAL_KEY]: Math.round(grandTotal * 100) / 100,
-      });
+      if (dimensionCount > 0) {
+        // Hitung grand total jika lebih dari 1 kolom dan dimensionCount > 0
+        const grandTotal = colKeys.reduce((sum, key) => sum + colTotals[key], 0);
+        newData.push({
+          ...colTotals,
+          [TOTAL_KEY]: Math.round(grandTotal * 100) / 100,
+        });
+      }
     } else {
       // Hanya push total per kolom, tanpa grand total
       if (dimensionCount > 0) newData.push({ ...colTotals });
