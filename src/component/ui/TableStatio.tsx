@@ -227,7 +227,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
     // Custom row header renderer to make parent rows and total row bold
     const afterGetRowHeader = (row: number, TH: HTMLTableCellElement) => {
       const isParentRow = parentRowIndices && parentRowIndices.has(row);
-      const isTotalRow = row === extraRowHeaders.length - 1 && dimensionCount > 0;
+      const isTotalRow =
+        row === extraRowHeaders.length - 1 && dimensionCount > 0;
 
       if (isParentRow || isTotalRow) {
         TH.style.fontWeight = "700";
@@ -238,7 +239,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
     // Custom column header renderer to make Total column bold
     const afterGetColHeader = (col: number, TH: HTMLTableCellElement) => {
-      const isTotalCol = col === extraColHeaders.length - 1 && dimensionCount > 0;
+      const isTotalCol =
+        col === extraColHeaders.length - 1 && dimensionCount > 0;
       const colHeader = extraColHeaders[col];
 
       if (isTotalCol || colHeader === TOTAL_KEY) {
@@ -246,9 +248,6 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
         TH.style.textAlign = "center";
       }
     };
-
-    console.log(extraColHeaders, extraRowHeaders);
-    console.log(tableData);
 
     return (
       <div className="my-4">
@@ -292,15 +291,27 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
             // Kasus khusus: hanya 1 kolom
             if (onlyOneCol && row === lastRow && dimensionCount > 0)
-              return { copyPaste: false, readOnly: true, className: "htBold total-cell" };
+              return {
+                copyPaste: false,
+                readOnly: true,
+                className: "htBold total-cell",
+              };
 
             // Kasus khusus: hanya 1 baris
             if (onlyOneRow && col === lastCol && dimensionCount > 0)
-              return { copyPaste: false, readOnly: true, className: "htBold total-cell" };
+              return {
+                copyPaste: false,
+                readOnly: true,
+                className: "htBold total-cell",
+              };
 
             // Total row or total column - make bold
             if (!onlyOneCol && !onlyOneRow && (isTotalRow || isTotalCol)) {
-              return { copyPaste: false, readOnly: true, className: "htBold total-cell" };
+              return {
+                copyPaste: false,
+                readOnly: true,
+                className: "htBold total-cell",
+              };
             }
 
             // Parent rows should be bold and readonly
