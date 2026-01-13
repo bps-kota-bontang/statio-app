@@ -27,8 +27,7 @@ const TableAnalysis = () => {
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Analysis" }]);
   }, [setBreadcrumbs]);
 
-  const { useTables, analyzeTable, analyzeTables, commitTables } =
-    useTableApi();
+  const { useTables, analyzeTable, analyzeTables } = useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
   const table = useDataTable<TableList>();
@@ -48,14 +47,6 @@ const TableAnalysis = () => {
       mutate();
     },
     [analyzeTables, mutate]
-  );
-
-  const handleCommitTables = useCallback(
-    async (tableIDs: string[]) => {
-      await commitTables(tableIDs);
-      mutate();
-    },
-    [commitTables, mutate]
   );
 
   const columns = useMemo<Column<TableList>[]>(
@@ -358,38 +349,21 @@ const TableAnalysis = () => {
         actions={
           <div className="flex gap-2">
             {table.selectedIDs.length > 0 && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    ask({
-                      title: "Analyze Selected Tables?",
-                      message: `Are you sure want to analyze ${table.selectedIDs.length} selected tables?`,
-                      onConfirm: () =>
-                        handleAnalyzeTables(
-                          table.selectedIDs.map((t) => String(t))
-                        ),
-                    })
-                  }
-                >
-                  Bulk Analyze
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    ask({
-                      title: "Commit Selected Tables?",
-                      message: `Are you sure want to commit ${table.selectedIDs.length} selected tables?`,
-                      onConfirm: () =>
-                        handleCommitTables(
-                          table.selectedIDs.map((t) => String(t))
-                        ),
-                    })
-                  }
-                >
-                  Bulk Commit
-                </Button>
-              </>
+              <Button
+                size="sm"
+                onClick={() =>
+                  ask({
+                    title: "Analyze Selected Tables?",
+                    message: `Are you sure want to analyze ${table.selectedIDs.length} selected tables?`,
+                    onConfirm: () =>
+                      handleAnalyzeTables(
+                        table.selectedIDs.map((t) => String(t))
+                      ),
+                  })
+                }
+              >
+                Bulk Analyze
+              </Button>
             )}
           </div>
         }

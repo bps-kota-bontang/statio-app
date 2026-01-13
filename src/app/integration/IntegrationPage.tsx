@@ -12,6 +12,7 @@ import type { StatioContextType } from "@/component/layout/StatioLayout";
 import ExportTableModal from "@/component/integration/tables/ExportTableModal";
 import GenerateTableModal from "@/component/integration/tables/GenerateTableModal";
 import { useConfirm } from "@/hooks/useConfirm";
+import { CheckCircle, FileIcon, SendIcon } from "lucide-react";
 
 const IntegrationPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -43,8 +44,13 @@ const IntegrationPage = () => {
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [currentTableId, setCurrentTableId] = useState<string | null>(null);
 
-  const { useTables, generateParentTable, exportTable, commitTable } =
-    useTableApi();
+  const {
+    useTables,
+    generateParentTable,
+    exportTable,
+    commitTable,
+    commitTables,
+  } = useTableApi();
   const { toast } = useToast();
 
   const { data, isLoading, mutate } = useTables(table);
@@ -135,6 +141,14 @@ const IntegrationPage = () => {
     [commitTable, mutate]
   );
 
+  const handleCommitTables = useCallback(
+    async (tableIDs: string[]) => {
+      await commitTables(tableIDs);
+      mutate();
+    },
+    [commitTables, mutate]
+  );
+
   const handleConfirmExport = useCallback(
     async (years: string[], format: "xlsx" | "xls") => {
       if (!selectedTableForExport || years.length === 0) return;
@@ -171,6 +185,57 @@ const IntegrationPage = () => {
         key: "name",
         label: "Name",
         sortable: true,
+      },
+      {
+        key: "status",
+        label: "Status",
+        filterOptions: [
+          {
+            label: "Draft",
+            value: "draft",
+          },
+          {
+            label: "Submitted",
+            value: "submitted",
+          },
+          {
+            label: "Finalized",
+            value: "finalized",
+          },
+        ],
+        filterIncludeEmpty: false,
+        render: (row) => {
+          const status = row.status;
+
+          const variants = {
+            draft: {
+              text: "Draft",
+              class: "bg-gray-100 text-gray-700 border border-gray-300",
+              icon: <FileIcon className="w-3 h-3" />,
+            },
+            submitted: {
+              text: "Submitted",
+              class: "bg-blue-100 text-blue-700 border border-blue-300",
+              icon: <SendIcon className="w-3 h-3" />,
+            },
+            finalized: {
+              text: "Finalized",
+              class: "bg-green-100 text-green-700 border border-green-300",
+              icon: <CheckCircle className="w-3 h-3" />,
+            },
+          };
+
+          const s = variants[status];
+
+          return (
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${s.class}`}
+            >
+              {s.icon}
+              {s.text}
+            </span>
+          );
+        },
       },
       {
         key: "actions",
@@ -226,6 +291,28 @@ const IntegrationPage = () => {
       <DataTable
         data={data?.data ?? []}
         meta={data?.meta}
+        selectable
+        actions={
+          <div className="flex gap-2">
+            {table.selectedIDs.length > 0 && (
+              <Button
+                size="sm"
+                onClick={() =>
+                  ask({
+                    title: "Commit Selected Tables?",
+                    message: `Are you sure want to commit ${table.selectedIDs.length} selected tables?`,
+                    onConfirm: () =>
+                      handleCommitTables(
+                        table.selectedIDs.map((t) => String(t))
+                      ),
+                  })
+                }
+              >
+                Bulk Commit
+              </Button>
+            )}
+          </div>
+        }
         columns={columns}
         isLoading={isLoading}
         {...table}
@@ -252,7 +339,7 @@ const IntegrationPage = () => {
         onExport={handleConfirmExport}
       />
 
-      {/* Confirm Dialog Commi*/}
+      {/* Confirm Dialog Commit */}
       <ConfirmDialog />
     </div>
   );
