@@ -5,7 +5,7 @@ import DataTable, { type Column } from "@/component/ui/DataTable";
 import { useDataTable } from "@/hooks/useDataTable";
 import { useTableApi } from "@/service/table";
 import type { TableList } from "@/type/table";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Link, useOutletContext } from "react-router";
 import {
   AlertTriangle,
@@ -17,31 +17,18 @@ import {
 import { useOrganizationApi } from "@/service/organization";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import { useConfirm } from "@/hooks/useConfirm";
-import ExportTableModal from "@/component/tables/ExportTableModal";
 
 const TableAnalysis = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
   const { ask, ConfirmDialog } = useConfirm();
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [selectedTableForExport, setSelectedTableForExport] = useState<
-    string | null
-  >(null);
-  const [selectedTableName, setSelectedTableName] = useState<string>("");
-  const [availableYears, setAvailableYears] = useState<number[]>([]);
 
   useEffect(() => {
     document.title = "Analysis | Statio";
     setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Analysis" }]);
   }, [setBreadcrumbs]);
 
-  const {
-    useTables,
-    analyzeTable,
-    analyzeTables,
-    commitTable,
-    commitTables,
-    exportTable,
-  } = useTableApi();
+  const { useTables, analyzeTable, analyzeTables, commitTables } =
+    useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
   const table = useDataTable<TableList>();
@@ -53,14 +40,6 @@ const TableAnalysis = () => {
       mutate();
     },
     [analyzeTable, mutate]
-  );
-
-  const handleCommitTable = useCallback(
-    async (tableID: string) => {
-      await commitTable(tableID);
-      mutate();
-    },
-    [commitTable, mutate]
   );
 
   const handleAnalyzeTables = useCallback(
@@ -77,43 +56,6 @@ const TableAnalysis = () => {
       mutate();
     },
     [commitTables, mutate]
-  );
-
-  const handleExportTable = useCallback(
-    async (tableId: string, tableName: string) => {
-      // Get year range - default to last 5 years including current year
-      const years: number[] = [];
-      const currentYear = new Date().getFullYear();
-      const defaultFromYear = currentYear - 4;
-      const defaultToYear = currentYear;
-
-      // Generate years array
-      for (let year = defaultFromYear; year <= defaultToYear; year++) {
-        years.push(year);
-      }
-
-      setSelectedTableForExport(tableId);
-      setSelectedTableName(tableName);
-      setAvailableYears(years.sort((a, b) => b - a)); // Sort descending
-      setIsExportModalOpen(true);
-    },
-    []
-  );
-
-  const handleConfirmExport = useCallback(
-    async (years: string[], format: 'xlsx' | 'xls') => {
-      if (!selectedTableForExport || years.length === 0) return;
-
-      try {
-        await exportTable(selectedTableForExport, years, format);
-        setIsExportModalOpen(false);
-        setSelectedTableForExport(null);
-      } catch (error) {
-        console.error("Export failed:", error);
-        alert("Export failed. Please try again.");
-      }
-    },
-    [selectedTableForExport, exportTable]
   );
 
   const columns = useMemo<Column<TableList>[]>(
@@ -401,37 +343,11 @@ const TableAnalysis = () => {
             >
               Analyze
             </Button>
-            {row.status == "finalized" && (
-              <Button
-                size="sm"
-                onClick={() =>
-                  ask({
-                    title: "Commit Table?",
-                    message: "Are you sure want to commit this table?",
-                    onConfirm: () => handleCommitTable(row.id),
-                  })
-                }
-              >
-                Commit
-              </Button>
-            )}
-            <Button
-              size="sm"
-              onClick={() => handleExportTable(row.id, row.name)}
-            >
-              Export
-            </Button>
           </div>
         ),
       },
     ],
-    [
-      ask,
-      handleAnalyzeTable,
-      handleCommitTable,
-      handleExportTable,
-      organizations?.data,
-    ]
+    [ask, handleAnalyzeTable, organizations?.data]
   );
 
   return (
@@ -484,15 +400,6 @@ const TableAnalysis = () => {
         {...table}
       />
       <ConfirmDialog />
-
-      {/* Export Year Selection Modal */}
-      <ExportTableModal
-        isOpen={isExportModalOpen}
-        tableName={selectedTableName}
-        availableYears={availableYears}
-        onClose={() => setIsExportModalOpen(false)}
-        onExport={handleConfirmExport}
-      />
     </div>
   );
 };

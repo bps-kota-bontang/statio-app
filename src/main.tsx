@@ -26,7 +26,7 @@ import UsersPage from "@/app/users/UsersPage";
 import ProfilePage from "@/app/profile/ProfilePage";
 import IntegrationLayout from "@/component/layout/IntegrationLayout";
 import OrganizationLayout from "@/component/layout/OrganizationLayout";
-import IntegrationPage from "@/component/integration/tables/IntegrationPage";
+import IntegrationPage from "@/app/integration/IntegrationPage";
 
 initGA();
 
