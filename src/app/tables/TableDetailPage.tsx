@@ -14,6 +14,7 @@ import {
   trackTableFinalize,
   trackTableRevert,
   trackTableSubmit,
+  trackTableUnfinalize,
   trackTableView,
 } from "@/utils/analytics";
 
@@ -28,6 +29,7 @@ const TableDetailPage = () => {
     submitTable,
     finalizeTable,
     revertTable,
+    unfinalizeTable,
     updateTableNotes,
   } = useTableApi();
   const { id } = useParams<{ id: string }>();
@@ -74,7 +76,9 @@ const TableDetailPage = () => {
   }, [data?.data]);
 
   const isAdmin = user?.roles.includes("admin");
-  const isLocked = isAdmin ? data?.data.status == "finalized" : data?.data.is_locked;
+  const isLocked = isAdmin
+    ? data?.data.status == "finalized"
+    : data?.data.is_locked;
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(data?.data?.name || "");
@@ -82,6 +86,7 @@ const TableDetailPage = () => {
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReverting, setIsReverting] = useState(false);
+  const [isUnfinalizing, setIsUnfinalizing] = useState(false);
   const [notes, setNotes] = useState<string>(); // ✅ preload notes if exist
   const [noteStatus, setNoteStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -173,7 +178,9 @@ const TableDetailPage = () => {
             </>
           ) : (
             <>
-              <h3 className="text-xl font-semibold">{data.data.name}</h3>
+              <h3 className="text-xl font-semibold">
+                {data.data.name} ({data.data.indicator.unit})
+              </h3>
               <button
                 disabled={data.data.is_locked}
                 onClick={() => {
@@ -277,8 +284,31 @@ const TableDetailPage = () => {
 
           {/* Final */}
           {data.data.status === "finalized" && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 text-green-700 border border-green-400 font-medium text-sm shadow-sm w-full sm:w-auto">
-              <Lock size={16} /> Sudah Difinalisasi
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <button
+                onClick={async () => {
+                  setIsUnfinalizing(true);
+                  try {
+                    await unfinalizeTable(id);
+                    trackTableUnfinalize(id, data.data.name);
+                    await mutate();
+                  } finally {
+                    setIsUnfinalizing(false);
+                  }
+                }}
+                disabled={isUnfinalizing}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-400 text-red-700 bg-red-50 hover:bg-red-100 font-medium text-sm transition shadow-sm disabled:opacity-50 w-full sm:w-auto"
+              >
+                {isUnfinalizing ? (
+                  <span className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
+                ) : (
+                  <RotateCcw size={16} />
+                )}
+                Batalkan Finalisasi
+              </button>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 text-green-700 border border-green-400 font-medium text-sm shadow-sm w-full sm:w-auto">
+                <Lock size={16} /> Sudah Difinalisasi
+              </div>
             </div>
           )}
         </div>

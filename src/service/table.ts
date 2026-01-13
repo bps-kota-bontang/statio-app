@@ -169,6 +169,13 @@ export const useTableApi = () => {
     });
   };
 
+  const unfinalizeTable = async (id: string): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "unfinalized" }),
+    });
+  };
+
   const analyzeTable = async (id: string): Promise<ApiResponse<null>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/analyze`, {
       method: "POST",
@@ -292,6 +299,7 @@ export const useTableApi = () => {
     submitTable,
     finalizeTable,
     revertTable,
+    unfinalizeTable,
     analyzeTable,
     analyzeTables,
     getTableFacts,

@@ -139,6 +139,21 @@ export const trackTableRevert = (tableId: string, tableName?: string): void => {
 };
 
 /**
+ * Track table unfinalize
+ * @param tableId - Table ID
+ * @param tableName - Table name
+ */
+export const trackTableUnfinalize = (
+  tableId: string,
+  tableName?: string
+): void => {
+  trackEvent("table_unfinalize", {
+    table_id: tableId,
+    table_name: tableName,
+  });
+};
+
+/**
  * Track table finalize
  * @param tableId - Table ID
  * @param tableName - Table name
