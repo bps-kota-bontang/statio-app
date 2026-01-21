@@ -55,6 +55,10 @@ export const MENU_ITEMS: MenuItem[] = [
         title: "Tables",
         href: "/integration/tables",
       },
+      {
+        title: "Configuration",
+        href: "/integration/configuration",
+      }
     ],
   },
   {
