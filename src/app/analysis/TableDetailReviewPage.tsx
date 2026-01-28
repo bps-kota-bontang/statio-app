@@ -70,7 +70,9 @@ const TableDetailReviewPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         {/* Left — Name editable */}
         <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-xl font-semibold">{data.data.name}</h3>
+          <h3 className="text-xl font-semibold">
+            {data.data.name} ({data.data.indicator.unit})
+          </h3>
         </div>
 
         {/* Right — Status & Action Button */}
