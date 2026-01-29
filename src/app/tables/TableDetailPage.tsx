@@ -12,6 +12,7 @@ import Button from "@/component/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { trackTableView } from "@/utils/analytics";
 import TableAction from "@/component/tables/TableAction";
+import { getIsLocked } from "@/utils/table";
 
 const TableDetailPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -63,9 +64,9 @@ const TableDetailPage = () => {
   }, [data?.data]);
 
   const isAdmin = user?.roles.includes("admin");
-  const isLocked = isAdmin
-    ? data?.data.status == "finalized"
-    : data?.data.is_locked;
+  const isViewer = user?.roles.includes("viewer");
+
+  const isLocked = getIsLocked({ isAdmin, isViewer, data: data?.data });
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(data?.data?.name || "");

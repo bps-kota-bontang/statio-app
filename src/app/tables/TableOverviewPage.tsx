@@ -40,7 +40,7 @@ const TableOverviewPage = () => {
 
   const existingLabels = useMemo(
     () => labels?.data.map((item) => item.name) || [],
-    [labels]
+    [labels],
   );
 
   // // Modal bulk label table
@@ -99,7 +99,7 @@ const TableOverviewPage = () => {
         label: "Name",
         sortable: true,
       },
-      ...(user?.roles.includes("admin")
+      ...(user?.roles.includes("admin") || user?.roles.includes("viewer")
         ? [
             {
               key: "organization_id",
@@ -148,7 +148,7 @@ const TableOverviewPage = () => {
             return <span className="text-sm text-gray-500">No data</span>;
 
           const percentFilled = Math.round(
-            (summary.total_filleds / summary.total_expecteds) * 100
+            (summary.total_filleds / summary.total_expecteds) * 100,
           );
 
           return (
@@ -249,7 +249,7 @@ const TableOverviewPage = () => {
         ),
       },
     ],
-    [existingLabels, openEdit, organizations?.data, user?.roles]
+    [existingLabels, openEdit, organizations?.data, user?.roles],
   );
 
   return (

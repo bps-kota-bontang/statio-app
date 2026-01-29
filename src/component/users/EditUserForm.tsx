@@ -136,6 +136,7 @@ const EditUserForm = ({ userID, onSubmit, onCancel }: EditUserFormProps) => {
           options={[
             { label: "Admin", value: "admin" },
             { label: "Operator", value: "operator" },
+            { label: "Viewer", value: "viewer" },
           ]}
           value={roles}
           onChange={setRoles}

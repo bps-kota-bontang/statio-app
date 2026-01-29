@@ -4,7 +4,7 @@ export type User = {
   id: string;
   username: string;
   email?: string;
-  roles: string[]; // e.g., ['admin', 'operator']
+  roles: string[]; // e.g., ['admin', 'operator', 'viewer']
   organization_id: string;
   organization?: Organization;
   has_invite_link?: boolean;

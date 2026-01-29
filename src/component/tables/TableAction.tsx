@@ -21,10 +21,14 @@ const TableAction = ({ table, onAction, className }: TableActionProps) => {
     useTableApi();
   const { user } = useAuth();
 
+  const isViewer = user?.roles?.includes("viewer");
+
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReverting, setIsReverting] = useState(false);
   const [isUnfinalizing, setIsUnfinalizing] = useState(false);
+
+  if (isViewer) return null;
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>

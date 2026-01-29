@@ -126,6 +126,7 @@ const CreateUserForm = ({ onSubmit, onCancel }: CreateUserFormProps) => {
           options={[
             { label: "Admin", value: "admin" },
             { label: "Operator", value: "operator" },
+            { label: "Viewer", value: "viewer" },
           ]}
           maximumSelection={2}
           value={roles}

@@ -31,7 +31,7 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
   // Build initial row headers
   let rowHeaders = rowDim
     ? rowDim.values.map((v) => v.name)
-    : years?.sort((a, b) => a - b).map((item) => String(item)) ?? [];
+    : (years?.sort((a, b) => a - b).map((item) => String(item)) ?? []);
 
   const colHeaders = colDim
     ? colDim.values.map((v) => v.name)
@@ -191,7 +191,7 @@ export const formatCellsToPayload = (
   dimensions: Dimension[],
   year: number | null,
   swapped?: boolean,
-  locale: "id" | "en" = "id"
+  locale: "id" | "en" = "id",
 ): FactRequest | null => {
   const isOneDim = dimensions.length === 1;
 
@@ -245,8 +245,8 @@ export const formatCellsToPayload = (
         cellDimensions.length > 0 && year
           ? year
           : swapped
-          ? Number(colName)
-          : Number(rowName),
+            ? Number(colName)
+            : Number(rowName),
     });
   });
 
@@ -275,7 +275,7 @@ export const buildDataWithAggregate = (
   parentRowIndices?: Set<number>,
   colHeaders?: string[],
   colAggregates?: Array<Aggregate>,
-  needsColAggregate?: boolean
+  needsColAggregate?: boolean,
 ) => {
   if (!data || data.length === 0) return [];
 
@@ -314,7 +314,7 @@ export const buildDataWithAggregate = (
 
       // Calculate aggregate for this row across all columns
       const rowValues: CellValue[] = colKeys.map(
-        (key) => (row as Record<string, CellValue>)[key]
+        (key) => (row as Record<string, CellValue>)[key],
       );
       const nonNullValues = rowValues
         .filter((val) => val !== null && val !== undefined && val !== "")
@@ -346,7 +346,7 @@ export const buildDataWithAggregate = (
         if (parentRowIndices.has(rowIndex)) {
           // Parent row: sum all column values (which already include child totals)
           const rowValues: CellValue[] = colKeys.map(
-            (key) => (row as Record<string, CellValue>)[key]
+            (key) => (row as Record<string, CellValue>)[key],
           );
           const nonNullValues = rowValues
             .filter((val) => val !== null && val !== undefined && val !== "")
@@ -443,7 +443,7 @@ export const buildDataWithTotals = buildDataWithAggregate;
 
 export const formattedNumber = (
   value: number | string,
-  locale: "id" | "en" = "id"
+  locale: "id" | "en" = "id",
 ): number | null => {
   if (typeof value === "number") return value;
   if (typeof value !== "string") return null;
@@ -470,7 +470,7 @@ export const formattedNumber = (
 export function getRowNumber(
   index: number,
   page: number,
-  perPage: number
+  perPage: number,
 ): number {
   return index + 1 + (page - 1) * perPage;
 }
@@ -485,7 +485,7 @@ export const buildCellDisplay = (
   oldValue: number | null,
   isOutlier: boolean | null | undefined,
   rowId: string,
-  colId: string
+  colId: string,
 ): CellDisplay => {
   const hasValue = value !== null && value !== undefined;
   const hasOld = oldValue !== null && oldValue !== undefined;
@@ -562,7 +562,7 @@ function buildPivot0Dim(data: Table, years?: number[]): PivotTable {
     years && years.length > 0
       ? years.sort((a, b) => a - b)
       : Array.from(new Set((data.facts || []).map((f) => f.year))).sort(
-          (a, b) => a - b
+          (a, b) => a - b,
         );
 
   const columns: PivotColumn[] = [
@@ -598,7 +598,7 @@ function buildPivot0Dim(data: Table, years?: number[]): PivotTable {
         oldValue,
         isOutlier,
         String(year),
-        SINGLE_VALUE_COL_ID
+        SINGLE_VALUE_COL_ID,
       ),
     };
 
@@ -620,7 +620,7 @@ function buildPivot0Dim(data: Table, years?: number[]): PivotTable {
 function buildPivot1Dim(
   data: Table,
   rowDimensionId: string,
-  yearFilter?: number
+  yearFilter?: number,
 ): PivotTable {
   const rowDim = data.dimensions.find((d) => d.id === rowDimensionId);
   if (!rowDim) {
@@ -669,7 +669,7 @@ function buildPivot1Dim(
           oldValue,
           isOutlier,
           rv.id,
-          SINGLE_VALUE_COL_ID
+          SINGLE_VALUE_COL_ID,
         ),
       };
 
@@ -692,7 +692,7 @@ function buildPivot2Dim(
   data: Table,
   rowDimensionId: string,
   colDimensionId: string,
-  yearFilter?: number
+  yearFilter?: number,
 ): PivotTable {
   const rowDim = data.dimensions.find((d) => d.id === rowDimensionId);
   const colDim = data.dimensions.find((d) => d.id === colDimensionId);
@@ -750,7 +750,7 @@ function buildPivot2Dim(
           oldValue,
           isOutlier,
           rv.id,
-          col.id
+          col.id,
         );
       }
 
@@ -782,7 +782,7 @@ function buildPivot2Dim(
  */
 export const buildPivotFromFacts = (
   data: Table,
-  years?: number[]
+  years?: number[],
 ): PivotTable => {
   const dimCount = data.dimensions.length;
 
@@ -818,4 +818,31 @@ export const formatNumberUnit = (num: number | null) => {
   if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
   // if (num >= 1_000) return (num / 1_000).toFixed(0) + "K";
   return num.toString();
+};
+
+/*
+ * Determine if the table is locked based on user roles and table data.
+ * - Admins: locked if table status is "finalized".
+ * - Viewers: always locked.
+ * - Others: locked based on table's is_locked property.
+ */
+
+export const getIsLocked = ({
+  isAdmin,
+  isViewer,
+  data,
+}: {
+  isAdmin?: boolean;
+  isViewer?: boolean;
+  data?: Table;
+}) => {
+  if (isAdmin) {
+    return data?.status === "finalized";
+  }
+
+  if (isViewer) {
+    return true;
+  }
+
+  return data?.is_locked;
 };

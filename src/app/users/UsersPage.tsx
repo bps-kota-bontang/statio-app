@@ -134,6 +134,7 @@ const UsersPage = () => {
         filterOptions: [
           { label: "Admin", value: "admin" },
           { label: "Operator", value: "operator" },
+          { label: "Viewer", value: "viewer" },
         ],
         sortable: false,
         render: (row) => (
