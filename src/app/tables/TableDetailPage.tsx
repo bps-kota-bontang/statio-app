@@ -68,6 +68,8 @@ const TableDetailPage = () => {
 
   const isLocked = getIsLocked({ isAdmin, isViewer, data: data?.data });
 
+  const noteDisabled = isLocked || isViewer;
+
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(data?.data?.name || "");
   const [isSaving, setIsSaving] = useState(false);
@@ -222,7 +224,7 @@ const TableDetailPage = () => {
           placeholder="Jika ada catatan khusus terkait data pada tabel ini, silakan tuliskan di sini ya..."
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
-          disabled={data.data.is_locked}
+          disabled={noteDisabled}
         />
 
         <div className="flex items-center gap-3">
@@ -230,9 +232,9 @@ const TableDetailPage = () => {
             variant="primary"
             size="md"
             onClick={handleSaveNote}
-            disabled={noteStatus === "saving" || data.data.is_locked}
+            disabled={noteStatus === "saving" || noteDisabled}
             className={`flex items-center gap-2 shadow-lg backdrop-blur-xl border ${
-              data.data.is_locked ? "opacity-50 cursor-not-allowed" : ""
+              noteDisabled ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             <Save className="w-4 h-4" />

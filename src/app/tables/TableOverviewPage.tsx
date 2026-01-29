@@ -29,6 +29,11 @@ const TableOverviewPage = () => {
   }, [setBreadcrumbs]);
 
   const { user } = useAuth();
+
+  const isViewer = useMemo(() => {
+    return user?.roles.includes("viewer");
+  }, [user]);
+
   const { addLabelsTables, updateTableLabels, useTableLables, useTables } =
     useTableApi();
   const { useOrganizations } = useOrganizationApi();
@@ -242,21 +247,23 @@ const TableOverviewPage = () => {
             <Link to={`/tables/${row.id}`} target="_blank">
               <Button size="sm">View</Button>
             </Link>
-            <Button size="sm" onClick={() => openEdit(row)}>
-              Label
-            </Button>
+            {!isViewer && (
+              <Button size="sm" onClick={() => openEdit(row)}>
+                Label
+              </Button>
+            )}
           </div>
         ),
       },
     ],
-    [existingLabels, openEdit, organizations?.data, user?.roles],
+    [existingLabels, isViewer, openEdit, organizations?.data, user?.roles],
   );
 
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-xl font-semibold">Tables</h1>
       <DataTable
-        selectable
+        selectable={!isViewer}
         actions={
           <div className="flex gap-2">
             {table.selectedIDs.length > 0 && (
