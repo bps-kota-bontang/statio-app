@@ -19,6 +19,7 @@ import { CheckCircle, FileIcon, SendIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganizationApi } from "@/service/organization";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
+import ExportTableModal from "@/component/integration/tables/ExportTableModal";
 
 const TableOverviewPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -34,14 +35,25 @@ const TableOverviewPage = () => {
     return user?.roles.includes("viewer");
   }, [user]);
 
-  const { addLabelsTables, updateTableLabels, useTableLables, useTables } =
-    useTableApi();
+  const {
+    addLabelsTables,
+    updateTableLabels,
+    useTableLables,
+    useTables,
+    exportTable,
+  } = useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
 
   const table = useDataTable<TableList>();
   const { data, isLoading, mutate } = useTables(table);
   const { data: labels } = useTableLables();
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [selectedTableForExport, setSelectedTableForExport] = useState<
+    string | null
+  >(null);
+  const [selectedTableName, setSelectedTableName] = useState<string>("");
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
 
   const existingLabels = useMemo(
     () => labels?.data.map((item) => item.name) || [],
@@ -91,6 +103,43 @@ const TableOverviewPage = () => {
     setEditingTable(row);
     setIsEditOpen(true);
   }, []);
+
+  const handleConfirmExport = useCallback(
+    async (years: string[], format: "xlsx" | "xls") => {
+      if (!selectedTableForExport || years.length === 0) return;
+
+      try {
+        await exportTable(selectedTableForExport, years, format);
+        setIsExportModalOpen(false);
+        setSelectedTableForExport(null);
+      } catch (error) {
+        console.error("Export failed:", error);
+        alert("Export failed. Please try again.");
+      }
+    },
+    [selectedTableForExport, exportTable],
+  );
+
+  const handleExportTable = useCallback(
+    async (tableId: string, tableName: string) => {
+      // Get year range - default to last 5 years including current year
+      const years: number[] = [];
+      const currentYear = new Date().getFullYear();
+      const defaultFromYear = currentYear - 4;
+      const defaultToYear = currentYear;
+
+      // Generate years array
+      for (let year = defaultFromYear; year <= defaultToYear; year++) {
+        years.push(year);
+      }
+
+      setSelectedTableForExport(tableId);
+      setSelectedTableName(tableName);
+      setAvailableYears(years.sort((a, b) => b - a)); // Sort descending
+      setIsExportModalOpen(true);
+    },
+    [],
+  );
 
   const columns = useMemo<Column<TableList>[]>(
     () => [
@@ -252,11 +301,24 @@ const TableOverviewPage = () => {
                 Label
               </Button>
             )}
+            <Button
+              size="sm"
+              onClick={() => handleExportTable(row.id, row.name)}
+            >
+              Export
+            </Button>
           </div>
         ),
       },
     ],
-    [existingLabels, isViewer, openEdit, organizations?.data, user?.roles],
+    [
+      existingLabels,
+      handleExportTable,
+      isViewer,
+      openEdit,
+      organizations?.data,
+      user?.roles,
+    ],
   );
 
   return (
@@ -306,6 +368,15 @@ const TableOverviewPage = () => {
           onSubmit={handleBulkLabelTable}
         />
       </Modal>
+
+      {/* Export Year Selection Modal */}
+      <ExportTableModal
+        isOpen={isExportModalOpen}
+        tableName={selectedTableName}
+        availableYears={availableYears}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleConfirmExport}
+      />
     </div>
   );
 };
