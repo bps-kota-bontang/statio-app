@@ -2,29 +2,29 @@ import { useState, useCallback, useEffect } from "react";
 import Modal from "@/component/ui/Modal";
 import Button from "@/component/ui/Button";
 
-interface ExportTableModalProps {
+interface DownloadTableModalProps {
   isOpen: boolean;
   tableName: string;
   availableYears: number[];
   onClose: () => void;
-  onExport: (years: string[], format: 'xlsx' | 'xls') => void;
+  onDownload: (years: string[], format: "xlsx" | "xls") => void;
 }
 
-const ExportTableModal = ({
+const DownloadTableModal = ({
   isOpen,
   tableName,
   availableYears,
   onClose,
-  onExport,
-}: ExportTableModalProps) => {
+  onDownload,
+}: DownloadTableModalProps) => {
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
-  const [selectedFormat, setSelectedFormat] = useState<'xlsx' | 'xls'>('xlsx');
+  const [selectedFormat, setSelectedFormat] = useState<"xlsx" | "xls">("xlsx");
 
   // Reset selection when modal opens
   useEffect(() => {
     if (isOpen) {
       setSelectedYears([]);
-      setSelectedFormat('xlsx');
+      setSelectedFormat("xlsx");
     }
   }, [isOpen]);
 
@@ -46,15 +46,15 @@ const ExportTableModal = ({
     }
   }, [availableYears, selectedYears.length]);
 
-  const handleExport = useCallback(() => {
-    onExport(selectedYears, selectedFormat);
-  }, [selectedYears, selectedFormat, onExport]);
+  const handleDownload = useCallback(() => {
+    onDownload(selectedYears, selectedFormat);
+  }, [selectedYears, selectedFormat, onDownload]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="space-y-2.5">
         <div>
-          <h2 className="text-lg font-semibold">Export Table</h2>
+          <h2 className="text-lg font-semibold">Download Table</h2>
           <p className="text-sm text-gray-600 mt-0.5">{tableName}</p>
         </div>
 
@@ -103,7 +103,7 @@ const ExportTableModal = ({
         {/* Format Selection */}
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-1.5">
-            Export Format
+            Format
           </label>
           <div className="flex gap-3">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -111,8 +111,10 @@ const ExportTableModal = ({
                 type="radio"
                 name="format"
                 value="xlsx"
-                checked={selectedFormat === 'xlsx'}
-                onChange={(e) => setSelectedFormat(e.target.value as 'xlsx' | 'xls')}
+                checked={selectedFormat === "xlsx"}
+                onChange={(e) =>
+                  setSelectedFormat(e.target.value as "xlsx" | "xls")
+                }
                 className="w-4 h-4 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm">XLSX (Excel 2007+)</span>
@@ -122,8 +124,10 @@ const ExportTableModal = ({
                 type="radio"
                 name="format"
                 value="xls"
-                checked={selectedFormat === 'xls'}
-                onChange={(e) => setSelectedFormat(e.target.value as 'xlsx' | 'xls')}
+                checked={selectedFormat === "xls"}
+                onChange={(e) =>
+                  setSelectedFormat(e.target.value as "xlsx" | "xls")
+                }
                 className="w-4 h-4 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm">XLS (Legacy)</span>
@@ -137,10 +141,10 @@ const ExportTableModal = ({
           </Button>
           <Button
             size="sm"
-            onClick={handleExport}
+            onClick={handleDownload}
             disabled={selectedYears.length === 0}
           >
-            Export ({selectedYears.length})
+            Download ({selectedYears.length})
           </Button>
         </div>
       </div>
@@ -148,4 +152,4 @@ const ExportTableModal = ({
   );
 };
 
-export default ExportTableModal;
+export default DownloadTableModal;

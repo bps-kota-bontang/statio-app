@@ -19,7 +19,7 @@ import { CheckCircle, FileIcon, SendIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganizationApi } from "@/service/organization";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
-import ExportTableModal from "@/component/integration/tables/ExportTableModal";
+import DownloadTableModal from "@/component/tables/DownloadTableModal";
 
 const TableOverviewPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -40,7 +40,7 @@ const TableOverviewPage = () => {
     updateTableLabels,
     useTableLables,
     useTables,
-    exportTable,
+    downloadTable,
   } = useTableApi();
   const { useOrganizations } = useOrganizationApi();
   const { data: organizations } = useOrganizations();
@@ -48,8 +48,8 @@ const TableOverviewPage = () => {
   const table = useDataTable<TableList>();
   const { data, isLoading, mutate } = useTables(table);
   const { data: labels } = useTableLables();
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [selectedTableForExport, setSelectedTableForExport] = useState<
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [selectedTableForDownload, setSelectedTableForDownload] = useState<
     string | null
   >(null);
   const [selectedTableName, setSelectedTableName] = useState<string>("");
@@ -104,23 +104,23 @@ const TableOverviewPage = () => {
     setIsEditOpen(true);
   }, []);
 
-  const handleConfirmExport = useCallback(
+  const handleConfirmDownload = useCallback(
     async (years: string[], format: "xlsx" | "xls") => {
-      if (!selectedTableForExport || years.length === 0) return;
+      if (!selectedTableForDownload || years.length === 0) return;
 
       try {
-        await exportTable(selectedTableForExport, years, format);
-        setIsExportModalOpen(false);
-        setSelectedTableForExport(null);
+        await downloadTable(selectedTableForDownload, years, format);
+        setIsDownloadModalOpen(false);
+        setSelectedTableForDownload(null);
       } catch (error) {
-        console.error("Export failed:", error);
-        alert("Export failed. Please try again.");
+        console.error("Download failed:", error);
+        alert("Download failed. Please try again.");
       }
     },
-    [selectedTableForExport, exportTable],
+    [selectedTableForDownload, downloadTable],
   );
 
-  const handleExportTable = useCallback(
+  const handleDownloadTable = useCallback(
     async (tableId: string, tableName: string) => {
       // Get year range - default to last 5 years including current year
       const years: number[] = [];
@@ -133,10 +133,10 @@ const TableOverviewPage = () => {
         years.push(year);
       }
 
-      setSelectedTableForExport(tableId);
+      setSelectedTableForDownload(tableId);
       setSelectedTableName(tableName);
       setAvailableYears(years.sort((a, b) => b - a)); // Sort descending
-      setIsExportModalOpen(true);
+      setIsDownloadModalOpen(true);
     },
     [],
   );
@@ -303,9 +303,9 @@ const TableOverviewPage = () => {
             )}
             <Button
               size="sm"
-              onClick={() => handleExportTable(row.id, row.name)}
+              onClick={() => handleDownloadTable(row.id, row.name)}
             >
-              Export
+              Download
             </Button>
           </div>
         ),
@@ -313,7 +313,7 @@ const TableOverviewPage = () => {
     ],
     [
       existingLabels,
-      handleExportTable,
+      handleDownloadTable,
       isViewer,
       openEdit,
       organizations?.data,
@@ -369,13 +369,13 @@ const TableOverviewPage = () => {
         />
       </Modal>
 
-      {/* Export Year Selection Modal */}
-      <ExportTableModal
-        isOpen={isExportModalOpen}
+      {/* Download Year Selection Modal */}
+      <DownloadTableModal
+        isOpen={isDownloadModalOpen}
         tableName={selectedTableName}
         availableYears={availableYears}
-        onClose={() => setIsExportModalOpen(false)}
-        onExport={handleConfirmExport}
+        onClose={() => setIsDownloadModalOpen(false)}
+        onDownload={handleConfirmDownload}
       />
     </div>
   );

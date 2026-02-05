@@ -42,7 +42,7 @@ export const useTableApi = () => {
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         refreshInterval: 0, // refresh every 3 seconds
-      }
+      },
     );
 
     return { data, error, isLoading, mutate };
@@ -51,7 +51,7 @@ export const useTableApi = () => {
   const useTableInsightFacts = (
     id?: string,
     fromYear?: number,
-    toYear?: number
+    toYear?: number,
   ) => {
     const params = new URLSearchParams();
     if (fromYear) params.append("from_year", String(fromYear));
@@ -67,12 +67,12 @@ export const useTableApi = () => {
   };
 
   const useTables = createPaginatedResourceHook<TableList, TableFilters>(
-    "/tables"
+    "/tables",
   );
 
   const updateTableFact = async (
     id: string,
-    data: FactRequest
+    data: FactRequest,
   ): Promise<ApiResponse<null>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/facts`, {
       method: "PUT",
@@ -81,7 +81,7 @@ export const useTableApi = () => {
   };
 
   const createTable = async (
-    data: CreateTableRequest
+    data: CreateTableRequest,
   ): Promise<ApiResponse<Table>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables`, {
       method: "POST",
@@ -91,7 +91,7 @@ export const useTableApi = () => {
 
   const updateTable = async (
     id: string,
-    data: UpdateTableRequest
+    data: UpdateTableRequest,
   ): Promise<ApiResponse<Table>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}`, {
       method: "PUT",
@@ -100,7 +100,7 @@ export const useTableApi = () => {
   };
 
   const addLabelsTables = async (
-    data: BulkLabelsTablesRequest & { table_ids: string[] }
+    data: BulkLabelsTablesRequest & { table_ids: string[] },
   ): Promise<ApiResponse<null>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/labels`, {
       method: "PATCH",
@@ -120,7 +120,7 @@ export const useTableApi = () => {
 
   const updateTableLabels = async (
     id: string,
-    data: UpdateTableLabelRequest
+    data: UpdateTableLabelRequest,
   ): Promise<ApiResponse<TableList>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/labels`, {
       method: "PUT",
@@ -130,7 +130,7 @@ export const useTableApi = () => {
 
   const updateTableName = async (
     id: string,
-    data: UpdateTableNameRequest
+    data: UpdateTableNameRequest,
   ): Promise<ApiResponse<Table>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/name`, {
       method: "PUT",
@@ -140,7 +140,7 @@ export const useTableApi = () => {
 
   const updateTableNotes = async (
     id: string,
-    data: UpdateTableNotesRequest
+    data: UpdateTableNotesRequest,
   ): Promise<ApiResponse<Table>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/notes`, {
       method: "PUT",
@@ -202,10 +202,10 @@ export const useTableApi = () => {
     });
   };
 
-  const exportTable = async (
+  const downloadTable = async (
     id: string,
     years: string[],
-    format: "xlsx" | "xls" = "xlsx"
+    format: "xlsx" | "xls" = "xlsx",
   ): Promise<void> => {
     const params = new URLSearchParams();
     years.forEach((year) => params.append("years", year));
@@ -217,7 +217,7 @@ export const useTableApi = () => {
         : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/tables/${id}/export?${params.toString()}`,
+      `${API_BASE_URL}/api/v1/tables/${id}/download?${params.toString()}`,
       {
         method: "GET",
         credentials: "include",
@@ -225,7 +225,7 @@ export const useTableApi = () => {
           Accept: acceptHeader,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -261,7 +261,7 @@ export const useTableApi = () => {
 
   const generateParentTable = async (
     id: string,
-    dimensionIds: string[]
+    dimensionIds: string[],
   ): Promise<ApiResponse<Table>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/generate`, {
       method: "POST",
@@ -273,7 +273,7 @@ export const useTableApi = () => {
     const params = new URLSearchParams();
     if (dimensionValueIDs && dimensionValueIDs.length > 0) {
       dimensionValueIDs.forEach((id) =>
-        params.append("dimension_value_ids", id)
+        params.append("dimension_value_ids", id),
       );
     }
 
@@ -305,7 +305,7 @@ export const useTableApi = () => {
     getTableFacts,
     commitTable,
     commitTables,
-    exportTable,
+    downloadTable,
     generateParentTable,
   };
 };

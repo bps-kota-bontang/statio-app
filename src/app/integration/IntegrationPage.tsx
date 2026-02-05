@@ -9,7 +9,6 @@ import { useOutletContext } from "react-router";
 import { useTableApi } from "@/service/table";
 import { useToast } from "@/hooks/use-toast";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
-import ExportTableModal from "@/component/integration/tables/ExportTableModal";
 import GenerateTableModal from "@/component/integration/tables/GenerateTableModal";
 import IntegrationModal from "@/component/integration/tables/IntegrationModal";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -32,31 +31,25 @@ const IntegrationPage = () => {
   const table = useDataTable<TableList>();
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [showDimensionSelect, setShowDimensionSelect] = useState(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [availableDimensions, setAvailableDimensions] = useState<
     Array<{ id: string; name: string }>
   >([]);
   const [selectedDimensionIds, setSelectedDimensionIds] = useState<string[]>(
     [],
   );
-  const [selectedTableForExport, setSelectedTableForExport] = useState<
-    string | null
-  >(null);
-  const [selectedTableName, setSelectedTableName] = useState<string>("");
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [currentTableId, setCurrentTableId] = useState<string | null>(null);
   const [isIntegrationModalOpen, setIsIntegrationModalOpen] = useState(false);
   const [selectedIntegrationYear, setSelectedIntegrationYear] = useState<
     number | null
   >(null);
+  const [exportingTableId, setExportingTableId] = useState<string | null>(null);
+  const [exportingTableName, setExportingTableName] = useState<string | null>(
+    null,
+  );
 
-  const {
-    useTables,
-    generateParentTable,
-    exportTable,
-    commitTable,
-    commitTables,
-  } = useTableApi();
+  const { useTables, generateParentTable, commitTable, commitTables } =
+    useTableApi();
 
   const { exportIntegrationTable } = useIntegrationApi();
 
@@ -121,27 +114,6 @@ const IntegrationPage = () => {
     mutate,
   ]);
 
-  const handleExportTable = useCallback(
-    async (tableId: string, tableName: string) => {
-      // Get year range - default to last 5 years including current year
-      const years: number[] = [];
-      const currentYear = new Date().getFullYear();
-      const defaultFromYear = currentYear - 4;
-      const defaultToYear = currentYear;
-
-      // Generate years array
-      for (let year = defaultFromYear; year <= defaultToYear; year++) {
-        years.push(year);
-      }
-
-      setSelectedTableForExport(tableId);
-      setSelectedTableName(tableName);
-      setAvailableYears(years.sort((a, b) => b - a)); // Sort descending
-      setIsExportModalOpen(true);
-    },
-    [],
-  );
-
   const handleCommitTable = useCallback(
     async (tableID: string) => {
       await commitTable(tableID);
@@ -174,15 +146,42 @@ const IntegrationPage = () => {
     setIsIntegrationModalOpen(true);
   }, []);
 
+  const handleExportIntegration = useCallback(
+    (tableId?: string, tableName?: string) => {
+      // Generate year options
+      const years: number[] = [];
+      const currentYear = new Date().getFullYear();
+      const defaultFromYear = currentYear - 4;
+      const defaultToYear = currentYear;
+
+      for (let year = defaultFromYear; year <= defaultToYear; year++) {
+        years.push(year);
+      }
+
+      setAvailableYears(years.sort((a, b) => b - a));
+      setSelectedIntegrationYear(currentYear);
+      setExportingTableId(tableId || null);
+      setExportingTableName(tableName || null);
+      setIsIntegrationModalOpen(true);
+    },
+    [],
+  );
+
   const handleConfirmIntegration = useCallback(async () => {
-    if (!selectedIntegrationYear || table.selectedIDs.length === 0) return;
+    if (!selectedIntegrationYear) return;
+
+    // Determine which table IDs to export
+    const tableIds = exportingTableId
+      ? [exportingTableId]
+      : table.selectedIDs.map((t) => String(t));
+
+    if (tableIds.length === 0) return;
 
     try {
-      await exportIntegrationTable(
-        table.selectedIDs.map((t) => String(t)),
-        selectedIntegrationYear,
-      );
+      await exportIntegrationTable(tableIds, selectedIntegrationYear);
       setIsIntegrationModalOpen(false);
+      setExportingTableId(null);
+      setExportingTableName(null);
       mutate();
     } catch (error) {
       toast({
@@ -190,33 +189,18 @@ const IntegrationPage = () => {
         description:
           error instanceof Error
             ? error.message
-            : "Failed to export integration tables",
+            : "Failed to download integration tables",
         variant: "destructive",
       });
     }
   }, [
     selectedIntegrationYear,
+    exportingTableId,
     table.selectedIDs,
     exportIntegrationTable,
     mutate,
     toast,
   ]);
-
-  const handleConfirmExport = useCallback(
-    async (years: string[], format: "xlsx" | "xls") => {
-      if (!selectedTableForExport || years.length === 0) return;
-
-      try {
-        await exportTable(selectedTableForExport, years, format);
-        setIsExportModalOpen(false);
-        setSelectedTableForExport(null);
-      } catch (error) {
-        console.error("Export failed:", error);
-        alert("Export failed. Please try again.");
-      }
-    },
-    [selectedTableForExport, exportTable],
-  );
 
   const toggleDimension = useCallback((dimensionId: string) => {
     setSelectedDimensionIds((prev) =>
@@ -319,12 +303,14 @@ const IntegrationPage = () => {
                 {generatingId === row.id ? "Generating..." : "Generate"}
               </Button>
             )}
-            <Button
-              size="sm"
-              onClick={() => handleExportTable(row.id, row.name)}
-            >
-              Export
-            </Button>
+            {row.is_integrated && (
+              <Button
+                size="sm"
+                onClick={() => handleExportIntegration(row.id, row.name)}
+              >
+                Export
+              </Button>
+            )}
           </div>
         ),
       },
@@ -333,10 +319,26 @@ const IntegrationPage = () => {
       ask,
       generatingId,
       handleCommitTable,
-      handleExportTable,
+      handleExportIntegration,
       handleGenerateParent,
     ],
   );
+
+  // Check if at least one selected table has is_integrated = true
+  const hasIntegratedTable = useMemo(() => {
+    if (table.selectedIDs.length === 0 || !data?.data) return false;
+    return data.data.some(
+      (row) => table.selectedIDs.includes(row.id) && row.is_integrated === true,
+    );
+  }, [table.selectedIDs, data?.data]);
+
+  // Check if at least one selected table has status = finalized
+  const hasFinalizedTable = useMemo(() => {
+    if (table.selectedIDs.length === 0 || !data?.data) return false;
+    return data.data.some(
+      (row) => table.selectedIDs.includes(row.id) && row.status === "finalized",
+    );
+  }, [table.selectedIDs, data?.data]);
 
   return (
     <div className="p-4 space-y-4">
@@ -349,24 +351,28 @@ const IntegrationPage = () => {
           <div className="flex gap-2">
             {table.selectedIDs.length > 0 && (
               <>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    ask({
-                      title: "Commit Selected Tables?",
-                      message: `Are you sure want to commit ${table.selectedIDs.length} selected tables?`,
-                      onConfirm: () =>
-                        handleCommitTables(
-                          table.selectedIDs.map((t) => String(t)),
-                        ),
-                    })
-                  }
-                >
-                  Bulk Commit
-                </Button>
-                <Button size="sm" onClick={() => handleExportIntegrations()}>
-                  Integration
-                </Button>
+                {hasFinalizedTable && (
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      ask({
+                        title: "Commit Selected Tables?",
+                        message: `Are you sure want to commit ${table.selectedIDs.length} selected tables?`,
+                        onConfirm: () =>
+                          handleCommitTables(
+                            table.selectedIDs.map((t) => String(t)),
+                          ),
+                      })
+                    }
+                  >
+                    Commit
+                  </Button>
+                )}
+                {hasIntegratedTable && (
+                  <Button size="sm" onClick={() => handleExportIntegrations()}>
+                    Export
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -388,22 +394,18 @@ const IntegrationPage = () => {
         }}
       />
 
-      {/* Export Year Selection Modal */}
-      <ExportTableModal
-        isOpen={isExportModalOpen}
-        tableName={selectedTableName}
-        availableYears={availableYears}
-        onClose={() => setIsExportModalOpen(false)}
-        onExport={handleConfirmExport}
-      />
-
       {/* Integration Year Selection Modal */}
       <IntegrationModal
         isOpen={isIntegrationModalOpen}
-        tableCount={table.selectedIDs.length}
+        tableCount={exportingTableId ? 1 : table.selectedIDs.length}
+        tableName={exportingTableName}
         availableYears={availableYears}
         selectedYear={selectedIntegrationYear}
-        onClose={() => setIsIntegrationModalOpen(false)}
+        onClose={() => {
+          setIsIntegrationModalOpen(false);
+          setExportingTableId(null);
+          setExportingTableName(null);
+        }}
         onYearChange={setSelectedIntegrationYear}
         onExport={handleConfirmIntegration}
       />
