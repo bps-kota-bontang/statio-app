@@ -50,7 +50,26 @@ export const useIntegrationApi = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const importIntegrationFile = async (file: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/integrations/import`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
+  };
+
   return {
     exportIntegrationTable,
+    importIntegrationFile,
   };
 };

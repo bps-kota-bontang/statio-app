@@ -28,6 +28,7 @@ import IntegrationLayout from "@/component/layout/IntegrationLayout";
 import OrganizationLayout from "@/component/layout/OrganizationLayout";
 import IntegrationPage from "@/app/integration/IntegrationPage";
 import ConfigurationPage from "@/app/integration/ConfigurationPage";
+import ImportPage from "@/app/integration/ImportPage";
 
 initGA();
 
@@ -62,6 +63,7 @@ createRoot(root!).render(
             </Route>
             <Route path="integration" element={<IntegrationLayout />}>
               <Route path="tables" element={<IntegrationPage />} />
+              <Route path="import" element={<ImportPage />} />
               <Route path="configuration" element={<ConfigurationPage />} />
             </Route>
             <Route path="organizations" element={<OrganizationLayout />}>
@@ -78,5 +80,5 @@ createRoot(root!).render(
         </Routes>
       </BrowserRouter>
     </ToastProvider>
-  </AuthProvider>
+  </AuthProvider>,
 );
