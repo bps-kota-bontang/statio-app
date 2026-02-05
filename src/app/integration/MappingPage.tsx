@@ -96,6 +96,33 @@ const MappingPage = () => {
         sortable: true,
       },
       {
+        key: "website_table_id",
+        label: "Website Table ID",
+        render: (row) => row.website_table_id || "-",
+      },
+      {
+        key: "website_subject_id",
+        label: "Website Subject ID",
+        render: (row) => row.website_subject_id || "-",
+      },
+      {
+        key: "website_link",
+        label: "Website Link",
+        render: (row) =>
+          row.website_link ? (
+            <a
+              href={row.website_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              {row.website_link}
+            </a>
+          ) : (
+            "-"
+          ),
+      },
+      {
         key: "is_integrated",
         label: "Integrated",
         render: (row) => {
