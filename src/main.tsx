@@ -29,6 +29,7 @@ import OrganizationLayout from "@/component/layout/OrganizationLayout";
 import IntegrationPage from "@/app/integration/IntegrationPage";
 import ConfigurationPage from "@/app/integration/ConfigurationPage";
 import ImportPage from "@/app/integration/ImportPage";
+import MappingPage from "@/app/integration/MappingPage";
 
 initGA();
 
@@ -63,6 +64,7 @@ createRoot(root!).render(
             </Route>
             <Route path="integration" element={<IntegrationLayout />}>
               <Route path="tables" element={<IntegrationPage />} />
+              <Route path="mappings" element={<MappingPage />} />
               <Route path="import" element={<ImportPage />} />
               <Route path="configuration" element={<ConfigurationPage />} />
             </Route>

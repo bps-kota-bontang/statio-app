@@ -11,6 +11,7 @@ import type {
   TableLabelResponse,
   TableList,
   UpdateTableLabelRequest,
+  UpdateTableMappingRequest,
   UpdateTableNameRequest,
   UpdateTableNotesRequest,
   UpdateTableRequest,
@@ -284,6 +285,16 @@ export const useTableApi = () => {
     return apiFetch<ApiResponse<Fact[]>>(url);
   };
 
+  const mappingTable = async (
+    id: string,
+    data: UpdateTableMappingRequest,
+  ): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/mapping`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  };
+
   return {
     useTable,
     useTableInsightFacts,
@@ -307,5 +318,6 @@ export const useTableApi = () => {
     commitTables,
     downloadTable,
     generateParentTable,
+    mappingTable,
   };
 };

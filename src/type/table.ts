@@ -34,6 +34,7 @@ export type TableList = {
   has_parent_dimension: boolean;
   website_table_id?: string | null;
   website_subject_id?: string | null;
+  website_link?: string | null;
   is_integrated?: boolean | null;
   insight_facts_summary?: SummaryInsightFactsResponse | null;
 };
@@ -74,6 +75,12 @@ export type UpdateTableNameRequest = {
 
 export type UpdateTableNotesRequest = {
   notes: string;
+};
+
+export type UpdateTableMappingRequest = {
+  website_table_id: string | null;
+  website_subject_id: string | null;
+  website_link: string | null;
 };
 
 export type SummaryInsightFactsResponse = {

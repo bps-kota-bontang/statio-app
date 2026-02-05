@@ -56,6 +56,10 @@ export const MENU_ITEMS: MenuItem[] = [
         href: "/integration/tables",
       },
       {
+        title: "Mapping",
+        href: "/integration/mappings",
+      },
+      {
         title: "Import",
         href: "/integration/import",
       },
