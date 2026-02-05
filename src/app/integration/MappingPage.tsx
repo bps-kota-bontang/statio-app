@@ -14,6 +14,7 @@ import MappingModal, {
 } from "@/component/integration/tables/MappingModal";
 import { useConfirm } from "@/hooks/useConfirm";
 import { CheckCircle, XCircle } from "lucide-react";
+import { Link } from "react-router";
 
 const MappingPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -131,6 +132,9 @@ const MappingPage = () => {
         sortable: false,
         render: (row) => (
           <div className="flex gap-2">
+            <Link to={`/tables/${row.id}`} target="_blank">
+              <Button size="sm">View</Button>
+            </Link>
             <Button size="sm" onClick={() => handleOpenMapping(row)}>
               Mapping
             </Button>
