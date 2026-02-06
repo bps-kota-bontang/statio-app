@@ -24,6 +24,7 @@ export type Table = {
 export type TableList = {
   id: string;
   name: string;
+  direction: number;
   labels?: string[];
   indicator: IndicatorList | null;
   organization: Organization | null;

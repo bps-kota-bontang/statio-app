@@ -16,6 +16,7 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { Link } from "react-router";
 import Switch from "@/component/ui/Switch";
 import DownloadTableModal from "@/component/tables/DownloadTableModal";
+import Badge from "@/component/ui/Badge";
 
 const MappingPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -161,11 +162,34 @@ const MappingPage = () => {
         sortable: true,
       },
       {
-        key: "count_dimensions",
+        key: "direction",
         label: "Dimensions",
-        render: (row) => {
-          return <p className="text-center">{row.dimensions.length}</p>;
-        },
+        filterOptions: [
+          {
+            label: "0 Dimension",
+            value: "0",
+          },
+          {
+            label: "1 Dimension",
+            value: "1",
+          },
+          {
+            label: "2 Dimensions",
+            value: "2",
+          },
+        ],
+        filterIncludeEmpty: false,
+        render: (row) => (
+          <div className="flex flex-wrap gap-2">
+            {row.dimensions.length > 0 ? (
+              row.dimensions.map((dimension, index) => (
+                <Badge key={index} label={dimension.name} />
+              ))
+            ) : (
+              <span className="text-sm text-gray-500">No dimensions</span>
+            )}
+          </div>
+        ),
       },
       {
         key: "website_table_id",
