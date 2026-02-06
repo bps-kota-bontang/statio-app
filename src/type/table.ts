@@ -36,6 +36,7 @@ export type TableList = {
   website_table_id?: string | null;
   website_subject_id?: string | null;
   website_link?: string | null;
+  can_integrate: boolean;
   is_integrated: boolean;
   insight_facts_summary?: SummaryInsightFactsResponse | null;
 };

@@ -17,7 +17,7 @@ import { Link } from "react-router";
 import Switch from "@/component/ui/Switch";
 import DownloadTableModal from "@/component/tables/DownloadTableModal";
 import Badge from "@/component/ui/Badge";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, XCircle } from "lucide-react";
 
 const MappingPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -264,6 +264,42 @@ const MappingPage = () => {
           ) : (
             "-"
           ),
+      },
+      {
+        key: "can_integrate",
+        label: "Integratable",
+        filterOptions: [
+          { label: "Yes", value: "true" },
+          { label: "No", value: "false" },
+        ],
+        filterIncludeEmpty: false,
+        render: (row) => {
+          const isIntegrated = row.can_integrate;
+
+          const variants = {
+            true: {
+              text: "Yes",
+              class: "bg-green-100 text-green-700 border border-green-300",
+              icon: <CheckCircle className="w-3 h-3" />,
+            },
+            false: {
+              text: "No",
+              class: "bg-red-100 text-red-700 border border-red-300",
+              icon: <XCircle className="w-3 h-3" />,
+            },
+          };
+
+          const s = variants[String(isIntegrated) as "true" | "false"];
+
+          return (
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${s.class}`}
+            >
+              {s.icon}
+              {s.text}
+            </span>
+          );
+        },
       },
       {
         key: "is_integrated",
