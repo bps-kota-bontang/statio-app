@@ -37,13 +37,13 @@ const TableViewer = ({
   const [locale, setLocale] = useState<"id" | "en">("id");
   const [showLocaleHelp, setShowLocaleHelp] = useState(false);
   const [helpPos, setHelpPos] = useState<{ top: number; left: number } | null>(
-    null
+    null,
   );
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const [swap, setSwap] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
-    "idle"
+    "idle",
   );
 
   const dims = useMemo(() => table?.dimensions ?? [], [table]);
@@ -77,9 +77,9 @@ const TableViewer = ({
           (colHeader) =>
             base.data.find((_r, i) => base.rowHeaders[i] === rowHeader)?.[
               colHeader
-            ] ?? null
-        )
-      )
+            ] ?? null,
+        ),
+      ),
     );
 
     // When transposed, parent rows become parent columns
@@ -88,7 +88,7 @@ const TableViewer = ({
 
     const baseTransposed = {
       data: transposedDataValues.map((rowValues) =>
-        Object.fromEntries(base.rowHeaders.map((h, i) => [h, rowValues[i]]))
+        Object.fromEntries(base.rowHeaders.map((h, i) => [h, rowValues[i]])),
       ),
       rowHeaders: base.colHeaders,
       colHeaders: base.rowHeaders,
@@ -124,7 +124,7 @@ const TableViewer = ({
         rowHeaders,
         dims,
         year,
-        swap
+        swap,
       );
 
       if (!payloadFactRequest) return;
@@ -144,7 +144,7 @@ const TableViewer = ({
         setTimeout(() => setStatus("idle"), 3000);
       }
     },
-    [rowHeaders, dims, year, swap, updateTableFact, id, onRevalidate]
+    [rowHeaders, dims, year, swap, updateTableFact, id, onRevalidate],
   );
 
   // 🔹 Hitung posisi popup locale
@@ -269,56 +269,56 @@ const TableViewer = ({
         aggregate={
           dims.length === 1
             ? !swap // Jika tidak di-swap, aggregate untuk row (bottom)
-              ? table?.aggregate ?? null
+              ? (table?.aggregate ?? null)
               : null // Jika di-swap, aggregate akan jadi column (right), bukan row
             : dims.length === 2 && rowDimension?.aggregate === true
-            ? "sum" // Placeholder, will be overridden by rowAggregates
-            : null
+              ? "sum" // Placeholder, will be overridden by rowAggregates
+              : null
         }
         rowAggregates={
           dims.length === 1 && !swap && table?.aggregate
             ? // Dimension = 1, not swapped: rowAggregates = all columns same aggregate
               colHeaders.map(() => table.aggregate!)
             : dims.length === 2 &&
-              rowDimension?.aggregate === true &&
-              colDimension
-            ? // Map column headers to their aggregates from column dimension values
-              (() => {
-                const aggregates = colHeaders.map((colName) => {
-                  const colValue = colDimension.values.find(
-                    (v) => v.name === colName
-                  );
-                  return colValue?.aggregate ?? null;
-                });
-                return aggregates;
-              })()
-            : undefined
+                rowDimension?.aggregate === true &&
+                colDimension
+              ? // Map column headers to their aggregates from column dimension values
+                (() => {
+                  const aggregates = colHeaders.map((colName) => {
+                    const colValue = colDimension.values.find(
+                      (v) => v.name === colName,
+                    );
+                    return colValue?.aggregate ?? null;
+                  });
+                  return aggregates;
+                })()
+              : undefined
         }
         colAggregates={
           dims.length === 1 && swap && table?.aggregate
             ? // Dimension = 1, swapped: colAggregates = all rows same aggregate
               rowHeaders.map(() => table.aggregate!)
             : dims.length === 2 &&
-              colDimension?.aggregate === true &&
-              rowDimension
-            ? // Map row headers to their aggregates from row dimension values
-              (() => {
-                const aggregates = rowHeaders.map((rowName) => {
-                  // Check if this column is a parent column (when transposed)
-                  if (parentColumns && parentColumns.has(rowName)) {
-                    // Parent columns (former parent rows) should aggregate their children
-                    // Use "sum" as default aggregate for parent groupings
-                    return "sum";
-                  }
+                colDimension?.aggregate === true &&
+                rowDimension
+              ? // Map row headers to their aggregates from row dimension values
+                (() => {
+                  const aggregates = rowHeaders.map((rowName) => {
+                    // Check if this column is a parent column (when transposed)
+                    if (parentColumns && parentColumns.has(rowName)) {
+                      // Parent columns (former parent rows) should aggregate their children
+                      // Use "sum" as default aggregate for parent groupings
+                      return "sum";
+                    }
 
-                  const rowValue = rowDimension.values.find(
-                    (v) => v.name === rowName
-                  );
-                  return rowValue?.aggregate ?? null;
-                });
-                return aggregates;
-              })()
-            : undefined
+                    const rowValue = rowDimension.values.find(
+                      (v) => v.name === rowName,
+                    );
+                    return rowValue?.aggregate ?? null;
+                  });
+                  return aggregates;
+                })()
+              : undefined
         }
         needsColAggregate={
           (dims.length === 1 && swap && table?.aggregate !== null) ||
@@ -354,7 +354,7 @@ const TableViewer = ({
               <code>1,234.56</code>
             </p>
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );

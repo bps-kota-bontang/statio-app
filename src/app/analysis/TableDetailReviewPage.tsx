@@ -7,15 +7,18 @@ import Loading from "@/component/ui/Loading";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import TableReviewer from "@/component/analysis/TableReviewer";
 import TableAction from "@/component/tables/TableAction";
+import { useAuth } from "@/hooks/useAuth";
 
 const TableDetailReviewPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
-
+  const { user } = useAuth();
   const { useTable, useTableInsightFacts } = useTableApi();
   const { id } = useParams<{ id: string }>();
   const lastYear = new Date().getFullYear() - 1;
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get("year");
+
+  const isAdmin = user?.roles.includes("admin");
 
   const years = useMemo(
     () => Array.from({ length: 4 }, (_, i) => lastYear - i),
@@ -51,6 +54,12 @@ const TableDetailReviewPage = () => {
       (a, b) => (b.values?.length ?? 0) - (a.values?.length ?? 0),
     );
   }, [data?.data?.dimensions]);
+
+  const originalDimensions = useMemo(() => {
+    if (!data?.data) return [];
+
+    return data.data.dimensions;
+  }, [data?.data]);
 
   const handleYearSelect = useCallback(
     (year: number) => {
@@ -102,7 +111,10 @@ const TableDetailReviewPage = () => {
       )}
 
       <TableReviewer
-        table={{ ...data.data, dimensions: sortedDimensions }}
+        table={{
+          ...data.data,
+          dimensions: isAdmin ? originalDimensions : sortedDimensions,
+        }}
         years={years}
       />
 

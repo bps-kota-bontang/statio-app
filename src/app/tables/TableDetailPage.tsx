@@ -63,6 +63,12 @@ const TableDetailPage = () => {
     );
   }, [data?.data]);
 
+  const originalDimensions = useMemo(() => {
+    if (!data?.data) return [];
+
+    return data.data.dimensions;
+  }, [data?.data]);
+
   const isAdmin = user?.roles.includes("admin");
   const isViewer = user?.roles.includes("viewer");
 
@@ -208,7 +214,10 @@ const TableDetailPage = () => {
         id={id}
         isLocked={isLocked}
         year={yearParam ? Number(yearParam) : lastYear}
-        table={{ ...data.data, dimensions: sortedDimensions }}
+        table={{
+          ...data.data,
+          dimensions: isAdmin ? originalDimensions : sortedDimensions,
+        }}
         onRevalidate={handleRevalidate}
         years={years}
       />
