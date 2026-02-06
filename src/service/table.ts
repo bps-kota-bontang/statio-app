@@ -295,6 +295,16 @@ export const useTableApi = () => {
     });
   };
 
+  const updateTableIntegrated = async (
+    id: string,
+    isIntegrated: boolean,
+  ): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/integrated`, {
+      method: "PUT",
+      body: JSON.stringify({ is_integrated: isIntegrated }),
+    });
+  };
+
   return {
     useTable,
     useTableInsightFacts,
@@ -319,5 +329,6 @@ export const useTableApi = () => {
     downloadTable,
     generateParentTable,
     mappingTable,
+    updateTableIntegrated,
   };
 };

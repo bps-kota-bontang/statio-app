@@ -13,8 +13,9 @@ import MappingModal, {
   type MappingFormData,
 } from "@/component/integration/tables/MappingModal";
 import { useConfirm } from "@/hooks/useConfirm";
-import { CheckCircle, XCircle } from "lucide-react";
 import { Link } from "react-router";
+import Switch from "@/component/ui/Switch";
+import DownloadTableModal from "@/component/tables/DownloadTableModal";
 
 const MappingPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -34,15 +35,56 @@ const MappingPage = () => {
   const [selectedMappingTable, setSelectedMappingTable] =
     useState<TableList | null>(null);
 
-  const {
-    useTables,
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [selectedTableForDownload, setSelectedTableForDownload] = useState<
+    string | null
+  >(null);
+  const [selectedTableName, setSelectedTableName] = useState<string>("");
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
 
-    mappingTable,
-  } = useTableApi();
+  const { useTables, updateTableIntegrated, mappingTable, downloadTable } =
+    useTableApi();
 
   const { toast } = useToast();
 
   const { data, isLoading, mutate } = useTables(table);
+
+  const handleConfirmDownload = useCallback(
+    async (years: string[], format: "xlsx" | "xls") => {
+      if (!selectedTableForDownload || years.length === 0) return;
+
+      try {
+        await downloadTable(selectedTableForDownload, years, format);
+        setIsDownloadModalOpen(false);
+        setSelectedTableForDownload(null);
+      } catch (error) {
+        console.error("Download failed:", error);
+        alert("Download failed. Please try again.");
+      }
+    },
+    [selectedTableForDownload, downloadTable],
+  );
+
+  const handleDownloadTable = useCallback(
+    async (tableId: string, tableName: string) => {
+      // Get year range - default to last 5 years including current year
+      const years: number[] = [];
+      const currentYear = new Date().getFullYear();
+      const defaultFromYear = currentYear - 4;
+      const defaultToYear = currentYear;
+
+      // Generate years array
+      for (let year = defaultFromYear; year <= defaultToYear; year++) {
+        years.push(year);
+      }
+
+      setSelectedTableForDownload(tableId);
+      setSelectedTableName(tableName);
+      setAvailableYears(years.sort((a, b) => b - a)); // Sort descending
+      setIsDownloadModalOpen(true);
+    },
+    [],
+  );
 
   const handleOpenMapping = useCallback((table: TableList) => {
     setSelectedMappingTable(table);
@@ -82,6 +124,29 @@ const MappingPage = () => {
     [selectedMappingTable, mappingTable, toast, mutate],
   );
 
+  const handleToggleIntegrated = useCallback(
+    async (tableId: string, currentValue: boolean) => {
+      try {
+        await updateTableIntegrated(tableId, !currentValue);
+        toast({
+          title: "Success",
+          description: "Integration status updated successfully",
+        });
+        mutate();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Failed to update integration status",
+          variant: "destructive",
+        });
+      }
+    },
+    [updateTableIntegrated, toast, mutate],
+  );
+
   const columns = useMemo<Column<TableList>[]>(
     () => [
       {
@@ -96,14 +161,25 @@ const MappingPage = () => {
         sortable: true,
       },
       {
+        key: "count_dimensions",
+        label: "Dimensions",
+        render: (row) => {
+          return <p className="text-center">{row.dimensions.length}</p>;
+        },
+      },
+      {
         key: "website_table_id",
         label: "Website Table ID",
-        render: (row) => row.website_table_id || "-",
+        render: (row) => {
+          return <p className="text-center">{row.website_table_id || "-"}</p>;
+        },
       },
       {
         key: "website_subject_id",
         label: "Website Subject ID",
-        render: (row) => row.website_subject_id || "-",
+        render: (row) => {
+          return <p className="text-center">{row.website_subject_id || "-"}</p>;
+        },
       },
       {
         key: "website_link",
@@ -124,34 +200,18 @@ const MappingPage = () => {
       },
       {
         key: "is_integrated",
+        filterOptions: [
+          { label: "Integrated", value: "true" },
+          { label: "Not Integrated", value: "false" },
+        ],
+        filterIncludeEmpty: false,
         label: "Integrated",
-        render: (row) => {
-          const isIntegrated = row.is_integrated;
-
-          const variants = {
-            true: {
-              text: "Yes",
-              class: "bg-green-100 text-green-700 border border-green-300",
-              icon: <CheckCircle className="w-3 h-3" />,
-            },
-            false: {
-              text: "No",
-              class: "bg-red-100 text-red-700 border border-red-300",
-              icon: <XCircle className="w-3 h-3" />,
-            },
-          };
-
-          const s = variants[String(isIntegrated) as "true" | "false"];
-
-          return (
-            <span
-              className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${s.class}`}
-            >
-              {s.icon}
-              {s.text}
-            </span>
-          );
-        },
+        render: (row) => (
+          <Switch
+            checked={row.is_integrated}
+            onChange={() => handleToggleIntegrated(row.id, row.is_integrated)}
+          />
+        ),
       },
       {
         key: "actions",
@@ -165,11 +225,17 @@ const MappingPage = () => {
             <Button size="sm" onClick={() => handleOpenMapping(row)}>
               Mapping
             </Button>
+            <Button
+              size="sm"
+              onClick={() => handleDownloadTable(row.id, row.name)}
+            >
+              Download
+            </Button>
           </div>
         ),
       },
     ],
-    [handleOpenMapping],
+    [handleDownloadTable, handleOpenMapping, handleToggleIntegrated],
   );
 
   return (
@@ -178,7 +244,6 @@ const MappingPage = () => {
       <DataTable
         data={data?.data ?? []}
         meta={data?.meta}
-        selectable
         columns={columns}
         isLoading={isLoading}
         {...table}
@@ -193,6 +258,15 @@ const MappingPage = () => {
           setSelectedMappingTable(null);
         }}
         onSubmit={handleSubmitMapping}
+      />
+
+      {/* Download Year Selection Modal */}
+      <DownloadTableModal
+        isOpen={isDownloadModalOpen}
+        tableName={selectedTableName}
+        availableYears={availableYears}
+        onClose={() => setIsDownloadModalOpen(false)}
+        onDownload={handleConfirmDownload}
       />
 
       {/* Confirm Dialog Commit */}
