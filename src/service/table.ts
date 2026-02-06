@@ -305,6 +305,14 @@ export const useTableApi = () => {
     });
   };
 
+  const swapTableDimension = async (
+    id: string,
+  ): Promise<ApiResponse<Table>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/swap`, {
+      method: "POST",
+    });
+  };
+
   return {
     useTable,
     useTableInsightFacts,
@@ -330,5 +338,6 @@ export const useTableApi = () => {
     generateParentTable,
     mappingTable,
     updateTableIntegrated,
+    swapTableDimension,
   };
 };

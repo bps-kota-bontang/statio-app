@@ -17,6 +17,7 @@ import { Link } from "react-router";
 import Switch from "@/component/ui/Switch";
 import DownloadTableModal from "@/component/tables/DownloadTableModal";
 import Badge from "@/component/ui/Badge";
+import { ArrowLeftRight } from "lucide-react";
 
 const MappingPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -43,8 +44,13 @@ const MappingPage = () => {
   const [selectedTableName, setSelectedTableName] = useState<string>("");
   const [availableYears, setAvailableYears] = useState<number[]>([]);
 
-  const { useTables, updateTableIntegrated, mappingTable, downloadTable } =
-    useTableApi();
+  const {
+    useTables,
+    updateTableIntegrated,
+    mappingTable,
+    downloadTable,
+    swapTableDimension,
+  } = useTableApi();
 
   const { toast } = useToast();
 
@@ -91,6 +97,29 @@ const MappingPage = () => {
     setSelectedMappingTable(table);
     setIsMappingModalOpen(true);
   }, []);
+
+  const handleSwapDimensions = useCallback(
+    async (tableId: string) => {
+      try {
+        await swapTableDimension(tableId);
+        toast({
+          title: "Success",
+          description: "Table dimensions swapped successfully",
+        });
+        mutate();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Failed to swap table dimensions",
+          variant: "destructive",
+        });
+      }
+    },
+    [swapTableDimension, toast, mutate],
+  );
 
   const handleSubmitMapping = useCallback(
     async (data: MappingFormData) => {
@@ -180,11 +209,25 @@ const MappingPage = () => {
         ],
         filterIncludeEmpty: false,
         render: (row) => (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             {row.dimensions.length > 0 ? (
-              row.dimensions.map((dimension, index) => (
-                <Badge key={index} label={dimension.name} />
-              ))
+              <>
+                {row.dimensions.map((dimension, index) => {
+                  return <Badge key={index} label={dimension.name} />;
+                })}
+
+                {row.dimensions.length > 1 && (
+                  <span
+                    className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer hover:bg-gray-100 p-1 rounded-full"
+                    title="Swap Dimensions"
+                  >
+                    <ArrowLeftRight
+                      className="w-4 h-4"
+                      onClick={() => handleSwapDimensions(row.id)}
+                    />
+                  </span>
+                )}
+              </>
             ) : (
               <span className="text-sm text-gray-500">No dimensions</span>
             )}
@@ -259,7 +302,12 @@ const MappingPage = () => {
         ),
       },
     ],
-    [handleDownloadTable, handleOpenMapping, handleToggleIntegrated],
+    [
+      handleDownloadTable,
+      handleOpenMapping,
+      handleSwapDimensions,
+      handleToggleIntegrated,
+    ],
   );
 
   return (

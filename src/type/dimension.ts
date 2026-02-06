@@ -16,6 +16,7 @@ export type DimensionValue = {
 export type DimensionList = {
   id: string;
   name: string;
+  order: number;
   has_parent_dimension: boolean;
 };
 
