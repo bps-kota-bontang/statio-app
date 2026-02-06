@@ -77,7 +77,7 @@ function getAggregateHeader(aggregates: Array<Aggregate> | undefined): string {
 function calculateRowHeaderWidthPrecise(
   headers: string[],
   font: string = "14px Arial",
-  padding: number = 20
+  padding: number = 20,
 ): number {
   if (!headers || headers.length === 0) return 100;
 
@@ -119,7 +119,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
       onChange,
       locale = "id",
     },
-    ref
+    ref,
   ) => {
     const hotRef = useRef<HotTableRef>(null);
 
@@ -145,8 +145,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
         parentRowIndices,
         colHeaders,
         colAggregates,
-        needsColAggregate
-      )
+        needsColAggregate,
+      ),
     );
 
     const numericFormat = useMemo(() => {
@@ -174,7 +174,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
         if (!valid) {
           alert(
-            "Beberapa cell tidak valid. Silakan perbaiki sebelum menyimpan."
+            "Beberapa cell tidak valid. Silakan perbaiki sebelum menyimpan.",
           );
           return null;
         }
@@ -210,8 +210,8 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
           parentRowIndices,
           colHeaders,
           colAggregates,
-          needsColAggregate
-        )
+          needsColAggregate,
+        ),
       );
     }, [
       colHeaders,
@@ -226,7 +226,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
     const handleAfterChange = (
       changes: CellChange[] | null,
-      source: string
+      source: string,
     ) => {
       if (!changes || source === "loadData") return;
 
@@ -251,7 +251,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
         parentRowIndices,
         colHeaders,
         colAggregates,
-        needsColAggregate
+        needsColAggregate,
       );
 
       setTableData(newBuildData);
@@ -288,7 +288,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
     const rowHeaderWidth = useMemo(
       () => calculateRowHeaderWidthPrecise(extraRowHeaders, "14px Arial", 40),
-      [extraRowHeaders]
+      [extraRowHeaders],
     );
 
     // Custom row header renderer to make parent rows and total row bold
@@ -301,8 +301,18 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
 
       if (isParentRow || isTotalRow) {
         TH.style.fontWeight = "700";
-        TH.style.backgroundColor = isParentRow ? "#f9fafb" : "#f3f4f6";
-        TH.style.textAlign = "center";
+      }
+    };
+
+    const afterGetColHeader = (col: number, TH: HTMLTableCellElement) => {
+      const hasAggregate =
+        needsColAggregate &&
+        colAggregates &&
+        colAggregates.some((agg) => agg !== null);
+      const isTotalCol = col === extraColHeaders.length - 1 && hasAggregate;
+
+      if (isTotalCol) {
+        TH.style.fontWeight = "700";
       }
     };
 
@@ -316,6 +326,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
           themeName="ht-theme-main"
           colHeaders={extraColHeaders}
           rowHeaders={extraRowHeaders}
+          afterGetColHeader={afterGetColHeader}
           afterGetRowHeader={afterGetRowHeader}
           maxCols={extraColHeaders.length} // prevent to add new columns
           maxRows={extraRowHeaders.length} // prevent to add new rows
@@ -408,7 +419,7 @@ const TableStatio = forwardRef<TableStatioHandle, TableStatioProps>(
         />
       </div>
     );
-  }
+  },
 );
 
 export default TableStatio;
