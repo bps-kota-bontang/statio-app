@@ -271,7 +271,7 @@ const TableViewer = ({
             ? !swap // Jika tidak di-swap, aggregate untuk row (bottom)
               ? (table?.aggregate ?? null)
               : null // Jika di-swap, aggregate akan jadi column (right), bukan row
-            : dims.length === 2 && rowDimension?.aggregate === true
+            : dims.length === 2 && rowDimension?.is_aggregated === true
               ? "sum" // Placeholder, will be overridden by rowAggregates
               : null
         }
@@ -280,7 +280,7 @@ const TableViewer = ({
             ? // Dimension = 1, not swapped: rowAggregates = all columns same aggregate
               colHeaders.map(() => table.aggregate!)
             : dims.length === 2 &&
-                rowDimension?.aggregate === true &&
+                rowDimension?.is_aggregated === true &&
                 colDimension
               ? // Map column headers to their aggregates from column dimension values
                 (() => {
@@ -299,7 +299,7 @@ const TableViewer = ({
             ? // Dimension = 1, swapped: colAggregates = all rows same aggregate
               rowHeaders.map(() => table.aggregate!)
             : dims.length === 2 &&
-                colDimension?.aggregate === true &&
+                colDimension?.is_aggregated === true &&
                 rowDimension
               ? // Map row headers to their aggregates from row dimension values
                 (() => {
@@ -322,7 +322,7 @@ const TableViewer = ({
         }
         needsColAggregate={
           (dims.length === 1 && swap && table?.aggregate !== null) ||
-          (dims.length === 2 && colDimension?.aggregate === true)
+          (dims.length === 2 && colDimension?.is_aggregated === true)
         }
         locale={locale}
         onChange={(changes) => {

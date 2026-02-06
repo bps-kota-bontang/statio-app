@@ -25,7 +25,7 @@ export type Dimension = {
   name: string;
   notes?: string | null;
   order: number;
-  aggregate: boolean;
+  is_aggregated: boolean;
   values: DimensionValue[];
 };
 
