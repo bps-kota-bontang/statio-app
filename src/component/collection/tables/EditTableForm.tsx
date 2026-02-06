@@ -58,7 +58,7 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
           dimension_ids: dimensionIds,
           organization_id: organizationId,
         },
-        ["name", "indicator_id", "organization_id"]
+        ["name", "indicator_id", "organization_id"],
       );
       if (!isValid) return;
       setIsSubmitting(true);
@@ -78,7 +78,7 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
       organizationId,
       tableID,
       validate,
-    ]
+    ],
   );
 
   if (isLoading) return <Loading />;
@@ -149,7 +149,9 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
           options={
             dimensions?.data.map((dimension) => ({
               value: dimension.id,
-              label: dimension.name,
+              label:
+                dimension.name +
+                (dimension.notes ? ` (${dimension.notes})` : ""),
             })) ?? []
           }
           maximumSelection={2}

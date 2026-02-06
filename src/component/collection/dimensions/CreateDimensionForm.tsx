@@ -21,6 +21,7 @@ const CreateDimensionForm = ({
 }: CreateDimensionFormProps) => {
   const { useDimensions } = useDimensionApi();
   const [name, setName] = useState("");
+  const [notes, setNotes] = useState<string | null>(null);
   const [valueInput, setValueInput] = useState("");
   const [values, setValues] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,12 +33,12 @@ const CreateDimensionForm = ({
 
   const existingNames = useMemo(
     () => data?.data.map((dim) => dim.name) || [],
-    [data]
+    [data],
   );
 
   const existingValues = useMemo(
     () => data?.data.flatMap((dim) => dim.values.map((val) => val.name)) || [],
-    [data]
+    [data],
   );
 
   const handleAddValue = useCallback(
@@ -47,7 +48,7 @@ const CreateDimensionForm = ({
       setValues((prev) => [...prev, v]);
       setValueInput("");
     },
-    [valueInput, values]
+    [valueInput, values],
   );
 
   const handleRemoveValue = useCallback((val: string) => {
@@ -62,15 +63,16 @@ const CreateDimensionForm = ({
       const { isValid } = validate({ name, values }, ["name"], ["values"]);
       if (!isValid) return;
       setIsSubmitting(true);
-      const success = await onSubmit({ name, values });
+      const success = await onSubmit({ name, notes, values });
       setIsSubmitting(false);
       if (success) {
         setName("");
+        setNotes(null);
         setValues([]);
         setValueInput("");
       }
     },
-    [name, values, onSubmit, validate]
+    [onSubmit, validate, name, values, notes],
   );
 
   return (
@@ -90,6 +92,20 @@ const CreateDimensionForm = ({
           berbeda.
         </p>
         {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+      </div>
+
+      {/* Notes */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Notes (optional)</label>
+        <Input
+          value={notes ?? ""}
+          onChange={(val) => setNotes(val === "" ? null : val)}
+          placeholder="Additional information about this dimension"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Tambahkan catatan tambahan terkait dimensi ini.
+        </p>
+        {errors.notes && <p className="text-xs text-red-500">{errors.notes}</p>}
       </div>
 
       {/* Values */}

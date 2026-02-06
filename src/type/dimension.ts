@@ -23,6 +23,7 @@ export type DimensionList = {
 export type Dimension = {
   id: string;
   name: string;
+  notes?: string | null;
   order: number;
   aggregate: boolean;
   values: DimensionValue[];
@@ -34,6 +35,7 @@ export type DimensionName = {
 
 export type CreateDimensionRequest = {
   name: string;
+  notes?: string | null;
   values: string[];
 };
 
@@ -44,5 +46,6 @@ export type UpdateDimensionValueRequest = {
 
 export type UpdateDimensionRequest = {
   name: string;
+  notes?: string | null;
   values: UpdateDimensionValueRequest[];
 };

@@ -27,11 +27,12 @@ const EditDimensionForm = ({
 }: EditDimensionFormProps) => {
   const { useDimensions } = useDimensionApi();
   const [name, setName] = useState(dimension.name);
+  const [notes, setNotes] = useState<string | null>(dimension.notes ?? null);
   const [valueInput, setValueInput] = useState("");
   const [values, setValues] = useState<UpdateDimensionValueRequest[]>(
     dimension.values
       .map((v) => ({ id: v.id, name: v.name?.trim() ?? "" }))
-      .filter((v) => v.name !== "") // Hapus value kosong dari awal
+      .filter((v) => v.name !== ""), // Hapus value kosong dari awal
   );
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -44,7 +45,7 @@ const EditDimensionForm = ({
     () =>
       data?.data.map((dim) => dim.name).filter((n) => n !== dimension.name) ||
       [],
-    [data, dimension.name]
+    [data, dimension.name],
   );
 
   const existingValues = useMemo(
@@ -52,7 +53,7 @@ const EditDimensionForm = ({
       data?.data
         .flatMap((dim) => dim.values.map((val) => val.name))
         .filter((v) => !values.some((val) => val.name === v)) || [],
-    [data, values]
+    [data, values],
   );
 
   const handleAddValue = useCallback(() => {
@@ -61,7 +62,7 @@ const EditDimensionForm = ({
 
     // Pastikan tidak ada duplikat (case-insensitive)
     const exists = values.some(
-      (val) => val?.name?.toLowerCase() === v.toLowerCase()
+      (val) => val?.name?.toLowerCase() === v.toLowerCase(),
     );
     if (exists) return;
 
@@ -79,11 +80,11 @@ const EditDimensionForm = ({
         prev.map((v, i) =>
           i === index
             ? { ...v, name: newName.trimStart() } // trim agar tak ada spasi kosong di depan
-            : v
-        )
+            : v,
+        ),
       );
     },
-    []
+    [],
   );
 
   const handleSubmit = useCallback(
@@ -111,7 +112,7 @@ const EditDimensionForm = ({
 
       const { isValid } = validate(
         { name: trimmedName, values: cleanedValues },
-        ["name"]
+        ["name"],
       );
       if (!isValid) return;
 
@@ -128,19 +129,20 @@ const EditDimensionForm = ({
           if (original && original.name === v.name) return { id: v.id }; // tidak diubah
 
           return { id: v.id, name: v.name }; // diubah
-        }
+        },
       );
 
       setIsSubmitting(true);
       const success = await onSubmit(dimension.id, {
         name: trimmedName,
+        notes: notes,
         values: payloadValues,
       });
       setIsSubmitting(false);
 
       if (success) setEditingIndex(null);
     },
-    [name, values, onSubmit, validate, dimension]
+    [onSubmit, name, values, validate, dimension.id, dimension.values, notes],
   );
 
   return (
@@ -160,6 +162,19 @@ const EditDimensionForm = ({
           berbeda.
         </p>
         {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+      </div>
+
+      {/* Notes */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Notes (Optional)</label>
+        <Input
+          value={notes ?? ""}
+          onChange={(val) => setNotes(val === "" ? null : val)}
+          placeholder="Catatan tambahan tentang dimensi ini (opsional)"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Berikan catatan tambahan jika diperlukan.
+        </p>
       </div>
 
       {/* Values */}
@@ -197,7 +212,8 @@ const EditDimensionForm = ({
             {values
               .filter(
                 (val, index) =>
-                  editingIndex === index || (val.name && val.name.trim() !== "")
+                  editingIndex === index ||
+                  (val.name && val.name.trim() !== ""),
               )
               .map((val, index) => (
                 <motion.div

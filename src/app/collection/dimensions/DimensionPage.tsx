@@ -39,7 +39,7 @@ export default function DimensionExample() {
   // Modal edit
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingDimension, setEditingDimension] = useState<Dimension | null>(
-    null
+    null,
   );
 
   const handleCreateDimension = async (data: CreateDimensionRequest) => {
@@ -56,7 +56,7 @@ export default function DimensionExample() {
 
   const handleEditDimension = async (
     id: string,
-    data: UpdateDimensionRequest
+    data: UpdateDimensionRequest,
   ) => {
     try {
       await updateDimension(id, data);
@@ -93,6 +93,12 @@ export default function DimensionExample() {
         sortable: true,
       },
       {
+        key: "notes",
+        label: "Notes",
+        sortable: false,
+        render: (row) => row.notes ?? "-",
+      },
+      {
         key: "values",
         label: "Values",
         sortable: false,
@@ -117,7 +123,7 @@ export default function DimensionExample() {
         ),
       },
     ],
-    [openEdit]
+    [openEdit],
   );
 
   return (

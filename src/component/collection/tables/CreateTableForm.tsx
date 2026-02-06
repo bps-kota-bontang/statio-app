@@ -129,7 +129,7 @@ const CreateTableForm = ({ onSubmit, onCancel }: CreateTableFormProps) => {
           options={
             dimensions?.data.map((dimension) => ({
               value: dimension.id,
-              label: dimension.name,
+              label: dimension.name  + (dimension.notes ? ` (${dimension.notes})` : ""),
             })) ?? []
           }
           maximumSelection={2}
