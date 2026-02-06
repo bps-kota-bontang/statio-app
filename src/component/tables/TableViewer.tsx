@@ -288,7 +288,7 @@ const TableViewer = ({
                     const colValue = colDimension.values.find(
                       (v) => v.name === colName,
                     );
-                    return colValue?.aggregate ?? null;
+                    return colValue?.aggregate ?? table.aggregate ?? null;
                   });
                   return aggregates;
                 })()
@@ -307,14 +307,17 @@ const TableViewer = ({
                     // Check if this column is a parent column (when transposed)
                     if (parentColumns && parentColumns.has(rowName)) {
                       // Parent columns (former parent rows) should aggregate their children
-                      // Use "sum" as default aggregate for parent groupings
-                      return "sum";
+                      // Use their own aggregate if defined, fallback to table aggregate or "sum"
+                      const rowValue = rowDimension.values.find(
+                        (v) => v.name === rowName,
+                      );
+                      return rowValue?.aggregate ?? table.aggregate ?? "sum";
                     }
 
                     const rowValue = rowDimension.values.find(
                       (v) => v.name === rowName,
                     );
-                    return rowValue?.aggregate ?? null;
+                    return rowValue?.aggregate ?? table.aggregate ?? null;
                   });
                   return aggregates;
                 })()

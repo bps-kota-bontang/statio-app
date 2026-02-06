@@ -141,17 +141,93 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
         const childIndex = rowHeaders.indexOf(v.name);
 
         if (parentIndex !== -1 && childIndex !== -1) {
-          // Aggregate child values to parent
+          // Aggregate child values to parent based on aggregate type
           colHeaders.forEach((colKey) => {
             const childValue = data[childIndex][colKey];
             if (childValue !== null && typeof childValue === "number") {
               const currentParentValue = data[parentIndex][colKey];
-              data[parentIndex][colKey] =
-                (typeof currentParentValue === "number"
-                  ? currentParentValue
-                  : 0) + childValue;
+              
+              // For dimension 2: use column dimension value's aggregate
+              // For dimension 0 or 1: use parent value's aggregate or table aggregate
+              let aggregateType: string;
+              if (colDim) {
+                // Dimension 2: get aggregate from column dimension value
+                const colDimValue = colDim.values.find((cv) => cv.name === colKey);
+                aggregateType = colDimValue?.aggregate ?? table.aggregate ?? "sum";
+              } else {
+                // Dimension 0 or 1: get aggregate from parent value or table
+                const parentValue = rowDim.values.find((val) => val.name === parentName);
+                aggregateType = parentValue?.aggregate ?? table.aggregate ?? "sum";
+              }
+              
+              if (aggregateType === "sum") {
+                data[parentIndex][colKey] =
+                  (typeof currentParentValue === "number"
+                    ? currentParentValue
+                    : 0) + childValue;
+              } else if (aggregateType === "avg") {
+                // For avg, we'll sum first and divide by count later
+                data[parentIndex][colKey] =
+                  (typeof currentParentValue === "number"
+                    ? currentParentValue
+                    : 0) + childValue;
+              } else if (aggregateType === "min") {
+                data[parentIndex][colKey] =
+                  typeof currentParentValue === "number"
+                    ? Math.min(currentParentValue, childValue)
+                    : childValue;
+              } else if (aggregateType === "max") {
+                data[parentIndex][colKey] =
+                  typeof currentParentValue === "number"
+                    ? Math.max(currentParentValue, childValue)
+                    : childValue;
+              } else {
+                // Default to sum
+                data[parentIndex][colKey] =
+                  (typeof currentParentValue === "number"
+                    ? currentParentValue
+                    : 0) + childValue;
+              }
             }
           });
+        }
+      }
+    });
+
+    // Second pass: For 'avg' aggregate, divide by number of children
+    rowDim.values.forEach((v) => {
+      if (v.parent) {
+        const parentName = v.parent.name;
+        const parentIndex = rowHeaders.indexOf(parentName);
+        
+        if (parentIndex !== -1) {
+          // Count children of this parent
+          const childrenCount = rowDim.values.filter(
+            (child) => child.parent?.name === parentName
+          ).length;
+          
+          if (childrenCount > 0) {
+            colHeaders.forEach((colKey) => {
+              // Check if this column uses 'avg' aggregate
+              let aggregateType: string;
+              if (colDim) {
+                // Dimension 2: get aggregate from column dimension value
+                const colDimValue = colDim.values.find((cv) => cv.name === colKey);
+                aggregateType = colDimValue?.aggregate ?? table.aggregate ?? "sum";
+              } else {
+                // Dimension 0 or 1: get aggregate from parent value or table
+                const parentValue = rowDim.values.find((val) => val.name === parentName);
+                aggregateType = parentValue?.aggregate ?? table.aggregate ?? "sum";
+              }
+              
+              if (aggregateType === "avg") {
+                const sumValue = data[parentIndex][colKey];
+                if (typeof sumValue === "number") {
+                  data[parentIndex][colKey] = sumValue / childrenCount;
+                }
+              }
+            });
+          }
         }
       }
     });
@@ -159,10 +235,13 @@ export function tableResponseToRowObjects(table: Table, years?: number[]) {
 
   // Get row aggregates from dimension values
   const rowAggregates: Array<Aggregate> = rowHeaders.map((rowName) => {
-    // Check if this is a parent row (parent rows don't have aggregate)
-    if (parentRows.has(rowName)) return null;
-
     const dimValue = rowDim?.values.find((v) => v.name === rowName);
+    
+    // Parent rows should also have aggregate (from their own definition or table aggregate)
+    if (parentRows.has(rowName)) {
+      return dimValue?.aggregate ?? table.aggregate ?? null;
+    }
+
     return dimValue?.aggregate ?? null;
   });
 
@@ -340,11 +419,14 @@ export const buildDataWithAggregate = (
       return { ...row, [TOTAL_KEY]: Math.round(aggregateValue * 100) / 100 };
     });
 
-    // Second pass: Calculate parent row totals (sum of their children's values in data columns)
+    // Second pass: Calculate parent row totals based on aggregate type
     if (parentRowIndices && parentRowIndices.size > 0) {
       newData = newData.map((row, rowIndex) => {
         if (parentRowIndices.has(rowIndex)) {
-          // Parent row: sum all column values (which already include child totals)
+          // Get aggregate type for this parent row
+          const parentAggregateType = colAggregates[rowIndex] ?? "sum";
+          
+          // Parent row: aggregate all column values (which already include child totals)
           const rowValues: CellValue[] = colKeys.map(
             (key) => (row as Record<string, CellValue>)[key],
           );
@@ -352,7 +434,20 @@ export const buildDataWithAggregate = (
             .filter((val) => val !== null && val !== undefined && val !== "")
             .map((val) => Number(val));
 
-          const parentTotal = nonNullValues.reduce((sum, val) => sum + val, 0);
+          let parentTotal: number;
+          if (parentAggregateType === "sum") {
+            parentTotal = nonNullValues.reduce((sum, val) => sum + val, 0);
+          } else if (parentAggregateType === "avg") {
+            const sum = nonNullValues.reduce((sum, val) => sum + val, 0);
+            parentTotal = nonNullValues.length > 0 ? sum / nonNullValues.length : 0;
+          } else if (parentAggregateType === "min") {
+            parentTotal = nonNullValues.length > 0 ? Math.min(...nonNullValues) : 0;
+          } else if (parentAggregateType === "max") {
+            parentTotal = nonNullValues.length > 0 ? Math.max(...nonNullValues) : 0;
+          } else {
+            parentTotal = nonNullValues.reduce((sum, val) => sum + val, 0);
+          }
+          
           return { ...row, [TOTAL_KEY]: Math.round(parentTotal * 100) / 100 };
         }
         return row;
@@ -386,7 +481,8 @@ export const buildDataWithAggregate = (
         // Find this column's aggregate from rowAggregates array
         const colIndex = colHeaders.indexOf(key);
         if (colIndex >= 0 && colIndex < rowAggregates.length) {
-          colAggregateType = rowAggregates[colIndex];
+          // Use dimension value aggregate if available, fallback to table aggregate
+          colAggregateType = rowAggregates[colIndex] ?? aggregate;
         }
       }
 
