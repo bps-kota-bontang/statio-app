@@ -196,6 +196,12 @@ export const useTableApi = () => {
     });
   };
 
+  const deleteTable = async (id: string): Promise<ApiResponse<null>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}`, {
+      method: "DELETE",
+    });
+  };
+
   const commitTables = async (ids: string[]): Promise<ApiResponse<null>> => {
     return apiFetch(`${API_BASE_URL}/api/v1/tables/commit`, {
       method: "POST",
@@ -339,5 +345,6 @@ export const useTableApi = () => {
     mappingTable,
     updateTableIntegrated,
     swapTableDimension,
+    deleteTable,
   };
 };

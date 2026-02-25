@@ -23,6 +23,7 @@ import { useTableApi } from "@/service/table";
 import { useIndicatorApi } from "@/service/indicator";
 import { useOrganizationApi } from "@/service/organization";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
+import { useConfirm } from "@/hooks/useConfirm";
 
 const TablePage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -39,10 +40,12 @@ const TablePage = () => {
   const { useDimensionNames } = useDimensionApi();
   const table = useDataTable<TableList>();
 
+  const { ask, ConfirmDialog } = useConfirm();
+
   const { useTables } = useTableApi();
   const { useIndicatorNames, useIndicatorMeasures, useIndicatorUnits } =
     useIndicatorApi();
-  const { createTable, updateTable } = useTableApi();
+  const { createTable, updateTable, deleteTable } = useTableApi();
   const { useOrganizations, assignTablesToOrganization } = useOrganizationApi();
 
   const { data, isLoading, mutate } = useTables(table);
@@ -50,21 +53,21 @@ const TablePage = () => {
   const { data: dimensions } = useDimensionNames();
   const existingDimensionNames = useMemo(
     () => dimensions?.data.map((dim) => dim.name) || [],
-    [dimensions]
+    [dimensions],
   );
 
   const { data: names } = useIndicatorNames();
 
   const existingIndicatorNames = useMemo(
     () => names?.data.map((dim) => dim.name) || [],
-    [names]
+    [names],
   );
 
   const { data: measures } = useIndicatorMeasures();
 
   const existingIndicatorMeasures = useMemo(
     () => measures?.data.map((dim) => dim.measure) || [],
-    [measures]
+    [measures],
   );
 
   const { data: units } = useIndicatorUnits();
@@ -72,7 +75,7 @@ const TablePage = () => {
 
   const existingIndicatorUnits = useMemo(
     () => units?.data.map((unit) => unit.unit) || [],
-    [units]
+    [units],
   );
 
   // // Modal create
@@ -108,6 +111,14 @@ const TablePage = () => {
       return false;
     }
   };
+
+  const handleDeleteTable = useCallback(
+    async (tableID: string) => {
+      await deleteTable(tableID);
+      mutate();
+    },
+    [deleteTable, mutate],
+  );
 
   const handleAssignOrganization = async (data: AssignOrganizationRequest) => {
     try {
@@ -199,18 +210,33 @@ const TablePage = () => {
             <Button size="sm" onClick={() => openEdit(row.id)}>
               Edit
             </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() =>
+                ask({
+                  title: "Delete Table?",
+                  message: "Are you sure want to delete this table?",
+                  onConfirm: () => handleDeleteTable(row.id),
+                })
+              }
+            >
+              Delete
+            </Button>
           </div>
         ),
       },
     ],
     [
+      ask,
       existingDimensionNames,
       existingIndicatorMeasures,
       existingIndicatorNames,
       existingIndicatorUnits,
+      handleDeleteTable,
       openEdit,
       organizations?.data,
-    ]
+    ],
   );
 
   return (
@@ -281,6 +307,9 @@ const TablePage = () => {
           onSubmit={handleAssignOrganization}
         />
       </Modal>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog />
     </div>
   );
 };
