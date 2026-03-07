@@ -134,7 +134,7 @@ const IntegrationPage = () => {
     // Generate year options
     const years: number[] = [];
     const currentYear = new Date().getFullYear();
-    const defaultFromYear = currentYear - 4;
+    const defaultFromYear = currentYear - 5;
     const defaultToYear = currentYear;
 
     for (let year = defaultFromYear; year <= defaultToYear; year++) {
@@ -151,7 +151,7 @@ const IntegrationPage = () => {
       // Generate year options
       const years: number[] = [];
       const currentYear = new Date().getFullYear();
-      const defaultFromYear = currentYear - 4;
+      const defaultFromYear = currentYear - 5;
       const defaultToYear = currentYear;
 
       for (let year = defaultFromYear; year <= defaultToYear; year++) {

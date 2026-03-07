@@ -77,7 +77,7 @@ const MappingPage = () => {
       // Get year range - default to last 5 years including current year
       const years: number[] = [];
       const currentYear = new Date().getFullYear();
-      const defaultFromYear = currentYear - 4;
+      const defaultFromYear = currentYear - 5;
       const defaultToYear = currentYear;
 
       // Generate years array
