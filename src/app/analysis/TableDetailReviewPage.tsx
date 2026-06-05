@@ -14,15 +14,15 @@ const TableDetailReviewPage = () => {
   const { user } = useAuth();
   const { useTable, useTableInsightFacts } = useTableApi();
   const { id } = useParams<{ id: string }>();
-  const lastYear = new Date().getFullYear() - 1;
+  const currentYear = new Date().getFullYear();
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get("year");
 
   const isAdmin = user?.roles.includes("admin");
 
   const years = useMemo(
-    () => Array.from({ length: 4 }, (_, i) => lastYear - i),
-    [lastYear],
+    () => Array.from({ length: 4 }, (_, i) => currentYear - i),
+    [currentYear],
   );
 
   const { data, isLoading, error, mutate } = useTable(
@@ -95,7 +95,7 @@ const TableDetailReviewPage = () => {
       {sortedDimensions.length > 0 && (
         <Tab
           items={years}
-          selected={yearParam ? Number(yearParam) : lastYear}
+          selected={yearParam ? Number(yearParam) : currentYear}
           onSelect={handleYearSelect}
           badges={
             insightFacts?.data
