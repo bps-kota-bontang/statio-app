@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useOutletContext } from "react-router";
-import { FolderOpen, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Button from "@/component/ui/Button";
 import DataTable, { type Column } from "@/component/ui/DataTable";
 import Modal from "@/component/ui/Modal";
@@ -18,19 +18,19 @@ import type { StatioContextType } from "@/component/layout/StatioLayout";
 
 const ProjectsPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
-  const { useProjects, createProject, updateProject, deleteProject } = useProjectApi();
+  const { useProjects, createProject, updateProject, deleteProject } =
+    useProjectApi();
   const table = useDataTable<ProjectList>();
   const { data, isLoading, mutate } = useProjects(table);
   const { ask, ConfirmDialog } = useConfirm();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectList | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectList | null>(
+    null,
+  );
 
   useEffect(() => {
     document.title = "Projects | Statio";
-    setBreadcrumbs([
-      { label: "Dashboard", href: "/" },
-      { label: "Projects" },
-    ]);
+    setBreadcrumbs([{ label: "Dashboard", href: "/" }, { label: "Projects" }]);
   }, [setBreadcrumbs]);
 
   const handleCreate = async (payload: CreateProjectRequest) => {
@@ -78,7 +78,7 @@ const ProjectsPage = () => {
         render: (row) => (
           <div className="flex gap-2">
             <Link to={`/projects/${row.id}`}>
-              <Button size="sm">Open</Button>
+              <Button size="sm">View</Button>
             </Link>
             <Button size="sm" onClick={() => setEditingProject(row)}>
               Edit
@@ -89,7 +89,8 @@ const ProjectsPage = () => {
               onClick={() =>
                 ask({
                   title: "Delete Project?",
-                  message: "Project and its links will be deleted. Tables remain safe.",
+                  message:
+                    "Project and its links will be deleted. Tables remain safe.",
                   onConfirm: () => handleDelete(row.id),
                 })
               }
@@ -106,7 +107,6 @@ const ProjectsPage = () => {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center gap-2">
-        <FolderOpen className="w-6 h-6 text-blue-600" />
         <h1 className="text-xl font-semibold">Projects</h1>
       </div>
       <DataTable
@@ -122,8 +122,11 @@ const ProjectsPage = () => {
         isLoading={isLoading}
         {...table}
       />
-
-      <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} closeOutside={false}>
+      <Modal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        closeOutside={false}
+      >
         <CreateProjectForm
           onSubmit={handleCreate}
           onCancel={() => setIsCreateOpen(false)}
