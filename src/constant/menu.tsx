@@ -3,6 +3,7 @@ import {
   Building,
   Cable,
   ChartScatter,
+  FolderOpen,
   LayoutDashboard,
   PackageOpen,
   Table,
@@ -20,6 +21,12 @@ export const MENU_ITEMS: MenuItem[] = [
     title: "Tables",
     href: "/tables",
     icon: <Table />,
+  },
+  {
+    title: "Projects",
+    href: "/projects",
+    icon: <FolderOpen />,
+    roles: ["admin"],
   },
   {
     title: "Analysis",

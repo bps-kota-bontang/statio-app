@@ -30,6 +30,9 @@ import IntegrationPage from "@/app/integration/IntegrationPage";
 import ConfigurationPage from "@/app/integration/ConfigurationPage";
 import ImportPage from "@/app/integration/ImportPage";
 import MappingPage from "@/app/integration/MappingPage";
+import ProjectLayout from "@/component/layout/ProjectLayout";
+import ProjectsPage from "@/app/projects/ProjectsPage";
+import ProjectDetailPage from "@/app/projects/ProjectDetailPage";
 
 initGA();
 
@@ -52,6 +55,10 @@ createRoot(root!).render(
             <Route path="tables">
               <Route index element={<TableOverviewPage />} />
               <Route path=":id" element={<TableDetailPage />} />
+            </Route>
+            <Route path="projects" element={<ProjectLayout />}>
+              <Route index element={<ProjectsPage />} />
+              <Route path=":id" element={<ProjectDetailPage />} />
             </Route>
             <Route path="analysis" element={<AnalysisLayout />}>
               <Route index element={<TableAnalysis />} />

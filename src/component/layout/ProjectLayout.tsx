@@ -1,0 +1,17 @@
+import { useAuth } from "@/hooks/useAuth";
+import { Outlet, useOutletContext } from "react-router";
+import Error from "@/component/ui/Error";
+import type { StatioContextType } from "@/component/layout/StatioLayout";
+
+const ProjectLayout = () => {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+  const { user } = useAuth();
+
+  if (!user?.roles?.includes("admin")) {
+    return <Error message="Only administrators can access projects." />;
+  }
+
+  return <Outlet context={{ setBreadcrumbs }} />;
+};
+
+export default ProjectLayout;
