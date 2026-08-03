@@ -18,15 +18,15 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: <LayoutDashboard />,
   },
   {
-    title: "Tables",
-    href: "/tables",
-    icon: <Table />,
-  },
-  {
     title: "Projects",
     href: "/projects",
     icon: <FolderOpen />,
     roles: ["admin"],
+  },
+  {
+    title: "Tables",
+    href: "/tables",
+    icon: <Table />,
   },
   {
     title: "Analysis",
