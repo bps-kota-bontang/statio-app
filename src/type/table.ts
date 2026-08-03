@@ -19,6 +19,7 @@ export type Table = {
   organization: Organization | null;
   dimensions: Dimension[];
   facts: Fact[] | null;
+  year_offset: number;
 };
 
 export type TableList = {

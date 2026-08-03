@@ -25,14 +25,18 @@ const TableDetailPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const yearParam = searchParams.get("year");
 
-  const years = useMemo(
-    () => Array.from({ length: 4 }, (_, i) => currentYear - i),
-    [currentYear],
-  );
-
   const { data, isLoading, error, mutate } = useTable(
     id,
     yearParam ? Number(yearParam) : null,
+  );
+
+  const startYear = useMemo(() => {
+    return currentYear + (data?.data.year_offset ?? 0);
+  }, [currentYear, data?.data.year_offset]);
+
+  const years = useMemo(
+    () => Array.from({ length: 4 }, (_, i) => startYear - i),
+    [startYear],
   );
 
   useEffect(() => {
