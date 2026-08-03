@@ -99,7 +99,7 @@ const TableDetailReviewPage = () => {
       {sortedDimensions.length > 0 && (
         <Tab
           items={years}
-          selected={yearParam ? Number(yearParam) : currentYear}
+          selected={yearParam ? Number(yearParam) : startYear}
           onSelect={handleYearSelect}
           badges={
             insightFacts?.data

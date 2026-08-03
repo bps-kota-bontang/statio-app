@@ -202,7 +202,7 @@ const TableDetailPage = () => {
       {sortedDimensions.length > 0 && (
         <Tab
           items={years}
-          selected={yearParam ? Number(yearParam) : currentYear}
+          selected={yearParam ? Number(yearParam) : startYear}
           onSelect={handleYearSelect}
           badges={
             insightFacts?.data
@@ -217,7 +217,7 @@ const TableDetailPage = () => {
       <TableViewer
         id={id}
         isLocked={isLocked}
-        year={yearParam ? Number(yearParam) : currentYear}
+        year={yearParam ? Number(yearParam) : startYear}
         table={{
           ...data.data,
           dimensions: isAdmin ? originalDimensions : sortedDimensions,
