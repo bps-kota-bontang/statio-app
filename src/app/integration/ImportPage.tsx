@@ -1,19 +1,13 @@
 import type { StatioContextType } from "@/component/layout/StatioLayout";
-import { useConfigurationApi } from "@/service/configuration";
 import { useIntegrationApi } from "@/service/integration";
 import { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router";
 import Button from "@/component/ui/Button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileIcon, CheckCircle, AlertCircle } from "lucide-react";
-
-const BASE_URL_KEY = "integration_base_url";
-const PATH_IMPORT = "/api/v1/integrations/upload";
+import { Upload, FileIcon, CheckCircle } from "lucide-react";
 
 const ImportPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
-  const { useConfiguration } = useConfigurationApi();
-  const { data } = useConfiguration(BASE_URL_KEY);
   const { importIntegrationFile } = useIntegrationApi();
   const { toast } = useToast();
 
@@ -29,9 +23,6 @@ const ImportPage = () => {
       { label: "Import" },
     ]);
   }, [setBreadcrumbs]);
-
-  const baseUrl = data?.data?.value || "";
-  const uploadUrl = baseUrl ? `${baseUrl}${PATH_IMPORT}` : "";
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,36 +78,8 @@ const ImportPage = () => {
       <div className="space-y-2">
         <h1 className="text-xl font-semibold">Integration Import</h1>
         <p className="text-sm text-gray-600">
-          Upload integration files to import data
+          Select integration file and upload to import data
         </p>
-      </div>
-
-      {/* Base URL Display */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-blue-900">
-            Base URL
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={baseUrl}
-              readOnly
-              className="flex-1 px-3 py-2 border border-blue-300 rounded-md bg-white text-sm"
-              placeholder="Not configured"
-            />
-            {baseUrl ? (
-              <CheckCircle className="w-5 h-5 text-green-600" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
-            )}
-          </div>
-          {uploadUrl && (
-            <p className="text-xs text-gray-600 mt-1">
-              Upload endpoint: <span className="font-mono">{uploadUrl}</span>
-            </p>
-          )}
-        </div>
       </div>
 
       {/* Upload Form */}
@@ -177,7 +140,7 @@ const ImportPage = () => {
           </Button>
           <Button
             onClick={handleUpload}
-            disabled={!selectedFile || isUploading || !baseUrl}
+            disabled={!selectedFile || isUploading}
           >
             {isUploading ? (
               <>
@@ -193,19 +156,6 @@ const ImportPage = () => {
           </Button>
         </div>
       </div>
-
-      {!baseUrl && (
-        <div className="flex items-start gap-2 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-          <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-          <div className="text-sm text-yellow-800">
-            <p className="font-medium">Base URL not configured</p>
-            <p className="mt-1">
-              Please configure the integration base URL in the configuration
-              settings before uploading files.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -7,13 +7,12 @@ import { useConfigurationApi } from "@/service/configuration";
 import { useOutletContext } from "react-router";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 
-const BASE_URL_KEY = "integration_base_url";
-const DEFAULT_URL = "http://localhost:4000";
+const COOKIE_KEY = "integration_website_cookie";
 
 const ConfigurationPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
   const { useConfiguration, updateConfiguration } = useConfigurationApi();
-  const { data, mutate } = useConfiguration(BASE_URL_KEY);
+  const { data, mutate } = useConfiguration(COOKIE_KEY);
 
   const [inputValue, setInputValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -40,10 +39,9 @@ const ConfigurationPage = () => {
     setMessage(null);
 
     try {
-      new URL(value); // Validate URL
-      await updateConfiguration(BASE_URL_KEY, {
+      await updateConfiguration(COOKIE_KEY, {
         value,
-        name: "Integration Base URL",
+        name: "Integration Website Cookie",
       });
       setMessage({ type: "success", text: successMsg });
       mutate();
@@ -61,24 +59,24 @@ const ConfigurationPage = () => {
     <div className="p-4 space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Integration API Configuration</CardTitle>
+          <CardTitle>Integration Cookie Configuration</CardTitle>
           <p className="text-sm text-gray-500">
-            Configure the base URL for the integration service API
+            Configure cookie for integration upload to BPS website
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="baseUrl">Base URL</Label>
+            <Label htmlFor="integrationCookie">Cookie</Label>
             <Input
-              id="baseUrl"
-              type="url"
+              id="integrationCookie"
+              type="text"
               value={inputValue}
               onChange={setInputValue}
-              placeholder={DEFAULT_URL}
+              placeholder="PHPSESSID=...; other_cookie=..."
               className="mt-1"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Example: {DEFAULT_URL} or https://api.example.com
+              Paste cookie header value from browser request.
             </p>
           </div>
 
@@ -106,13 +104,13 @@ const ConfigurationPage = () => {
             </Button>
             <Button
               onClick={() => {
-                setInputValue(DEFAULT_URL);
-                handleUpdate(DEFAULT_URL, "Reset to default");
+                setInputValue("");
+                setMessage(null);
               }}
               variant="secondary"
               disabled={isSaving}
             >
-              Reset
+              Clear
             </Button>
           </div>
         </CardContent>
