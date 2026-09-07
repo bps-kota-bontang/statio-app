@@ -12,7 +12,9 @@ export type Table = {
   labels: string[];
   notes: string | null;
   is_locked: boolean;
+  is_deprecated: boolean;
   is_aggregated: boolean;
+  is_show: boolean;
   status: "draft" | "submitted" | "finalized";
   aggregate?: Aggregate;
   has_parent_dimension: boolean;
@@ -31,7 +33,9 @@ export type TableList = {
   organization: Organization | null;
   dimensions: DimensionList[];
   is_locked: boolean;
+  is_deprecated: boolean;
   is_aggregated: boolean;
+  is_show: boolean;
   status: "draft" | "submitted" | "finalized";
   has_parent_dimension: boolean;
   website_table_id?: string | null;

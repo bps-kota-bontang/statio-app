@@ -71,6 +71,16 @@ export const useTableApi = () => {
     "/tables",
   );
 
+  const updateTableDeprecated = async (
+    id: string,
+    isDeprecated: boolean,
+  ): Promise<ApiResponse<null>> => {
+    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}/deprecated`, {
+      method: "PUT",
+      body: JSON.stringify({ is_deprecated: isDeprecated }),
+    });
+  };
+
   const updateTableFact = async (
     id: string,
     data: FactRequest,
@@ -344,6 +354,7 @@ export const useTableApi = () => {
     generateParentTable,
     mappingTable,
     updateTableIntegrated,
+    updateTableDeprecated,
     swapTableDimension,
     deleteTable,
   };

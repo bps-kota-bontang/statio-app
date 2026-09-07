@@ -24,9 +24,12 @@ import { useIndicatorApi } from "@/service/indicator";
 import { useOrganizationApi } from "@/service/organization";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import { useConfirm } from "@/hooks/useConfirm";
+import { useAuth } from "@/hooks/useAuth";
 
 const TablePage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+  const { user } = useAuth();
+  const isAdmin = user?.roles.includes("admin") ?? false;
 
   useEffect(() => {
     document.title = "Collection Tables | Statio";
@@ -45,7 +48,12 @@ const TablePage = () => {
   const { useTables } = useTableApi();
   const { useIndicatorNames, useIndicatorMeasures, useIndicatorUnits } =
     useIndicatorApi();
-  const { createTable, updateTable, deleteTable } = useTableApi();
+  const {
+    createTable,
+    updateTable,
+    deleteTable,
+    updateTableDeprecated,
+  } = useTableApi();
   const { useOrganizations, assignTablesToOrganization } = useOrganizationApi();
 
   const { data, isLoading, mutate } = useTables(table);
@@ -118,6 +126,18 @@ const TablePage = () => {
       mutate();
     },
     [deleteTable, mutate],
+  );
+
+  const handleToggleDeprecated = useCallback(
+    async (row: TableList) => {
+      try {
+        await updateTableDeprecated(row.id, !row.is_deprecated);
+        mutate();
+      } catch (error) {
+        console.error("Error updating table deprecation status:", error);
+      }
+    },
+    [mutate, updateTableDeprecated],
   );
 
   const handleAssignOrganization = async (data: AssignOrganizationRequest) => {
@@ -199,6 +219,57 @@ const TablePage = () => {
         ),
       },
       {
+        key: "information",
+        label: "Information",
+        filterOptions: [
+          { label: "Locked", value: "locked" },
+          { label: "Aggregated", value: "aggregated" },
+          { label: "Deprecated", value: "deprecated" },
+          { label: "Integrated", value: "integrated" },
+          { label: "Hidden", value: "hidden" },
+        ],
+        filterIncludeEmpty: false,
+        render: (row) => {
+          const chips = [
+            row.is_locked && {
+              label: "Locked",
+              className: "border-slate-300 bg-slate-100 text-slate-700",
+            },
+            row.is_aggregated && {
+              label: "Aggregated",
+              className: "border-blue-300 bg-blue-100 text-blue-700",
+            },
+            row.is_deprecated && {
+              label: "Deprecated",
+              className: "border-amber-300 bg-amber-100 text-amber-800",
+            },
+            row.is_integrated && {
+              label: "Integrated",
+              className: "border-emerald-300 bg-emerald-100 text-emerald-800",
+            },
+            !row.is_show && {
+              label: "Hidden",
+              className: "border-gray-300 bg-gray-100 text-gray-700",
+            },
+          ].filter(Boolean) as Array<{ label: string; className: string }>;
+
+          return chips.length > 0 ? (
+            <div className="flex max-w-xs flex-wrap gap-1">
+              {chips.map((chip) => (
+                <span
+                  key={chip.label}
+                  className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${chip.className}`}
+                >
+                  {chip.label}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="text-sm text-gray-500">-</span>
+          );
+        },
+      },
+      {
         key: "actions",
         label: "Actions",
         sortable: false,
@@ -223,6 +294,20 @@ const TablePage = () => {
             >
               Delete
             </Button>
+            {isAdmin && (
+              <Button
+                size="sm"
+                className={
+                  row.is_deprecated
+                    ? "!bg-emerald-600 !text-white hover:!bg-emerald-700"
+                    : "!bg-amber-500 !text-white hover:!bg-amber-600"
+                }
+                onClick={() => handleToggleDeprecated(row)}
+                title={row.is_deprecated ? "Activate table" : "Mark deprecated"}
+              >
+                {row.is_deprecated ? "Activate" : "Deprecate"}
+              </Button>
+            )}
           </div>
         ),
       },
@@ -234,6 +319,8 @@ const TablePage = () => {
       existingIndicatorNames,
       existingIndicatorUnits,
       handleDeleteTable,
+      handleToggleDeprecated,
+      isAdmin,
       openEdit,
       organizations?.data,
     ],

@@ -14,6 +14,7 @@ import IntegrationModal from "@/component/integration/tables/IntegrationModal";
 import { useConfirm } from "@/hooks/useConfirm";
 import { CheckCircle, FileIcon, SendIcon } from "lucide-react";
 import { useIntegrationApi } from "@/service/integration";
+import { useOrganizationApi } from "@/service/organization";
 
 const IntegrationPage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
@@ -52,6 +53,8 @@ const IntegrationPage = () => {
     useTableApi();
 
   const { exportIntegrationTable } = useIntegrationApi();
+  const { useOrganizations } = useOrganizationApi();
+  const { data: organizations } = useOrganizations({ perPage: 1000 });
 
   const { toast } = useToast();
 
@@ -224,6 +227,67 @@ const IntegrationPage = () => {
         sortable: true,
       },
       {
+        key: "organization_id",
+        label: "Organization",
+        filterOptions:
+          organizations?.data.map((organization) => ({
+            label: organization.name,
+            value: organization.id,
+          })) || [],
+        render: (row) => row.organization?.name ?? "-",
+      },
+      {
+        key: "information",
+        label: "Information",
+        filterOptions: [
+          { label: "Locked", value: "locked" },
+          { label: "Aggregated", value: "aggregated" },
+          { label: "Deprecated", value: "deprecated" },
+          { label: "Integrated", value: "integrated" },
+          { label: "Hidden", value: "hidden" },
+        ],
+        filterIncludeEmpty: false,
+        render: (row) => {
+          const chips = [
+            row.is_locked && {
+              label: "Locked",
+              className: "border-slate-300 bg-slate-100 text-slate-700",
+            },
+            row.is_aggregated && {
+              label: "Aggregated",
+              className: "border-blue-300 bg-blue-100 text-blue-700",
+            },
+            row.is_deprecated && {
+              label: "Deprecated",
+              className: "border-amber-300 bg-amber-100 text-amber-800",
+            },
+            row.is_integrated && {
+              label: "Integrated",
+              className: "border-emerald-300 bg-emerald-100 text-emerald-800",
+            },
+            !row.is_show && {
+              label: "Hidden",
+              className: "border-gray-300 bg-gray-100 text-gray-700",
+            },
+          ].filter(Boolean) as Array<{ label: string; className: string }>;
+
+          return chips.length > 0 ? (
+            <div className="flex max-w-xs flex-wrap gap-1">
+              {chips.map((chip) => (
+                <span
+                  key={chip.label}
+                  className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${chip.className}`}
+                >
+                  {chip.label}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="text-sm text-gray-500">-</span>
+          );
+        },
+      },
+      {
         key: "status",
         label: "Status",
         filterOptions: [
@@ -321,6 +385,7 @@ const IntegrationPage = () => {
       handleCommitTable,
       handleExportIntegration,
       handleGenerateParent,
+      organizations?.data,
     ],
   );
 
