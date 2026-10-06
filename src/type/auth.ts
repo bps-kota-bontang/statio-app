@@ -8,8 +8,10 @@ export type LoginResponse = {
 };
 
 export type LoginSsoRequest = {
-  token: string;
+  code: string;
   state: string;
+  type: string;
+  realm: string;
 };
 
 export type LoginInviteRequest = {

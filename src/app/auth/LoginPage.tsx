@@ -12,8 +12,10 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const paramsToken = searchParams.get("token");
+  const paramsCode = searchParams.get("code");
   const paramsState = searchParams.get("state");
+  const paramsType = searchParams.get("type") ?? "accounts";
+  const paramsRealm = searchParams.get("realm") ?? "pegawai";
   const paramsInviteToken = searchParams.get("invite_token");
 
   const [identifier, setIdentifier] = useState("");
@@ -29,11 +31,16 @@ const LoginPage = () => {
   // ✅ Auto-login dari callback SSO
   useEffect(() => {
     const processSso = async () => {
-      if (!paramsToken || !paramsState) return;
+      if (!paramsCode || !paramsState) return;
 
       try {
         setFormLoading(true);
-        const data = await loginSso({ token: paramsToken, state: paramsState });
+        const data = await loginSso({
+          code: paramsCode,
+          state: paramsState,
+          type: paramsType,
+          realm: paramsRealm,
+        });
         setToken(data.data.access_token);
         trackLogin("sso");
         navigate("/", { replace: true });
@@ -45,7 +52,7 @@ const LoginPage = () => {
     };
 
     processSso();
-  }, [paramsToken, paramsState, setToken, navigate]);
+  }, [paramsCode, paramsState, paramsType, paramsRealm, setToken, navigate]);
 
   useEffect(() => {
     const processInvite = async () => {
