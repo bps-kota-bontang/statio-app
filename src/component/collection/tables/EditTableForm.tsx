@@ -35,6 +35,15 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
   const [indicatorId, setIndicatorId] = useState<string>("");
   const [organizationId, setOrganizationId] = useState<string>("");
   const [dimensionIds, setDimensionIds] = useState<string[]>([]);
+  const [yearOffset, setYearOffset] = useState("");
+  const [isDeprecated, setIsDeprecated] = useState(false);
+  const parsedYearOffset = Number(yearOffset);
+  const isYearOffsetValid =
+    yearOffset.trim() !== "" &&
+    Number.isInteger(parsedYearOffset) &&
+    parsedYearOffset >= -32768 &&
+    parsedYearOffset <= 32767;
+  const currentYear = new Date().getFullYear();
 
   // ✅ Update form values when table data is loaded
   useEffect(() => {
@@ -43,6 +52,8 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
       setIndicatorId(data.data.indicator?.id ?? "");
       setOrganizationId(data.data.organization?.id ?? "");
       setDimensionIds(data.data.dimensions?.map((d) => d.id) ?? []);
+      setYearOffset(String(data.data.year_offset));
+      setIsDeprecated(data.data.is_deprecated);
     }
   }, [data]);
 
@@ -50,6 +61,7 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
     async (e: FormEvent) => {
       e.preventDefault();
       if (!onSubmit) return;
+      if (!isYearOffsetValid) return;
 
       const { isValid } = validate(
         {
@@ -57,6 +69,8 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
           indicator_id: indicatorId,
           dimension_ids: dimensionIds,
           organization_id: organizationId,
+          year_offset: parsedYearOffset,
+          is_deprecated: isDeprecated,
         },
         ["name", "indicator_id", "organization_id"],
       );
@@ -67,15 +81,20 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
         indicator_id: indicatorId,
         dimension_ids: dimensionIds,
         organization_id: organizationId,
+        year_offset: parsedYearOffset,
+        is_deprecated: isDeprecated,
       });
       setIsSubmitting(false);
     },
     [
       dimensionIds,
       indicatorId,
+      isDeprecated,
+      isYearOffsetValid,
       name,
       onSubmit,
       organizationId,
+      parsedYearOffset,
       tableID,
       validate,
     ],
@@ -85,7 +104,10 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
   if (error) return <Error message={error.message} hideButton />;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 relative">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 relative max-h-[calc(100dvh-8rem)] overflow-y-auto"
+    >
       {/* Name */}
       <div className="flex flex-col">
         <label className="text-sm font-medium mb-1">Name</label>
@@ -171,12 +193,59 @@ const EditTableForm = ({ tableID, onSubmit, onCancel }: EditTableFormProps) => {
         )}
       </div>
 
+      <div className="flex flex-col">
+        <label htmlFor="year-offset" className="text-sm font-medium mb-1">
+          Year Offset
+        </label>
+        <Input
+          id="year-offset"
+          type="number"
+          value={yearOffset}
+          onChange={setYearOffset}
+          min={-32768}
+          max={32767}
+          step={1}
+          required
+          aria-invalid={!isYearOffsetValid}
+          aria-describedby="year-offset-help year-offset-error"
+        />
+        <p id="year-offset-help" className="text-xs text-gray-500 mt-1">
+          Selisih dari tahun berjalan: -1 = tahun sebelumnya, 0 = tahun ini,
+          1 = tahun berikutnya. Mengatur tahun default dan pilihan tahun tabel.
+          {isYearOffsetValid &&
+            ` Tahun acuan saat ini: ${currentYear} + (${parsedYearOffset}) = ${currentYear + parsedYearOffset}.`}
+        </p>
+        {!isYearOffsetValid && (
+          <p id="year-offset-error" className="text-xs text-red-500">
+            Year offset wajib berupa bilangan bulat antara -32768 dan 32767.
+          </p>
+        )}
+      </div>
+
+      <div className="flex flex-col">
+        <label className="flex items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={isDeprecated}
+            onChange={(e) => setIsDeprecated(e.target.checked)}
+            disabled={isSubmitting}
+            aria-describedby="deprecated-help"
+            className="h-4 w-4 rounded border-gray-300"
+          />
+          Deprecated
+        </label>
+        <p id="deprecated-help" className="text-xs text-gray-500 mt-1">
+          Centang untuk menandai tabel sebagai deprecated. Hapus centang untuk
+          mengaktifkan kembali tabel.
+        </p>
+      </div>
+
       {/* Buttons */}
       <div className="flex justify-end gap-2 mt-3">
         <Button type="button" onClick={onCancel} variant="secondary">
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !isYearOffsetValid}>
           {isSubmitting ? "Updating..." : "Update"}
         </Button>
       </div>

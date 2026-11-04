@@ -34,6 +34,26 @@
 
 ## Untuk Admin BPS
 
+### Mengatur Year Offset Tabel
+
+1. Buka `/collection/tables`, lalu pilih **Edit** pada tabel.
+2. Isi **Year Offset** di bawah **Dimension** dengan bilangan bulat, lalu klik **Update**.
+3. Tahun acuan dihitung sebagai `tahun berjalan + year_offset`: `-1` untuk
+   tahun sebelumnya, `0` untuk tahun ini, dan `1` untuk tahun berikutnya.
+
+Pengaturan ini menentukan tahun default tabel berdimensi ketika tahun tidak
+dipilih secara eksplisit, serta awal pilihan empat tahun pada halaman tabel
+dan review. Nilai yang didukung adalah -32768 sampai 32767 sesuai tipe kolom
+database. Pengaturan hanya dapat diubah oleh admin dan tidak mengubah tahun
+pada data yang sudah tersimpan.
+
+### Mengatur Status Deprecated
+
+Di `/collection/tables`, pilih **Edit** pada tabel. Centang **Deprecated** untuk
+menandai tabel sebagai deprecated, atau hapus centang untuk mengaktifkannya
+kembali, lalu klik **Update**. Status ini dikelola melalui form edit, bukan
+tombol terpisah pada daftar tabel. Badge dan filter **Deprecated** tetap tersedia.
+
 ### 🔍 Workflow Review
 
 ```

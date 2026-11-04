@@ -58,6 +58,8 @@ export type UpdateTableRequest = {
   indicator_id: string;
   organization_id: string;
   dimension_ids: string[];
+  year_offset?: number;
+  is_deprecated?: boolean;
 };
 
 export type AssignOrganizationRequest = {

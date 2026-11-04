@@ -24,12 +24,9 @@ import { useIndicatorApi } from "@/service/indicator";
 import { useOrganizationApi } from "@/service/organization";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useAuth } from "@/hooks/useAuth";
 
 const TablePage = () => {
   const { setBreadcrumbs } = useOutletContext<StatioContextType>();
-  const { user } = useAuth();
-  const isAdmin = user?.roles.includes("admin") ?? false;
 
   useEffect(() => {
     document.title = "Collection Tables | Statio";
@@ -48,12 +45,7 @@ const TablePage = () => {
   const { useTables } = useTableApi();
   const { useIndicatorNames, useIndicatorMeasures, useIndicatorUnits } =
     useIndicatorApi();
-  const {
-    createTable,
-    updateTable,
-    deleteTable,
-    updateTableDeprecated,
-  } = useTableApi();
+  const { createTable, updateTable, deleteTable } = useTableApi();
   const { useOrganizations, assignTablesToOrganization } = useOrganizationApi();
 
   const { data, isLoading, mutate } = useTables(table);
@@ -126,18 +118,6 @@ const TablePage = () => {
       mutate();
     },
     [deleteTable, mutate],
-  );
-
-  const handleToggleDeprecated = useCallback(
-    async (row: TableList) => {
-      try {
-        await updateTableDeprecated(row.id, !row.is_deprecated);
-        mutate();
-      } catch (error) {
-        console.error("Error updating table deprecation status:", error);
-      }
-    },
-    [mutate, updateTableDeprecated],
   );
 
   const handleAssignOrganization = async (data: AssignOrganizationRequest) => {
@@ -294,20 +274,6 @@ const TablePage = () => {
             >
               Delete
             </Button>
-            {isAdmin && (
-              <Button
-                size="sm"
-                className={
-                  row.is_deprecated
-                    ? "!bg-emerald-600 !text-white hover:!bg-emerald-700"
-                    : "!bg-amber-500 !text-white hover:!bg-amber-600"
-                }
-                onClick={() => handleToggleDeprecated(row)}
-                title={row.is_deprecated ? "Activate table" : "Mark deprecated"}
-              >
-                {row.is_deprecated ? "Activate" : "Deprecate"}
-              </Button>
-            )}
           </div>
         ),
       },
@@ -319,8 +285,6 @@ const TablePage = () => {
       existingIndicatorNames,
       existingIndicatorUnits,
       handleDeleteTable,
-      handleToggleDeprecated,
-      isAdmin,
       openEdit,
       organizations?.data,
     ],

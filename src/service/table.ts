@@ -17,7 +17,7 @@ import type {
   UpdateTableRequest,
 } from "@/type/table";
 import type { ApiResponse } from "@/type/response";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import type { Fact, FactRequest } from "@/type/fact";
 import { useApiFetch } from "@/hooks/useApiFetch";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,7 @@ type TableFilters = Record<keyof Table, FilterValue>;
 export const useTableApi = () => {
   const apiFetch = useApiFetch();
   const { token } = useAuth();
+  const { mutate } = useSWRConfig();
 
   const useTable = (id?: string, year?: number | null) => {
     const params = new URLSearchParams();
@@ -104,10 +105,16 @@ export const useTableApi = () => {
     id: string,
     data: UpdateTableRequest,
   ): Promise<ApiResponse<Table>> => {
-    return apiFetch(`${API_BASE_URL}/api/v1/tables/${id}`, {
+    const url = `${API_BASE_URL}/api/v1/tables/${id}`;
+    const result = await apiFetch<ApiResponse<Table>>(url, {
       method: "PUT",
       body: JSON.stringify(data),
     });
+    await mutate(
+      (key) =>
+        typeof key === "string" && (key === url || key.startsWith(`${url}?`)),
+    );
+    return result;
   };
 
   const addLabelsTables = async (
