@@ -7,12 +7,13 @@ import { useConfigurationApi } from "@/service/configuration";
 import { useOutletContext } from "react-router";
 import type { StatioContextType } from "@/component/layout/StatioLayout";
 
-const COOKIE_KEY = "integration_website_cookie";
-
-const ConfigurationPage = () => {
-  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+const CookieConfiguration = ({ configurationKey, title, description }: {
+  configurationKey: string;
+  title: string;
+  description: string;
+}) => {
   const { useConfiguration, updateConfiguration } = useConfigurationApi();
-  const { data, mutate } = useConfiguration(COOKIE_KEY);
+  const { data, error, isLoading, mutate } = useConfiguration(configurationKey);
 
   const [inputValue, setInputValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -20,15 +21,6 @@ const ConfigurationPage = () => {
     type: "success" | "error";
     text: string;
   } | null>(null);
-
-  useEffect(() => {
-    document.title = "Integration Configuration | Statio";
-    setBreadcrumbs([
-      { label: "Dashboard", href: "/" },
-      { label: "Integration", highlight: false },
-      { label: "Configuration" },
-    ]);
-  }, [setBreadcrumbs]);
 
   useEffect(() => {
     if (data?.data?.value) setInputValue(data.data.value);
@@ -39,9 +31,9 @@ const ConfigurationPage = () => {
     setMessage(null);
 
     try {
-      await updateConfiguration(COOKIE_KEY, {
+      await updateConfiguration(configurationKey, {
         value,
-        name: "Integration Website Cookie",
+        name: title,
       });
       setMessage({ type: "success", text: successMsg });
       mutate();
@@ -59,20 +51,22 @@ const ConfigurationPage = () => {
     <div className="p-4 space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Integration Cookie Configuration</CardTitle>
+          <CardTitle>{title}</CardTitle>
           <p className="text-sm text-gray-500">
-            Configure cookie for integration upload to BPS website
+            {description}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="integrationCookie">Cookie</Label>
+            <Label htmlFor={configurationKey}>Cookie</Label>
             <Input
-              id="integrationCookie"
-              type="text"
+              id={configurationKey}
+              type="password"
               value={inputValue}
               onChange={setInputValue}
-              placeholder="PHPSESSID=...; other_cookie=..."
+              placeholder="Paste authenticated cookie header"
+              disabled={isSaving || isLoading}
+              autoComplete="off"
               className="mt-1"
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -80,6 +74,7 @@ const ConfigurationPage = () => {
             </p>
           </div>
 
+          {error && <p role="alert" className="text-sm text-red-700">Could not load the saved cookie. You can enter and save a new value.</p>}
           {message && (
             <div
               className={`p-3 rounded-md text-sm ${
@@ -97,7 +92,7 @@ const ConfigurationPage = () => {
               onClick={() =>
                 handleUpdate(inputValue, "Configuration saved successfully")
               }
-              disabled={isSaving || !inputValue}
+              disabled={isSaving || isLoading || !inputValue.trim()}
               variant="primary"
             >
               {isSaving ? "Saving..." : "Save"}
@@ -115,6 +110,28 @@ const ConfigurationPage = () => {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+};
+
+const ConfigurationPage = () => {
+  const { setBreadcrumbs } = useOutletContext<StatioContextType>();
+  useEffect(() => {
+    document.title = "Integration Configuration | Statio";
+    setBreadcrumbs([
+      { label: "Dashboard", href: "/" },
+      { label: "Integration", highlight: false },
+      { label: "Configuration" },
+    ]);
+  }, [setBreadcrumbs]);
+  return (
+    <div className="space-y-4">
+      <CookieConfiguration configurationKey="integration_dynamic_website_cookie"
+        title="Dynamic BPS Website Cookie"
+        description="Session cookie for web-be.apps.bps.go.id, used by Dynamic Table Import. Include the current CSRF cookie when available." />
+      <CookieConfiguration configurationKey="integration_website_cookie"
+        title="Legacy BPS Website Cookie"
+        description="Cookie for the legacy BPS integration. Stored separately and not used by Dynamic Table Import." />
     </div>
   );
 };

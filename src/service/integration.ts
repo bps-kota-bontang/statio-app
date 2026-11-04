@@ -1,5 +1,7 @@
 import { API_BASE_URL } from "@/config/api";
 import { useAuth } from "@/hooks/useAuth";
+import type { ApiResponse } from "@/type/response";
+import type { DynamicIntegrationResponse } from "@/type/integration";
 
 export const useIntegrationApi = () => {
   const { token } = useAuth();
@@ -68,8 +70,42 @@ export const useIntegrationApi = () => {
     }
   };
 
+  const importDynamicIntegrationFile = async (
+    file: File,
+  ): Promise<DynamicIntegrationResponse> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/integrations/import-dynamic`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: token ? { Authorization: ["Bearer", token].join(" ") } : {},
+        body: formData,
+      },
+    );
+    if (!response.ok) {
+      const body: unknown = await response.json().catch(() => null);
+      const message =
+        body && typeof body === "object" && "message" in body &&
+        typeof body.message === "string"
+          ? body.message
+          : `Import failed (HTTP ${response.status})`;
+      throw new Error(message);
+    }
+    const body: ApiResponse<DynamicIntegrationResponse> = await response.json();
+    if (!body?.data || !Array.isArray(body.data.results) ||
+        typeof body.data.total !== "number" ||
+        typeof body.data.success !== "number" ||
+        typeof body.data.failed !== "number") {
+      throw new Error("Invalid import response. Check BPS before retrying.");
+    }
+    return body.data;
+  };
+
   return {
     exportIntegrationTable,
     importIntegrationFile,
+    importDynamicIntegrationFile,
   };
 };
